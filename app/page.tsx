@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
-
+import Image from "next/image"
+import favicon from "./favicon.ico";
 export default function Page() {
   return (
     <div className="flex min-h-svh p-6">
@@ -13,6 +14,7 @@ export default function Page() {
         <div className="font-mono text-xs text-muted-foreground">
           (Press <kbd>d</kbd> to toggle dark mode)
         </div>
+        <Image src={favicon} alt="Favicon" width={32} height={32}/>
       </div>
     </div>
   )
