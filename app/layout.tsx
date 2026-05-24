@@ -1,24 +1,30 @@
-import { Geist, Geist_Mono, Inter } from "next/font/google"
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@/lib/utils"
+import Header from '@/components/header'
+import { Inter } from 'next/font/google'
+import { Metadata } from 'next'
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'})
+const inter = Inter({ subsets: ['latin'] })
 
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-})
+export const metadata: Metadata = {
+  title: "Fleet Management System",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
+  description: "Fleet Management System for managing vehicle fleets, drivers, and routes. Built with Next.js and TypeScript.",
+};
 
 
-export default function Layout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body>
+    <html className={`${inter.className} p-6`} lang="uk">
+      <body className="antialiased">
+        <Header className='fixed top-0 w-full inset-x-0 z-1000'/>
         <main>{children}</main>
       </body>
     </html>
