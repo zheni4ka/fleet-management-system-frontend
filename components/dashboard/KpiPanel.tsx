@@ -3,13 +3,20 @@ import React from 'react'
 interface KpiItem {
   label: string
   value: number | string
-  className?: string
+  description?: string
 }
 
 const KpiCard: React.FC<{item: KpiItem}> = ({ item }) => (
-  <div className="flex-1 p-4  bg-white/5 rounded-lg shadow-sm border border-white/5">
-    <div className="text-xs text-muted-foreground">{item.label}</div>
-    <div className="mt-2 text-2xl font-semibold">{item.value}</div>
+  <div className="p-4 bg-zinc-900/40 rounded-xl shadow-sm border border-white/10 flex flex-col justify-between">
+    <div>
+      <span className="text-sm font-medium text-muted-foreground">{item.label}</span>
+    </div>
+    <div className="mt-4">
+      <div className="text-3xl font-bold tracking-tight">{item.value}</div>
+      {item.description && (
+        <p className="text-xs text-muted-foreground mt-1 font-medium">{item.description}</p>
+      )}
+    </div>
   </div>
 )
 
@@ -27,7 +34,9 @@ export const KpiPanel: React.FC<{data?: KpiItem[]}> = async ({ data }) => {
       route: resRoute.status,
     });
     return (
-      <div className="p-4 text-red-500 font-medium">❌ Не вдалося завантажити дані для KPI.</div>
+      <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg font-medium text-sm">
+        ❌ Не вдалося завантажити аналітичні дані для KPI панелі.
+      </div>
     );
   }
 
@@ -35,22 +44,45 @@ export const KpiPanel: React.FC<{data?: KpiItem[]}> = async ({ data }) => {
   const drivers = await resDriver.json();
   const routes = await resRoute.json();
 
+  const activeRoutesCount = routes.filter((r: { active: boolean }) => r.active).length;
+  
+  // Розрахунок відсотка завантаженості флоту
+  const utilizationRate = routes.length > 0 
+    ? Math.round((activeRoutesCount / routes.length) * 100) 
+    : 0;
+
   const defaults: KpiItem[] = [
-    { label: 'Авто', value: autos.length },
-    { label: 'Водії', value: drivers.length },
-    { label: 'Маршрути', value: routes.length },
-    { label: 'Актуальні маршрути', value: routes.filter((r: { active: boolean }) => r.active).length },
+    { 
+      label: 'Усього авто', 
+      value: autos.length, 
+      description: 'Зареєстровано в базі'
+    },
+    { 
+      label: 'Активні водії', 
+      value: drivers.length, 
+      description: 'Доступно для рейсів'
+    },
+    { 
+      label: 'Активні рейси', 
+      value: activeRoutesCount, 
+      description: `Із ${routes.length} загальних маршрутів`
+    },
+    { 
+      label: 'Завантаженість', 
+      value: `${utilizationRate}%`, 
+      description: 'Відсоток активних маршрутів'
+    },
   ];
 
   const items = data ?? defaults;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {items.map((it) => (
-        <KpiCard key={it.label} item={it} />
-      ))}
-    </div>
+    <div className=" justify-center flex flex-row gap-4 w-full">
+  {items.map((it) => (
+    <KpiCard key={it.label} item={it} />
+  ))}
+</div>
   );
 }
 
-export default KpiPanel
+export default KpiPanel;
