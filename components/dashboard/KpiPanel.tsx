@@ -14,51 +14,43 @@ const KpiCard: React.FC<{item: KpiItem}> = ({ item }) => (
 )
 
 export const KpiPanel: React.FC<{data?: KpiItem[]}> = async ({ data }) => {
-
-  const responseAuto = await fetch(`${process.env.API_BASE_URL}/api/Auto/all`, { 
-      cache: 'no-store'
-    });
-  const responseDriver = await fetch(`${process.env.API_BASE_URL}/api/Driver/all`, { 
-      cache: 'no-store'
-    });
-  const responseRoute = await fetch(`${process.env.API_BASE_URL}/api/Route/all`, { 
-      cache: 'no-store'
-    });
+  const [resAuto, resDriver, resRoute] = await Promise.all([
+    fetch(`${process.env.API_BASE_URL}/api/Auto/all`, { cache: 'no-store' }),
+    fetch(`${process.env.API_BASE_URL}/api/Driver/all`, { cache: 'no-store' }),
+    fetch(`${process.env.API_BASE_URL}/api/Route/all`, { cache: 'no-store' })
+  ]);
     
-    if(!responseAuto.ok || !responseDriver.ok || !responseRoute.ok) {
-      console.error('Помилка завантаження даних для KPI:', {
-        auto: responseAuto.ok,
-      });
-      return (
-        <div className="p-4 text-red-500 font-medium">❌ Не вдалося завантажити дані для KPI.</div>
-      );
-    }
+  if (!resAuto.ok || !resDriver.ok || !resRoute.ok) {
+    console.error('Помилка завантаження даних для KPI:', {
+      auto: resAuto.status,
+      driver: resDriver.status,
+      route: resRoute.status,
+    });
+    return (
+      <div className="p-4 text-red-500 font-medium">❌ Не вдалося завантажити дані для KPI.</div>
+    );
+  }
 
-    
-  const autos = responseAuto.ok ? await responseAuto.json() : [];
-  const drivers = responseDriver.ok ? await responseDriver.json() : [];
-  const routes = responseRoute.ok ? await responseRoute.json() : [];
-
-
+  const autos = await resAuto.json();
+  const drivers = await resDriver.json();
+  const routes = await resRoute.json();
 
   const defaults: KpiItem[] = [
     { label: 'Авто', value: autos.length },
     { label: 'Водії', value: drivers.length },
     { label: 'Маршрути', value: routes.length },
-    //{ label: 'Активні поїздки', value: 3 },
-  ]
+    { label: 'Актуальні маршрути', value: routes.filter((r: { active: boolean }) => r.active).length },
+  ];
 
-  const items = data ?? defaults
+  const items = data ?? defaults;
 
   return (
-    <section className="w-full">
-      <div className="grid grid-cols-2 grid-rows-2 gap-4">
-        {items.map((it) => (
-          <KpiCard key={it.label} item={it} />
-        ))}
-      </div>
-    </section>
-  )
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {items.map((it) => (
+        <KpiCard key={it.label} item={it} />
+      ))}
+    </div>
+  );
 }
 
 export default KpiPanel

@@ -81,32 +81,40 @@ export default function EditDriverModal({ driver }: { driver: Driver }) {
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
       >
-        <div className="space-y-4">
+        <div className="flex flex-col w-full">
           <input
             type="text"
             placeholder="Ім'я"
             value={form.name}
             onChange={handleChange("name")}
+            className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"  
           />
           <input
             type="text"
             placeholder="Прізвище"
             value={form.surname}
             onChange={handleChange("surname")}
+            className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
           <input
             type="text"
             placeholder="По-батькові"
             value={form.patronymic}
             onChange={handleChange("patronymic")}
+            className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
           <input
             type="text"
             placeholder="Номер ліцензії"
             value={form.licenseNumber}
             onChange={handleChange("licenseNumber")}
+            className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
-          <Button onClick={handleSave}>Зберегти</Button>
+          <Button onClick={handleSave}
+            className="mt-4 bg-blue-600 text-white transition-transform duration-300 hover:scale-105 hover:bg-blue-700"
+          >
+            Зберегти
+          </Button>
         </div>
       </ModalWindow>
     </>
