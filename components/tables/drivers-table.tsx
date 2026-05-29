@@ -1,5 +1,7 @@
 "use client"
 
+import { useState } from "react"
+import { useRouter } from 'next/navigation'
 import {
   Table,
   TableBody,
@@ -11,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Inter } from "next/font/google"
 import { Driver } from "@/lib/types"
+import EditDriverModal from "../edit/edit-driver-modal"
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,6 +23,36 @@ interface DriversTableProps {
 }
 
 export function DriversTable({ data }: DriversTableProps) {
+  const router = useRouter();
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+ 
+
+  const handleDelete = async (id: number) => {
+    const confirmed = window.confirm('Ви впевнені, що хочете видалити водія?');
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingId(id);
+    try {
+      const base = (process.env as { NEXT_PUBLIC_API_BASE_URL?: string }).NEXT_PUBLIC_API_BASE_URL ?? "";
+      const url = base ? `${base}/api/Driver/${id}` : `/api/Driver/${id}`;
+      const response = await fetch(url, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Помилка сервера: ${response.status}`);
+      }
+
+      router.refresh();
+    } catch (error) {
+      console.error('Не вдалося видалити водія:', error);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   if (!data || data.length === 0) {
     return <p className="text-muted-foreground">Водіїв не знайдено.</p>
   }
@@ -50,10 +83,16 @@ export function DriversTable({ data }: DriversTableProps) {
                 </span>
               </TableCell>
               <TableCell className="text-center">
-                {/* Заглушки для майбутніх кнопок редагування/видалення */}
                 <div className="flex justify-center gap-2">
-                  <Button variant="outline" size="sm">Редагувати</Button>
-                  <Button variant="destructive" size="sm">Видалити</Button>
+                  <EditDriverModal driver={driver}/>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDelete(driver.id)}
+                    disabled={deletingId === driver.id}
+                  >
+                    Видалити
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>

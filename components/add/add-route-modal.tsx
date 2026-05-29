@@ -1,71 +1,121 @@
 "use client"
-import { useState } from "react"
+import { ChangeEvent, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import ModalWindow from "@/components/ui/modal-window"
+import { Auto, Driver, Location } from "@/lib/types"
+
+const routeStatuses = [
+  { value: 0, label: "Заплановано" },
+  { value: 1, label: "В процесі" },
+  { value: 2, label: "Виконано" },
+  { value: 3, label: "Скасовано" },
+]
 
 export default function AddRouteModal() {
   const [isOpen, setIsOpen] = useState(false)
   const [form, setForm] = useState({
-    start: "",
-    destination: "",
+    startLocationId: 0,
+    destinationLocationId: 0,
     departureTime: "",
     arrivalTime: "",
     autoId: 0,
     driverId: 0,
+    status: 0,
   })
 
-  const handleChange =
-    (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setForm((prev) => ({ ...prev, [field]: e.target.value }))
+  const apiBase =
+    (process.env as { NEXT_PUBLIC_API_BASE_URL?: string })
+      .NEXT_PUBLIC_API_BASE_URL ?? ""
+
+  const [drivers, setDrivers] = useState<Driver[]>([])
+  const [autos, setAutos] = useState<Auto[]>([])
+  const [locations, setLocations] = useState<Location[]>([])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const loadRouteDropdowns = async () => {
+      const endpoints = [
+        { url: `${apiBase}/api/Driver/all`, setter: setDrivers },
+        { url: `${apiBase}/api/Auto/all`, setter: setAutos },
+        { url: `${apiBase}/api/Location/all`, setter: setLocations },
+      ]
+
+      await Promise.all(
+        endpoints.map(async ({ url, setter }) => {
+          try {
+            const res = await fetch(url)
+            if (!res.ok) {
+              throw new Error(`Failed to load ${url}`)
+            }
+            setter(await res.json())
+          } catch (error) {
+            console.error("Error fetching route dropdown data:", error)
+          }
+        })
+      )
+    }
+
+    loadRouteDropdowns()
+  }, [isOpen, apiBase])
+
+  const handleInputChange =
+    (field: keyof typeof form) => (e: ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value
+      setForm((prev) => ({ ...prev, [field]: value }))
+    }
+
+  const handleSelectChange =
+    (field: keyof typeof form) => (e: ChangeEvent<HTMLSelectElement>) => {
+      setForm((prev) => ({ ...prev, [field]: Number(e.target.value) }))
     }
 
   const handleClear = () => {
     setForm({
-      start: "",
-      destination: "",
+      startLocationId: 0,
+      destinationLocationId: 0,
       departureTime: "",
       arrivalTime: "",
       autoId: 0,
       driverId: 0,
+      status: 0,
     })
   }
 
   const handleSave = async () => {
-    
-    await POST(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/Route`);
-
-    handleClear()
-    setIsOpen(false)
+    try {
+      await POST(apiBase ? `${apiBase}/api/Route` : `/api/Route`)
+      handleClear()
+      setIsOpen(false)
+    } catch (error) {
+      console.error("Не вдалося додати маршрут:", error)
+    }
   }
 
-async function POST(url: string) {
-  try {
+  async function POST(url: string) {
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        start: form.start,
-        destination: form.destination,
+        startLocationId: form.startLocationId,
+        destinationLocationId: form.destinationLocationId,
         departureTime: form.departureTime,
         arrivalTime: form.arrivalTime,
-        autoId: parseInt(form.autoId.toString(), 10) || 0,
-        driverId: parseInt(form.driverId.toString(), 10) || 0,
+        autoId: form.autoId,
+        driverId: form.driverId,
+        status: form.status,
       }),
-    });
+    })
 
     if (!response.ok) {
-      throw new Error(`Помилка сервера: ${response.status} ${response.statusText}`);
+      const text = await response.text()
+      throw new Error(
+        text ? `Помилка сервера: ${text}` : `Помилка сервера: ${response.status}`
+      )
     }
-    const text = await response.text(); 
-    const data = text ? JSON.parse(text) : null; 
-    return data;
-  } catch (error) {
-    console.error("Не вдалося зберегти дані:", error);
-    throw error;
-}
-}
+  }
 
   return (
     <>
@@ -80,60 +130,129 @@ async function POST(url: string) {
         onClose={() => setIsOpen(false)}
         title="Додати маршрут"
       >
-        <input
-          type="text"
-          value={form.start}
-          onChange={handleChange("start")}
-          placeholder="Початок"
-          className="rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        />
+        <div className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Початкова локація
+              </label>
+              <select
+                value={form.startLocationId || ""}
+                onChange={handleSelectChange("startLocationId")}
+                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Оберіть початкову локацію</option>
+                {locations.map((location) => (
+                  <option key={location.id} value={location.id}>
+                    {location.city}, {location.country}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Кінцева локація
+              </label>
+              <select
+                value={form.destinationLocationId || ""}
+                onChange={handleSelectChange("destinationLocationId")}
+                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Оберіть кінцеву локацію</option>
+                {locations.map((location) => (
+                  <option key={location.id} value={location.id}>
+                    {location.city}, {location.country}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-        <input
-          type="text"
-          value={form.destination}
-          onChange={handleChange("destination")}
-          placeholder="Кінець"
-          className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Час відправлення
+              </label>
+              <input
+                type="datetime-local"
+                value={form.departureTime}
+                onChange={handleInputChange("departureTime")}
+                className="w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Час прибуття
+              </label>
+              <input
+                type="datetime-local"
+                value={form.arrivalTime}
+                onChange={handleInputChange("arrivalTime")}
+                className="w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
+          </div>
 
-        <input
-          type="datetime-local"
-          value={form.departureTime}
-          onChange={handleChange("departureTime")}
-          placeholder="Час відправлення"
-          className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        />
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Водій
+              </label>
+              <select
+                value={form.driverId || ""}
+                onChange={handleSelectChange("driverId")}
+                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Оберіть водія</option>
+                {drivers.map((driver) => (
+                  <option key={driver.id} value={driver.id}>
+                    {driver.name} {driver.surname}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Автомобіль
+              </label>
+              <select
+                value={form.autoId || ""}
+                onChange={handleSelectChange("autoId")}
+                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Оберіть авто</option>
+                {autos.map((auto) => (
+                  <option key={auto.id} value={auto.id}>
+                    {auto.mark} {auto.model} ({auto.number})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Статус маршруту
+              </label>
+              <select
+                value={form.status}
+                onChange={handleSelectChange("status")}
+                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {routeStatuses.map((status) => (
+                  <option key={status.value} value={status.value}>
+                    {status.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-        <input
-          type="datetime-local"
-          value={form.arrivalTime}
-          onChange={handleChange("arrivalTime")}
-          placeholder="Час прибуття"
-          className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        />
-
-        <input
-          type="number"
-          value={form.autoId}
-          onChange={handleChange("autoId")}
-          placeholder="ID автомобіля"
-          className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        />
-
-        <input
-          type="number"
-          value={form.driverId}
-          onChange={handleChange("driverId")}
-          placeholder="ID водія"
-          className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        />
-
-        <Button
-          className="mt-4 bg-blue-600 align-bottom text-white transition-transform duration-300 hover:scale-105 hover:bg-blue-700"
-          onClick={handleSave}
-        >
-          Зберегти
-        </Button>
+          <Button
+            className="mt-4 bg-blue-600 text-white transition-transform duration-300 hover:scale-105 hover:bg-blue-700"
+            onClick={handleSave}
+          >
+            Зберегти
+          </Button>
+        </div>
       </ModalWindow>
     </>
   )

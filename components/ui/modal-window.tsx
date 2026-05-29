@@ -36,7 +36,7 @@ export default function ModalWindow({ isOpen, onClose, title, children }: ModalP
       ref={dialogRef}
       onClose={onClose} // Обробляє закриття через Esc
       onClick={handleBackdropClick}
-      className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 p-6 rounded-lg shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-md w-full border border-gray-200"
+      className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 p-6 rounded-lg shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm max-w-md w-full border border-gray-200 overflow-visible"
     >
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">{title}</h2>
@@ -46,7 +46,7 @@ export default function ModalWindow({ isOpen, onClose, title, children }: ModalP
           &times;
         </button>
       </div>
-      <div className="text-gray-600 flex gap-px-10 flex-col">
+      <div className="text-gray-600 flex gap-px-20 flex-col">
         {children}
       </div>
     </dialog>

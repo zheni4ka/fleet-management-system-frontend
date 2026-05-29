@@ -82,41 +82,40 @@ async function POST(url: string) {
         onClose={() => setIsOpen(false)}
         title="Додати автомобіль"
       >
-        <div className="space-y-3">
           <input
             type="text"
             onChange={handleChange("mark")}
             value={form.mark}
             placeholder="Марка"
-            className="w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
           <input
             type="text"
             onChange={handleChange("model")}
             value={form.model}
             placeholder="Модель"
-            className="w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
           <input
             type="text"
             onChange={handleChange("color")}
             value={form.color}
             placeholder="Колір"
-            className="w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
           <input
             type="text"
             onChange={handleChange("plate")}
             value={form.plate}
             placeholder="Номер"
-            className="w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
           <input
             type="text"
             onChange={handleChange("capacity")}
             value={form.capacity}
             placeholder="Місткість(кг)"
-            className="w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
           <Button
             className="mt-4 bg-blue-600 text-white transition-transform duration-300 hover:scale-105 hover:bg-blue-700"
@@ -124,7 +123,6 @@ async function POST(url: string) {
           >
             Зберегти
           </Button>
-        </div>
       </ModalWindow>
     </>
   )

@@ -1,13 +1,14 @@
-import React from 'react';
+"use client"
+
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Inter } from 'next/font/google'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Auto } from "@/lib/types"
-const inter = Inter({ subsets: ['latin'] })
+import EditAutoModal from '../edit/edit-auto-modal';
 
-interface Props {
-  className?: string;
-}
+const inter = Inter({ subsets: ['latin'] })
 
 interface AutosTableProps {
     data: Auto[]
@@ -15,8 +16,37 @@ interface AutosTableProps {
 
 
 export const AutosTable: React.FC<AutosTableProps> = ({ data }) => {
+  const router = useRouter();
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
-    if (!data || data.length === 0) {
+
+  const handleDelete = async (id: number) => {
+    const confirmed = window.confirm('Ви впевнені, що хочете видалити автомобіль?');
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingId(id);
+    try {
+      const base = (process.env as { NEXT_PUBLIC_API_BASE_URL?: string }).NEXT_PUBLIC_API_BASE_URL ?? "";
+      const url = base ? `${base}/api/Auto/${id}` : `/api/Auto/${id}`;
+      const response = await fetch(url, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Помилка сервера: ${response.status}`);
+      }
+
+      router.refresh();
+    } catch (error) {
+      console.error('Не вдалося видалити автомобіль:', error);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  if (!data || data.length === 0) {
         return <p className="text-muted-foreground">Автомобілів не знайдено.</p>
     }
 
@@ -47,8 +77,15 @@ export const AutosTable: React.FC<AutosTableProps> = ({ data }) => {
               </TableCell>
               <TableCell className="text-center">
                 <div className="flex justify-center gap-2">
-                  <Button variant="outline" size="sm">Редагувати</Button>
-                  <Button variant="destructive" size="sm">Видалити</Button>
+                  <EditAutoModal auto={auto}/>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDelete(auto.id)}
+                    disabled={deletingId === auto.id}
+                  >
+                    Видалити
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>
