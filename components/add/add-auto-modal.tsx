@@ -11,6 +11,17 @@ export default function AddAutoModal() {
     { value: 2, label: "Under Maintenance" }
   ]
 
+  const colors = [
+    {label: "Червоний" },
+    {label: "Синій" },
+    { label: "Зелений" },
+    { label: "Чорний" },
+    { label: "Білий" },
+    { label: "Сірий" },
+    { label: "Жовтий" },
+  ]
+
+
   const [form, setForm] = useState({
     mark: "",
     model: "",
@@ -108,13 +119,18 @@ async function POST(url: string) {
             placeholder="Модель"
             className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
-          <input
-            type="text"
-            onChange={handleChange("color")}
+          <select
             value={form.color}
-            placeholder="Колір"
-            className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
+            onChange={(e) => setForm((prev) => ({ ...prev, color: e.target.value }))}
+            className="mt-2 w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="" disabled>Виберіть колір</option>
+            {colors.map((color) => (
+              <option key={color.label} value={color.label}>
+                {color.label}
+              </option>
+            ))}
+          </select>
           <input
             type="text"
             onChange={handleChange("plate")}

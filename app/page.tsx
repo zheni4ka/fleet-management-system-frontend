@@ -1,7 +1,6 @@
 import KpiPanel from "@/components/dashboard/KpiPanel"
 import Link from "next/link"
 import RecentRoutesBlock from "@/components/recent-routes-block"
-// Компонент для секції останніх маршрутів (Server Component
 
 export default function Page() {
   return (
@@ -19,8 +18,8 @@ export default function Page() {
         <KpiPanel />
       </div>
 
-      <div className="grid w-full grid-cols-1 items-start gap-6 lg:grid-cols-3">
-        <div className="rounded-xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm lg:col-span-2">
+      <div className="grid w-full grid-cols-1 items-start gap-6 lg:grid-cols-4">
+        <div className="rounded-xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm lg:col-span-3">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-lg font-semibold tracking-tight">
               Останні маршрути
@@ -35,7 +34,7 @@ export default function Page() {
           <RecentRoutesBlock />
         </div>
 
-        <div className="space-y-4 rounded-xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm lg:col-span-1">
+        <div className="space-y-4 rounded-xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm lg:col-span-1 lg:sticky lg:top-6">
           <div>
             <h2 className="text-lg font-semibold tracking-tight">
               Панель швидкого переходу
