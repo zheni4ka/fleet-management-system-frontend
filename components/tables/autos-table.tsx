@@ -1,83 +1,124 @@
 "use client"
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Inter } from 'next/font/google'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import React, { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Inter } from "next/font/google"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Auto } from "@/lib/types"
-import EditAutoModal from '../edit/edit-auto-modal';
+import EditAutoModal from "../edit/edit-auto-modal"
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] })
 
 interface AutosTableProps {
-    data: Auto[]
+  data: Auto[]
 }
 
+const autoStatusLabel = (status: string | number) => {
+  switch (status) {
+    case 0:
+    case "Available":
+      return "Доступне"
+    case 1:
+    case "InService":
+      return "В експлуатації"
+    case 2:
+    case "Maintenance":
+      return "На техобслуговуванні"
+    default:
+      return "Невідомо"
+  }
+}
 
 export const AutosTable: React.FC<AutosTableProps> = ({ data }) => {
-  const router = useRouter();
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-
+  const router = useRouter()
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const handleDelete = async (id: number) => {
-    const confirmed = window.confirm('Ви впевнені, що хочете видалити автомобіль?');
+    const confirmed = window.confirm(
+      "Ви впевнені, що хочете видалити автомобіль?"
+    )
     if (!confirmed) {
-      return;
+      return
     }
 
-    setDeletingId(id);
+    setDeletingId(id)
     try {
-      const base = (process.env as { NEXT_PUBLIC_API_BASE_URL?: string }).NEXT_PUBLIC_API_BASE_URL ?? "";
-      const url = base ? `${base}/api/Auto/${id}` : `/api/Auto/${id}`;
+      const base =
+        (process.env as { NEXT_PUBLIC_API_BASE_URL?: string })
+          .NEXT_PUBLIC_API_BASE_URL ?? ""
+      const url = base ? `${base}/api/Auto/${id}` : `/api/Auto/${id}`
       const response = await fetch(url, {
-        method: 'DELETE',
-      });
+        method: "DELETE",
+      })
 
       if (!response.ok) {
-        throw new Error(`Помилка сервера: ${response.status}`);
+        throw new Error(`Помилка сервера: ${response.status}`)
       }
 
-      router.refresh();
+      router.refresh()
     } catch (error) {
-      console.error('Не вдалося видалити автомобіль:', error);
+      console.error("Не вдалося видалити автомобіль:", error)
     } finally {
-      setDeletingId(null);
+      setDeletingId(null)
     }
-  };
+  }
 
   if (!data || data.length === 0) {
-        return <p className="text-muted-foreground">Автомобілів не знайдено.</p>
-    }
+    return <p className="text-muted-foreground">Автомобілів не знайдено.</p>
+  }
 
-        return (
+  return (
     <div className="rounded-md border bg-white">
       <Table>
         <TableHeader className="">
           <TableRow>
-            <TableHead className={`w-1/6 ${inter.className}`}>ID</TableHead>
+            <TableHead className={`w-1/12 ${inter.className}`}>ID</TableHead>
             <TableHead className={`w-1/6 ${inter.className}`}>Марка</TableHead>
             <TableHead className={`w-1/6 ${inter.className}`}>Модель</TableHead>
             <TableHead className={`w-1/6 ${inter.className}`}>Колір</TableHead>
+            <TableHead className={`w-1/6 ${inter.className}`}>Статус</TableHead>
             <TableHead className={`w-1/6 ${inter.className}`}>Номер</TableHead>
-            <TableHead className={`w-1/6 ${inter.className} text-center`}>Операції</TableHead>
+            <TableHead className={`w-1/6 ${inter.className} text-center`}>
+              Операції
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {data.map((auto) => (
             <TableRow key={auto.id} className="hover:bg-slate-50/50">
-              <TableCell className={`font-mono text-xs ${inter.className}`}>{auto.id}</TableCell>
-              <TableCell className={`font-medium ${inter.className}`}>{auto.mark}</TableCell>
-              <TableCell className={` ${inter.className}`}>{auto.model}</TableCell>
-              <TableCell className={` ${inter.className}`}>{auto.color}</TableCell>
+              <TableCell className={`font-mono text-xs ${inter.className}`}>
+                {auto.id}
+              </TableCell>
+              <TableCell className={`font-medium ${inter.className}`}>
+                {auto.mark}
+              </TableCell>
+              <TableCell className={` ${inter.className}`}>
+                {auto.model}
+              </TableCell>
+              <TableCell className={` ${inter.className}`}>
+                {auto.color}
+              </TableCell>
               <TableCell>
-                <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-slate-700/10 ring-inset">
+                  {autoStatusLabel(auto.status)}
+                </span>
+              </TableCell>
+              <TableCell>
+                <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-700/10 ring-inset">
                   {auto.number}
                 </span>
               </TableCell>
               <TableCell className="text-center">
                 <div className="flex justify-center gap-2">
-                  <EditAutoModal auto={auto}/>
+                  <EditAutoModal auto={auto} />
                   <Button
                     variant="destructive"
                     size="sm"
@@ -93,7 +134,7 @@ export const AutosTable: React.FC<AutosTableProps> = ({ data }) => {
         </TableBody>
       </Table>
     </div>
-        );
+  )
 }
 
-export default AutosTable;
+export default AutosTable

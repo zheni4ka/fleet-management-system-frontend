@@ -10,8 +10,30 @@ async function RecentRoutesBlock() {
     )
 
   const routes = await resRoute.json()
-  // Беремо останні 5 маршрутів
   const recentRoutes = routes.slice(-5).reverse()
+
+  const getRouteStatusLabel = (status: string | number | undefined) => {
+    switch (status) {
+      case 0:
+      case 'Planned':
+        return 'Заплановано'
+      case 1:
+      case 'InProgress':
+        return 'В процесі'
+      case 2:
+      case 'Completed':
+        return 'Виконано'
+      case 3:
+      case 'Cancelled':
+        return 'Скасовано'
+      default:
+        return 'Невідомо'
+    }
+  }
+
+  const isRouteActive = (status: string | number | undefined) => {
+    return status === 0 || status === 'Planned' || status === 1 || status === 'InProgress'
+  }
 
   if (recentRoutes.length === 0) {
     return (
@@ -32,30 +54,35 @@ async function RecentRoutesBlock() {
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5">
-          {recentRoutes.map((route: { id: string; startPoint: string; endPoint: string; active: boolean }) => (
-            <tr key={route.id} className="transition-colors hover:bg-white/5">
-              <td className="py-3.5 font-mono text-xs text-blue-400">
-                #{route.id}
-              </td>
-              <td className="py-3.5 font-medium">
-                {route.startPoint || "Початкова точка"} -{">"}{" "}{route.endPoint || "Пункт призначення"}
-              </td>
-              <td className="py-3.5 text-right">
-                <span
-                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-                    route.active
-                      ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                      : "border border-zinc-500/20 bg-zinc-500/10 text-zinc-400"
-                  }`}
-                >
+          {recentRoutes.map((route: { id: string; startPoint?: string; endPoint?: string; status?: string | number; active?: boolean }) => {
+            const status = route.status ?? (route.active ? 'InProgress' : 'Completed')
+            const active = isRouteActive(status)
+
+            return (
+              <tr key={route.id} className="transition-colors hover:bg-white/5">
+                <td className="py-3.5 font-mono text-xs text-blue-400">
+                  #{route.id}
+                </td>
+                <td className="py-3.5 font-medium">
+                  {route.startPoint || "Початкова точка"} -{">"}{" "}{route.endPoint || "Пункт призначення"}
+                </td>
+                <td className="py-3.5 text-right">
                   <span
-                    className={`h-1.5 w-1.5 rounded-full ${route.active ? "bg-emerald-400" : "bg-zinc-400"}`}
-                  />
-                  {route.active ? "Активний" : "Завершений"}
-                </span>
-              </td>
-            </tr>
-          ))}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                      active
+                        ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
+                        : "border border-zinc-500/20 bg-zinc-500/10 text-zinc-400"
+                    }`}
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${active ? "bg-emerald-400" : "bg-zinc-400"}`}
+                    />
+                    {getRouteStatusLabel(status)}
+                  </span>
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>

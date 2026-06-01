@@ -6,6 +6,11 @@ export interface Driver {
   licenseNumber: string
 }
 
+export type AutoStatus =
+  | 0
+  | 1
+  | 2
+
 export interface Auto {
   id: number
   mark: string
@@ -13,6 +18,7 @@ export interface Auto {
   color: string
   number: string
   capacity: number
+  status: AutoStatus
 }
 
 export interface Location {

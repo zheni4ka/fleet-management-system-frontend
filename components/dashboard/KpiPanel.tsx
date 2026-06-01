@@ -44,7 +44,9 @@ export const KpiPanel: React.FC<{data?: KpiItem[]}> = async ({ data }) => {
   const drivers = await resDriver.json();
   const routes = await resRoute.json();
 
-  const activeRoutesCount = routes.filter((r: { active: boolean }) => r.active).length;
+  const activeRoutesCount = routes.filter((route: { status: string | number }) => {
+    return route.status === 0 || route.status === 'Planned' || route.status === 1 || route.status === 'InProgress'
+  }).length;
   
   // Розрахунок відсотка завантаженості флоту
   const utilizationRate = routes.length > 0 

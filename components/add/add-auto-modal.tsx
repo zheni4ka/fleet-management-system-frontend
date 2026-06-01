@@ -1,25 +1,36 @@
 "use client"
-import { useState } from "react"
+import { useState, type ChangeEvent } from "react"
 import { Button } from "@/components/ui/button"
 import ModalWindow from "@/components/ui/modal-window"
 
 export default function AddAutoModal() {
   const [isOpen, setIsOpen] = useState(false)
+  const autoStatuses = [
+    { value: 0, label: "Available" },
+    { value: 1, label: "In Service" },
+    { value: 2, label: "Under Maintenance" }
+  ]
+
   const [form, setForm] = useState({
     mark: "",
     model: "",
     color: "",
     plate: "",
     capacity: "",
+    status: 0,
   })
 
   const handleChange =
-    (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (field: keyof typeof form) => (e: ChangeEvent<HTMLInputElement>) => {
       setForm((prev) => ({ ...prev, [field]: e.target.value }))
     }
 
+  const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setForm((prev) => ({ ...prev, status: Number(e.target.value) }))
+  }
+
   const handleClear = () => {
-    setForm({ mark: "", model: "", color: "", plate: "", capacity: "" })
+    setForm({ mark: "", model: "", color: "", plate: "", capacity: "", status: 0 })
   }
 
   const handleSave = async () => {
@@ -49,7 +60,8 @@ async function POST(url: string) {
         model: form.model,
         color: form.color,
         number: form.plate,
-        capacity: parseInt(form.capacity, 10) || 1
+        capacity: parseInt(form.capacity, 10) || 1,
+        status: form.status,
       }),
     });
 
@@ -117,6 +129,17 @@ async function POST(url: string) {
             placeholder="Місткість(кг)"
             className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
+          <select
+            value={form.status}
+            onChange={handleSelectChange}
+            className="mt-2 w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {autoStatuses.map((status) => (
+              <option key={status.value} value={status.value}>
+                {status.label}
+              </option>
+            ))}
+          </select>
           <Button
             className="mt-4 bg-blue-600 text-white transition-transform duration-300 hover:scale-105 hover:bg-blue-700"
             onClick={handleSave}
