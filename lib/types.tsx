@@ -27,7 +27,7 @@ export interface EditAutoForm {
     color: string
     licensePlate: string
     capacity: number
-    status: number
+    status: string
 }
 
 export interface Location {
