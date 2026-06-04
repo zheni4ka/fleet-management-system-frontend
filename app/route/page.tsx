@@ -1,16 +1,15 @@
 import React from 'react';
 import { env } from 'process';
 import { Inter } from 'next/font/google';
-import RouteCard from '@/components/route-card';
 import { Route, Auto, Driver, Location } from '@/lib/types';
 import AddRouteModal from '@/components/add/add-route-modal';
+import RoutesList from '@/components/routes-list';
 
 const inter = Inter({ subsets: ['latin'] });
 
 interface PageProps {
   className?: string;
 }
-
 
 export const RoutesPage: React.FC<PageProps> = async ({ className }) => {
   const [routesRes, autosRes, driversRes, locationsRes] = await Promise.all([
@@ -19,7 +18,7 @@ export const RoutesPage: React.FC<PageProps> = async ({ className }) => {
     fetch(`${env.API_BASE_URL}/api/Driver/all`, { cache: 'no-store' }),
     fetch(`${env.API_BASE_URL}/api/Location/all`, { cache: 'no-store' }),
   ]);
-
+  
   if (!routesRes.ok || !autosRes.ok || !driversRes.ok || !locationsRes.ok) {
     return (
       <div className="p-6 text-red-500 font-medium">❌ Помилка завантаження даних для маршрутів, авто, водіїв або локацій.</div>
@@ -30,15 +29,10 @@ export const RoutesPage: React.FC<PageProps> = async ({ className }) => {
   const autos: Auto[] = await autosRes.json();
   const drivers: Driver[] = await driversRes.json();
   const locations: Location[] = await locationsRes.json();
-
-  const autoMap = new Map<number, string>();
-  autos.forEach((a) => autoMap.set(a.id, `${a.mark} ${a.model} ${a.number}`));
-
-  const driverMap = new Map<number, string>();
-  drivers.forEach((d) => driverMap.set(d.id, `${d.name} ${d.surname}`));
-
-  const locationMap = new Map<number, string>();
-  locations.forEach((loc) => locationMap.set(loc.id, `${loc.city}, ${loc.country}`));
+  
+  // Перетворюємо в масиви кортежів, оскільки об'єкт Map не можна напряму передати з серверного компонента в клієнтський
+  const autoMapData: [number, string][] = autos.map((a) => [a.id, `${a.mark} ${a.model} ${a.number}`]);
+  const driverMapData: [number, string][] = drivers.map((d) => [d.id, `${d.name} ${d.surname}`]);
 
   return (
     <div className={`${className ?? ''} p-8 max-w-6xl mx-auto space-y-6`}>
@@ -48,22 +42,13 @@ export const RoutesPage: React.FC<PageProps> = async ({ className }) => {
         <AddRouteModal />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {sampleRoutes.map((route) => (
-          <RouteCard
-            key={route.id}
-            startLocationName={locationMap.get(route.startLocationId)}
-            destinationLocationName={locationMap.get(route.destinationLocationId)}
-            departureTime={route.departureTime}
-            arrivalTime={route.arrivalTime}
-            autoId={route.autoId}
-            driverId={route.driverId}
-            autoName={route.autoId ? autoMap.get(route.autoId) : undefined}
-            driverName={route.driverId ? driverMap.get(route.driverId) : undefined}
-            status={route.status}
-          />
-        ))}
-      </div>
+      {/* Передаємо завантажені дані у клієнтський компонент, де працює useState */}
+      <RoutesList 
+        initialRoutes={sampleRoutes}
+        locations={locations}
+        autoMapData={autoMapData}
+        driverMapData={driverMapData}
+      />
     </div>
   );
 };

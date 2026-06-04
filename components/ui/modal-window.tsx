@@ -12,19 +12,18 @@ interface ModalProps {
 export default function ModalWindow({ isOpen, onClose, title, children }: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
-  // Слідкуємо за зміною пропсу isOpen
+
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
 
     if (isOpen) {
-      dialog.showModal(); // Відкриває модалку поверх усіх елементів (top-layer)
+      dialog.showModal();
     } else {
       dialog.close();
     }
   }, [isOpen]);
 
-  // Обробка натискання на задній фон (backdrop) для закриття
   const handleBackdropClick = (e: React.MouseEvent<HTMLDialogElement>) => {
     if (e.target === dialogRef.current) {
       onClose();
