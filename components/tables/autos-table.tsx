@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Auto } from "@/lib/types"
 import EditAutoModal from "../edit/edit-auto-modal"
 import toast from "react-hot-toast"
+import AutoMaintenanceModal from "../add/add-maintenance-modal"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -39,7 +40,7 @@ const autoStatusLabel = (status: string | number) => {
     case "InService":
       return "В експлуатації"
     case 2:
-    case "Maintenance":
+    case "UnderMaintenance":
       return "На техобслуговуванні"
     default:
       return "Невідомо"
@@ -144,6 +145,7 @@ export const AutosTable: React.FC<AutosTableProps> = ({ data }) => {
               </TableCell>
               <TableCell className="text-center">
                 <div className="flex justify-center gap-2">
+                  <AutoMaintenanceModal autoId={auto.id} autoTitle={`${auto.mark} ${auto.model}`} />
                   <EditAutoModal auto={auto} />
                   <Button
                     variant="destructive"

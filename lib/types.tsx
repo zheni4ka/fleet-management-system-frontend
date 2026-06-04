@@ -33,6 +33,14 @@ export type RouteStatus =
   | "Completed"
   | "Cancelled";
 
+export interface Maintenance {
+  id: number
+  name: string
+  autoId: number
+  description: string
+  serviceDate: string
+}
+
 export interface Route {
   id: number
   startLocationId: number
