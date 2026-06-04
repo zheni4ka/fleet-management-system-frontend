@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Route, Location } from "@/lib/types"
+import { cookies } from "next/headers"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -36,9 +37,16 @@ const isRouteActive = (status: string | number | undefined) => {
 }
 
 async function RecentRoutesBlock() {
+    const cookieStore = await cookies()
+    const token = cookieStore.get("token")?.value
+
+    const headers = {
+      "Authorization": `Bearer ${token}`
+    }
+
     const [routesRes, locationsRes] = await Promise.all([
-      fetch(`${process.env.API_BASE_URL}/api/Route/all`, { cache: "no-store" }),
-      fetch(`${process.env.API_BASE_URL}/api/Location/all`, { cache: "no-store" }),
+      fetch(`${process.env.API_BASE_URL}/api/Route/all`, { headers, cache: "no-store" }),
+      fetch(`${process.env.API_BASE_URL}/api/Location/all`, { headers, cache: "no-store" }),
     ])
 
     if (!routesRes.ok || !locationsRes.ok) {
@@ -57,7 +65,7 @@ async function RecentRoutesBlock() {
     locations.forEach((loc) => locationMap.set(loc.id, `${loc.city}, ${loc.country}`))
 
     if (recentRoutes.length === 0) {
-      return <p className="text-muted-foreground">Маршрутів поки немає.</p>
+      return <p className="text-muted-foreground p-4 text-sm">Маршрутів поки немає.</p>
     }
 
     return (
@@ -87,10 +95,10 @@ async function RecentRoutesBlock() {
                   <TableCell className={`font-medium ${inter.className}`}>
                     {startLocation} → {endLocation}
                   </TableCell>
-                  <TableCell className={`${inter.className}`}>
+                  <TableCell className={`${inter.className} text-xs`}>
                     {new Date(route.departureTime).toLocaleString('uk-UA') || "—"}
                   </TableCell>
-                  <TableCell className={`${inter.className}`}>
+                  <TableCell className={`${inter.className} text-xs`}>
                     {new Date(route.arrivalTime).toLocaleString('uk-UA') || "—"}
                   </TableCell>
                   <TableCell className="text-right">
@@ -98,7 +106,7 @@ async function RecentRoutesBlock() {
                       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
                         active
                           ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                          : "border border-zinc-500/20 bg-zinc-500/10 text-zinc-400"
+                          : "border border-zinc-500/20 bg-zinc-500/10 text-zinc-500"
                       }`}
                     >
                       <span

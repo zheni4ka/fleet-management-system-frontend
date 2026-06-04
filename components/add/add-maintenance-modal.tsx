@@ -5,15 +5,7 @@ import { Button } from "@/components/ui/button"
 import ModalWindow from "@/components/ui/modal-window"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
-
-// Локальний інтерфейс для записів ТО
-interface AutoMaintenance {
-  id: number
-  name: string
-  description: string
-  serviceDate: string
-  autoId: number
-}
+import { AutoMaintenance } from "@/lib/types"
 
 function getCookie(name: string): string | null {
   if (typeof document === "undefined") return null
@@ -25,7 +17,7 @@ function getCookie(name: string): string | null {
 
 interface Props {
   autoId: number
-  autoTitle: string // Наприклад: "BMW X5 (ВХ1234СА)"
+  autoTitle: string 
 }
 
 export default function AutoMaintenanceModal({ autoId, autoTitle }: Props) {
@@ -42,7 +34,7 @@ export default function AutoMaintenanceModal({ autoId, autoTitle }: Props) {
     serviceDate: "",
   })
 
-  // Завантаження історії при відкритті вікна
+
   useEffect(() => {
     if (!isOpen) return
 
@@ -111,11 +103,9 @@ export default function AutoMaintenanceModal({ autoId, autoTitle }: Props) {
 
     try {
       await savePromise
-      // Очищаємо форму
       setForm({ name: "", description: "", serviceDate: "" })
-      // Можемо закрити вікно, або просто оновити історію:
       setIsOpen(false)
-      router.refresh() // Оновлюємо статус в головній таблиці авто
+      router.refresh() 
     } catch (error) {
       console.error(error)
     }

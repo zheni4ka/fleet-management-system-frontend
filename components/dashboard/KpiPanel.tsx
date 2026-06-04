@@ -1,4 +1,5 @@
 import React from 'react'
+import { cookies } from 'next/headers'
 
 interface KpiItem {
   label: string
@@ -21,10 +22,17 @@ const KpiCard: React.FC<{item: KpiItem}> = ({ item }) => (
 )
 
 export const KpiPanel: React.FC<{data?: KpiItem[]}> = async ({ data }) => {
+  const cookieStore = await cookies()
+  const token = cookieStore.get("token")?.value
+
+  const headers = {
+    "Authorization": `Bearer ${token}`
+  }
+
   const [resAuto, resDriver, resRoute] = await Promise.all([
-    fetch(`${process.env.API_BASE_URL}/api/Auto/all`, { cache: 'no-store' }),
-    fetch(`${process.env.API_BASE_URL}/api/Driver/all`, { cache: 'no-store' }),
-    fetch(`${process.env.API_BASE_URL}/api/Route/all`, { cache: 'no-store' })
+    fetch(`${process.env.API_BASE_URL}/api/Auto/all`, { headers, cache: 'no-store' }),
+    fetch(`${process.env.API_BASE_URL}/api/Driver/all`, { headers, cache: 'no-store' }),
+    fetch(`${process.env.API_BASE_URL}/api/Route/all`, { headers, cache: 'no-store' })
   ]);
     
   if (!resAuto.ok || !resDriver.ok || !resRoute.ok) {
@@ -48,7 +56,6 @@ export const KpiPanel: React.FC<{data?: KpiItem[]}> = async ({ data }) => {
     return route.status === 0 || route.status === 'Planned' || route.status === 1 || route.status === 'InProgress'
   }).length;
   
-  // Розрахунок відсотка завантаженості флоту
   const utilizationRate = routes.length > 0 
     ? Math.round((activeRoutesCount / routes.length) * 100) 
     : 0;
@@ -80,10 +87,10 @@ export const KpiPanel: React.FC<{data?: KpiItem[]}> = async ({ data }) => {
 
   return (
     <div className=" justify-center flex flex-row gap-4 w-full">
-  {items.map((it) => (
-    <KpiCard key={it.label} item={it} />
-  ))}
-</div>
+      {items.map((it) => (
+        <KpiCard key={it.label} item={it} />
+      ))}
+    </div>
   );
 }
 

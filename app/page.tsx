@@ -2,8 +2,18 @@ import KpiPanel from "@/components/dashboard/KpiPanel"
 import Link from "next/link"
 import RecentRoutesBlock from "@/components/recent-routes-block"
 import FastAccess from "@/components/fast-access"
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 
-export default function Page() {
+export default async function Page() {
+  // Перевіряємо авторизацію
+  const cookieStore = await cookies()
+  const token = cookieStore.get("token")?.value
+
+  if (!token) {
+    redirect("/login")
+  }
+
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-7xl flex-col space-y-6 p-6 pt-8">
       <div className="space-y-10">
@@ -24,7 +34,7 @@ export default function Page() {
             </h2>
             <Link
               href="/route"
-              className="flex items-center gap-0.5 text-xs font-medium text-blue-400 hover:underline"
+              className="flex items-center gap-0.5 text-xs font-medium text-blue-500 hover:underline"
             >
               Усі маршрути -{">"}
             </Link>

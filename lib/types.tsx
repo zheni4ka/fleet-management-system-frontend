@@ -21,6 +21,15 @@ export interface Auto {
   status: AutoStatus
 }
 
+export interface EditAutoForm {
+    mark: string
+    model: string
+    color: string
+    licensePlate: string
+    capacity: number
+    status: number
+}
+
 export interface Location {
   id: number
   city: string
@@ -33,12 +42,12 @@ export type RouteStatus =
   | "Completed"
   | "Cancelled";
 
-export interface Maintenance {
+export interface AutoMaintenance {
   id: number
   name: string
-  autoId: number
   description: string
   serviceDate: string
+  autoId: number
 }
 
 export interface Route {
@@ -62,4 +71,8 @@ export interface RouteCardProps {
   autoName?: string
   driverName?: string
   status?: RouteStatus
+}
+
+export interface DriversTableProps {
+  data: Driver[]
 }

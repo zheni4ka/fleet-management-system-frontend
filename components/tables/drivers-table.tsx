@@ -15,6 +15,7 @@ import { Inter } from "next/font/google"
 import { Driver } from "@/lib/types"
 import EditDriverModal from "../edit/edit-driver-modal"
 import toast from "react-hot-toast"
+import { DriversTableProps } from "@/lib/types"
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -26,9 +27,6 @@ function getCookie(name: string): string | null {
   return null
 }
 
-interface DriversTableProps {
-  data: Driver[]
-}
 
 export function DriversTable({ data }: DriversTableProps) {
   const router = useRouter();

@@ -61,8 +61,6 @@ export const Directions: React.FC<DirectionsProps> = ({
     })
 
     directionsRendererRef.current = renderer
-
-    // Очищення карти при розмонтуванні компонента
     return () => {
       if (directionsRendererRef.current) {
         directionsRendererRef.current.setMap(null)
@@ -71,7 +69,6 @@ export const Directions: React.FC<DirectionsProps> = ({
     }
   }, [routesLibrary, map])
 
-  // 2. Запит та відображення маршруту при зміні точок
   useEffect(() => {
     if (!routesLibrary || !directionsRendererRef.current) return
 
@@ -101,7 +98,7 @@ export const Directions: React.FC<DirectionsProps> = ({
         }
       }
     )
-  }, [routesLibrary, origin, destination]) // Сюди більше не входить стейт рендерера!
+  }, [routesLibrary, origin, destination]) 
 
   return null
 }

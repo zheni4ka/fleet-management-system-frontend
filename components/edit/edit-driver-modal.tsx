@@ -3,6 +3,15 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import ModalWindow from "@/components/ui/modal-window"
 import { Driver } from "@/lib/types"
+import toast from "react-hot-toast"
+
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop()?.split(";").shift() ?? null
+  return null
+}
 
 export default function EditDriverModal({ driver }: { driver: Driver }) {
   const router = useRouter()
@@ -28,18 +37,37 @@ export default function EditDriverModal({ driver }: { driver: Driver }) {
   }
 
   const handleSave = async () => {
-    await PUT(`${apiBase}/api/Driver`)
-    handleClear()
-    setIsOpen(false)
-    router.refresh()
+    if (!form.name || !form.surname || !form.licenseNumber) {
+      toast.error("Будь ласка, заповніть всі поля форми перед збереженням.")
+      return
+    }
+
+    const savePromise = PUT(`${apiBase ? apiBase : ""}/api/Driver/${driver.id}`)
+
+    toast.promise(savePromise, {
+      loading: "Оновлення інформації про водія...",
+      success: "Інформацію про водія успішно оновлено.",
+      error: "Помилка при оновленні інформації про водія.",
+    })
+
+    try {
+      await savePromise
+      handleClear()
+      setIsOpen(false)
+      router.refresh()
+    } catch (error) {
+      console.error("Не вдалося оновити дані:", error)
+    }
   }
 
   const PUT = async (url: string) => {
+    const token = getCookie("token")
     try {
       const response = await fetch(url, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           id: driver.id,
@@ -81,13 +109,13 @@ export default function EditDriverModal({ driver }: { driver: Driver }) {
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
       >
-        <div className="flex flex-col w-full">
+        <div className="flex w-full flex-col">
           <input
             type="text"
             placeholder="Ім'я"
             value={form.name}
             onChange={handleChange("name")}
-            className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"  
+            className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
           <input
             type="text"
@@ -110,7 +138,8 @@ export default function EditDriverModal({ driver }: { driver: Driver }) {
             onChange={handleChange("licenseNumber")}
             className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
-          <Button onClick={handleSave}
+          <Button
+            onClick={handleSave}
             className="mt-4 bg-blue-600 text-white transition-transform duration-300 hover:scale-105 hover:bg-blue-700"
           >
             Зберегти
