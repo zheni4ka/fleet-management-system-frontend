@@ -5,14 +5,13 @@ import ModalWindow from "@/components/ui/modal-window"
 import { Auto, Driver, Location } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
-import e from "express"
 
 const routeStatuses = [
   { value: "Planned", label: "Заплановано" },
   { value: "InProgress", label: "В процесі" },
   { value: "Completed", label: "Виконано" },
   { value: "Cancelled", label: "Скасовано" },
-];
+]
 
 function getCookie(name: string): string | null {
   if (typeof document === "undefined") return null
@@ -32,7 +31,7 @@ export default function AddRouteModal() {
     arrivalTime: "",
     autoId: 0,
     driverId: 0,
-    status: 0,
+    status: "Planned"
   })
 
   const apiBase =
@@ -79,7 +78,8 @@ export default function AddRouteModal() {
 
   const handleSelectChange =
     (field: keyof typeof form) => (e: ChangeEvent<HTMLSelectElement>) => {
-      setForm((prev) => ({ ...prev, [field]: Number(e.target.value) }))
+      const value = field === "status" ? e.target.value : Number(e.target.value);
+      setForm((prev) => ({ ...prev, [field]: value }))
     }
 
   const handleClear = () => {
@@ -90,30 +90,37 @@ export default function AddRouteModal() {
       arrivalTime: "",
       autoId: 0,
       driverId: 0,
-      status: 0,
+      status: "Planned",
     })
   }
 
   const handleSave = async () => {
-
-    if(!form.startLocationId || !form.destinationLocationId || !form.departureTime || !form.arrivalTime || !form.autoId || !form.driverId) {
+    if (
+      !form.startLocationId ||
+      !form.destinationLocationId ||
+      !form.departureTime ||
+      !form.arrivalTime ||
+      !form.autoId ||
+      !form.driverId
+    ) {
       toast.error("Будь ласка, заповніть всі поля форми перед збереженням.")
       return
     }
 
-    const savePromise = POST(apiBase ? `${apiBase}/api/Route` : `/api/Route`);
+    const savePromise = POST(apiBase ? `${apiBase}/api/Route` : `/api/Route`)
 
     toast.promise(savePromise, {
       loading: "Збереження маршруту...",
       success: "Маршрут успішно додано!",
-      error: (err) => err.message || "Помилка при додаванні маршруту. Спробуйте ще раз.",
-    });
+      error: (err) =>
+        err.message || "Помилка при додаванні маршруту. Спробуйте ще раз.",
+    })
 
     try {
       await POST(apiBase ? `${apiBase}/api/Route` : `/api/Route`)
       handleClear()
       setIsOpen(false)
-      router.refresh() 
+      router.refresh()
     } catch (error) {
       console.error(error)
     }
@@ -144,7 +151,9 @@ export default function AddRouteModal() {
     if (!response.ok) {
       const text = await response.text()
       throw new Error(
-        text ? `Помилка сервера: ${text}` : `Помилка сервера: ${response.status}`
+        text
+          ? `Помилка сервера: ${text}`
+          : `Помилка сервера: ${response.status}`
       )
     }
   }
@@ -165,13 +174,13 @@ export default function AddRouteModal() {
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
                 Початкова локація
               </label>
               <select
                 value={form.startLocationId || ""}
                 onChange={handleSelectChange("startLocationId")}
-                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
                 <option value="">Оберіть початкову локацію</option>
                 {locations.map((location) => (
@@ -182,13 +191,13 @@ export default function AddRouteModal() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
                 Кінцева локація
               </label>
               <select
                 value={form.destinationLocationId || ""}
                 onChange={handleSelectChange("destinationLocationId")}
-                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
                 <option value="">Оберіть кінцеву локацію</option>
                 {locations.map((location) => (
@@ -202,7 +211,7 @@ export default function AddRouteModal() {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
                 Час відправлення
               </label>
               <input
@@ -213,7 +222,7 @@ export default function AddRouteModal() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
                 Час прибуття
               </label>
               <input
@@ -227,13 +236,13 @@ export default function AddRouteModal() {
 
           <div className="grid gap-3 sm:grid-cols-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
                 Водій
               </label>
               <select
                 value={form.driverId || ""}
                 onChange={handleSelectChange("driverId")}
-                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
                 <option value="">Оберіть водія</option>
                 {drivers.map((driver) => (
@@ -244,13 +253,13 @@ export default function AddRouteModal() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
                 Автомобіль
               </label>
               <select
                 value={form.autoId || ""}
                 onChange={handleSelectChange("autoId")}
-                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
                 <option value="">Оберіть авто</option>
                 {autos.map((auto) => (
@@ -261,13 +270,13 @@ export default function AddRouteModal() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
                 Статус маршруту
               </label>
               <select
                 value={form.status}
                 onChange={handleSelectChange("status")}
-                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
                 {routeStatuses.map((status) => (
                   <option key={status.value} value={status.value}>
