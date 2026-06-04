@@ -88,10 +88,10 @@ async function RecentRoutesBlock() {
                     {startLocation} → {endLocation}
                   </TableCell>
                   <TableCell className={`${inter.className}`}>
-                    {route.departureTime || "—"}
+                    {new Date(route.departureTime).toLocaleString('uk-UA') || "—"}
                   </TableCell>
                   <TableCell className={`${inter.className}`}>
-                    {route.arrivalTime || "—"}
+                    {new Date(route.arrivalTime).toLocaleString('uk-UA') || "—"}
                   </TableCell>
                   <TableCell className="text-right">
                     <span

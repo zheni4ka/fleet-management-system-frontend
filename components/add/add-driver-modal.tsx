@@ -55,8 +55,6 @@ export default function AddDriverModal() {
     } catch (error) {
       console.error("Не вдалося зберегти дані:", error);
     }
-    handleClear();
-    setIsOpen(false);
   }
 
 async function POST(url: string) {

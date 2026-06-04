@@ -14,9 +14,17 @@ import { Button } from "@/components/ui/button"
 import { Inter } from "next/font/google"
 import { Driver } from "@/lib/types"
 import EditDriverModal from "../edit/edit-driver-modal"
+import toast from "react-hot-toast"
 
 const inter = Inter({ subsets: ['latin'] })
 
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop()?.split(";").shift() ?? null
+  return null
+}
 
 interface DriversTableProps {
   data: Driver[]
@@ -33,18 +41,37 @@ export function DriversTable({ data }: DriversTableProps) {
       return;
     }
 
+    const token = getCookie("token")
+    if (!token) {
+      toast.error("Помилка авторизації. Увійдіть в систему.")
+      return
+    }
+
     setDeletingId(id);
-    try {
-      const base = (process.env as { NEXT_PUBLIC_API_BASE_URL?: string }).NEXT_PUBLIC_API_BASE_URL ?? "";
-      const url = base ? `${base}/api/Driver/${id}` : `/api/Driver/${id}`;
-      const response = await fetch(url, {
-        method: 'DELETE',
-      });
+    
+    const base = (process.env as { NEXT_PUBLIC_API_BASE_URL?: string }).NEXT_PUBLIC_API_BASE_URL ?? "";
+    const url = base ? `${base}/api/Driver/${id}` : `/api/Driver/${id}`;
 
-      if (!response.ok) {
-        throw new Error(`Помилка сервера: ${response.status}`);
+    const deletePromise = fetch(url, {
+      method: 'DELETE',
+      headers: {
+        "Authorization": `Bearer ${token}`
       }
+    }).then(async (res) => {
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(text || `Помилка сервера: ${res.status}`)
+      }
+    })
 
+    toast.promise(deletePromise, {
+      loading: "Видалення водія...",
+      success: "Водій успішно видалений!",
+      error: (err) => err.message || "Не вдалося видалити водія",
+    })
+
+    try {
+      await deletePromise
       router.refresh();
     } catch (error) {
       console.error('Не вдалося видалити водія:', error);

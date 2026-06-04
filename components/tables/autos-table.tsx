@@ -14,13 +14,22 @@ import {
 import { Button } from "@/components/ui/button"
 import { Auto } from "@/lib/types"
 import EditAutoModal from "../edit/edit-auto-modal"
+import toast from "react-hot-toast"
 
 const inter = Inter({ subsets: ["latin"] })
+
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop()?.split(";").shift() ?? null
+  return null
+}
 
 interface AutosTableProps {
   data: Auto[]
 }
-
+  
 const autoStatusLabel = (status: string | number) => {
   switch (status) {
     case 0:
@@ -49,20 +58,37 @@ export const AutosTable: React.FC<AutosTableProps> = ({ data }) => {
       return
     }
 
+    const token = getCookie("token")
+    if (!token) {
+      toast.error("Помилка авторизації. Увійдіть в систему.")
+      return
+    }
+
     setDeletingId(id)
-    try {
-      const base =
-        (process.env as { NEXT_PUBLIC_API_BASE_URL?: string })
-          .NEXT_PUBLIC_API_BASE_URL ?? ""
-      const url = base ? `${base}/api/Auto/${id}` : `/api/Auto/${id}`
-      const response = await fetch(url, {
-        method: "DELETE",
-      })
+    
+    const base = (process.env as { NEXT_PUBLIC_API_BASE_URL?: string }).NEXT_PUBLIC_API_BASE_URL ?? ""
+    const url = base ? `${base}/api/Auto/${id}` : `/api/Auto/${id}`
 
-      if (!response.ok) {
-        throw new Error(`Помилка сервера: ${response.status}`)
+    const deletePromise = fetch(url, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
       }
+    }).then(async (res) => {
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(text || `Помилка сервера: ${res.status}`)
+      }
+    })
 
+    toast.promise(deletePromise, {
+      loading: "Видалення автомобіля...",
+      success: "Автомобіль успішно видалено!",
+      error: (err) => err.message || "Не вдалося видалити автомобіль",
+    })
+
+    try {
+      await deletePromise
       router.refresh()
     } catch (error) {
       console.error("Не вдалося видалити автомобіль:", error)
