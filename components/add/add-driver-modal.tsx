@@ -47,17 +47,16 @@ export default function AddDriverModal() {
       error: (err) => err.message || "Помилка при додаванні водія. Спробуйте ще раз.",
     });
 
-    handleClear();
-    setIsOpen(false);
     try {
-      const url = base ? `${base}/api/Driver` : `/api/Driver`;
-      console.log("Posting driver to:", url);
-
-      await POST(url);
-      router.refresh()
+      await savePromise; 
+      handleClear();     
+      setIsOpen(false);  
+      router.refresh();
     } catch (error) {
       console.error("Не вдалося зберегти дані:", error);
     }
+    handleClear();
+    setIsOpen(false);
   }
 
 async function POST(url: string) {

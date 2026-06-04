@@ -117,7 +117,7 @@ export default function AddRouteModal() {
     })
 
     try {
-      await POST(apiBase ? `${apiBase}/api/Route` : `/api/Route`)
+      await savePromise
       handleClear()
       setIsOpen(false)
       router.refresh()
