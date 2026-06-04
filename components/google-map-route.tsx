@@ -1,10 +1,9 @@
 /// <reference types="@types/google.maps" />
 "use client"
 
-import React, { useEffect, useRef } from 'react'
-import { useMapsLibrary, useMap } from '@vis.gl/react-google-maps'
-import { APIProvider, Map } from '@vis.gl/react-google-maps'
-import ModalWindow from '@/components/ui/modal-window'
+import React, { useEffect, useRef } from "react"
+import { useMapsLibrary, useMap } from "@vis.gl/react-google-maps"
+import ModalWindow from "@/components/ui/modal-window"
 
 interface LatLng {
   lat: number
@@ -22,44 +21,45 @@ interface MapRouteProps {
   onClose: () => void
 }
 
-export const GoogleMapRoute: React.FC<MapRouteProps> = ({ origin, destination, onClose }) => {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
-
-  // 💡 Рядки адрес origin та destination вже готові! Створювати їх тут через `const` більше не потрібно.
+export const GoogleMapRoute: React.FC<MapRouteProps> = ({
+  origin,
+  destination,
+  onClose,
+}) => {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
 
   return (
-    <ModalWindow isOpen={true} onClose={onClose} title="Маршрут на карті">
-      <div className="w-full h-80 sm:h-96 rounded-lg overflow-hidden border border-white/5 shadow-sm">
-        <APIProvider apiKey={apiKey}>
-          <Map
-            defaultCenter={{ lat: 48.3794, lng: 31.1656 }}
-            defaultZoom={6}
-            fullscreenControl={false}
-            mapTypeControl={false}
-          >
-            {/* Передаємо рядки прямо у внутрішній сервіс Directions */}
-            <Directions origin={origin} destination={destination} />
-          </Map>
-        </APIProvider>
+    <ModalWindow isOpen={true} onClose={onClose} title="Маршрут на карті Google">
+      <div className="w-full h-full rounded-lg overflow-hidden border border-white/5 shadow-sm">
+        <iframe 
+          className="w-full h-full" 
+          src={`https://www.google.com/maps/embed/v1/directions?key=${apiKey}&origin=${encodeURIComponent(typeof origin === "string" ? origin : `${origin.lat},${origin.lng}`)}&destination=${encodeURIComponent(typeof destination === "string" ? destination : `${destination.lat},${destination.lng}`)}`}
+          style={{ border: 'none', minHeight: '500px' }}
+        />
       </div>
     </ModalWindow>
   )
 }
 
-export const Directions: React.FC<DirectionsProps> = ({ origin, destination }) => {
+export const Directions: React.FC<DirectionsProps> = ({
+  origin,
+  destination,
+}) => {
   const map = useMap()
-  const routesLibrary = useMapsLibrary('routes')
-  
-  const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null)
+  const routesLibrary = useMapsLibrary("routes")
+
+  const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(
+    null
+  )
 
   useEffect(() => {
     if (!routesLibrary || !map) return
 
-    const renderer = new routesLibrary.DirectionsRenderer({ 
+    const renderer = new routesLibrary.DirectionsRenderer({
       map,
-      suppressMarkers: false
+      suppressMarkers: false,
     })
-    
+
     directionsRendererRef.current = renderer
 
     // Очищення карти при розмонтуванні компонента
@@ -77,8 +77,10 @@ export const Directions: React.FC<DirectionsProps> = ({ origin, destination }) =
 
     const directionsService = new routesLibrary.DirectionsService()
 
-    const formatLocation = (loc: string | LatLng): string | google.maps.LatLng => {
-      if (typeof loc === 'string') {
+    const formatLocation = (
+      loc: string | LatLng
+    ): string | google.maps.LatLng => {
+      if (typeof loc === "string") {
         return loc
       }
       return new google.maps.LatLng(loc.lat, loc.lng)
@@ -88,14 +90,14 @@ export const Directions: React.FC<DirectionsProps> = ({ origin, destination }) =
       {
         origin: formatLocation(origin),
         destination: formatLocation(destination),
-        travelMode: 'DRIVING' as google.maps.TravelMode, 
+        travelMode: "DRIVING" as google.maps.TravelMode,
       },
       (result, status) => {
-        if (status === 'OK' && result && directionsRendererRef.current) {
+        if (status === "OK" && result && directionsRendererRef.current) {
           directionsRendererRef.current.setDirections(result)
         } else {
           console.error(`Помилка завантаження маршруту Google Maps: ${status}`)
-          console.log('Origin:', origin, 'Destination:', destination)
+          console.log("Origin:", origin, "Destination:", destination)
         }
       }
     )

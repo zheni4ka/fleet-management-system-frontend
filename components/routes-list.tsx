@@ -29,7 +29,6 @@ export const RoutesList: React.FC<RoutesListProps> = ({
 
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null)
 
-  // Знаходимо повні об'єкти локацій для передачі в GoogleMapRoute
   const startLoc = selectedRoute
     ? locations.find((l) => l.id === selectedRoute.startLocationId)
     : null
