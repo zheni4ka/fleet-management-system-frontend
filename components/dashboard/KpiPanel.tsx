@@ -11,7 +11,7 @@ const KpiCard: React.FC<{item: KpiItem}> = ({ item }) => (
     <div>
       <span className="text-sm font-medium text-muted-foreground">{item.label}</span>
     </div>
-    <div className="mt-4">
+    <div className="mt-2 justify-center flex flex-col items-center">
       <div className="text-3xl font-bold tracking-tight">{item.value}</div>
       {item.description && (
         <p className="text-xs text-muted-foreground mt-1 font-medium">{item.description}</p>
