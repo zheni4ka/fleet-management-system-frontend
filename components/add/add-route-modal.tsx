@@ -3,15 +3,27 @@ import { ChangeEvent, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import ModalWindow from "@/components/ui/modal-window"
 import { Auto, Driver, Location } from "@/lib/types"
+import { useRouter } from "next/navigation"
+import toast from "react-hot-toast"
+import e from "express"
 
 const routeStatuses = [
-  { value: 0, label: "Заплановано" },
-  { value: 1, label: "В процесі" },
-  { value: 2, label: "Виконано" },
-  { value: 3, label: "Скасовано" },
-]
+  { value: "Planned", label: "Заплановано" },
+  { value: "InProgress", label: "В процесі" },
+  { value: "Completed", label: "Виконано" },
+  { value: "Cancelled", label: "Скасовано" },
+];
+
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop()?.split(";").shift() ?? null
+  return null
+}
 
 export default function AddRouteModal() {
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [form, setForm] = useState({
     startLocationId: 0,
@@ -83,20 +95,40 @@ export default function AddRouteModal() {
   }
 
   const handleSave = async () => {
+
+    if(!form.startLocationId || !form.destinationLocationId || !form.departureTime || !form.arrivalTime || !form.autoId || !form.driverId) {
+      toast.error("Будь ласка, заповніть всі поля форми перед збереженням.")
+      return
+    }
+
+    const savePromise = POST(apiBase ? `${apiBase}/api/Route` : `/api/Route`);
+
+    toast.promise(savePromise, {
+      loading: "Збереження маршруту...",
+      success: "Маршрут успішно додано!",
+      error: (err) => err.message || "Помилка при додаванні маршруту. Спробуйте ще раз.",
+    });
+
     try {
       await POST(apiBase ? `${apiBase}/api/Route` : `/api/Route`)
       handleClear()
       setIsOpen(false)
+      router.refresh() 
     } catch (error) {
-      console.error("Не вдалося додати маршрут:", error)
+      console.error(error)
     }
   }
 
   async function POST(url: string) {
+    const token = getCookie("token")
+    if (!token) {
+      throw new Error("Токен не знайдено. Будь ласка, увійдіть в систему.")
+    }
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
         startLocationId: form.startLocationId,

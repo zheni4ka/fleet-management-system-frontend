@@ -2,8 +2,20 @@
 import { useState, type ChangeEvent } from "react"
 import { Button } from "@/components/ui/button"
 import ModalWindow from "@/components/ui/modal-window"
+import { useRouter } from "next/navigation"
+import toast from "react-hot-toast"
+
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop()?.split(";").shift() ?? null
+  return null
+}
 
 export default function AddAutoModal() {
+  const base = (process.env as { NEXT_PUBLIC_API_BASE_URL?: string }).NEXT_PUBLIC_API_BASE_URL ?? "";
+  const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const autoStatuses = [
     { value: 0, label: "Available" },
@@ -45,15 +57,30 @@ export default function AddAutoModal() {
   }
 
   const handleSave = async () => {
+    if (!form.mark || !form.model || !form.color || !form.plate || !form.capacity) {
+      toast.error("Будь ласка, заповніть всі поля форми.");
+      return;
+    }
+
+    const savePromise = POST((base)
+      ? `${base}/api/Auto`
+      : `/api/Auto`
+    );
+
+    toast.promise(savePromise, {
+      loading: "Збереження автомобіля...",
+      success: "Автомобіль успішно додано!",
+      error: (err) => err.message || "Помилка при додаванні автомобіля. Спробуйте ще раз.",
+    });
+
     handleClear();
     setIsOpen(false);
     try {
-      const base = (process.env as { NEXT_PUBLIC_API_BASE_URL?: string }).NEXT_PUBLIC_API_BASE_URL ?? "";
       const url = base ? `${base}/api/Auto` : `/api/Auto`;
       console.log("Posting auto to:", url);
 
       await POST(url);
-
+      router.refresh()
     } catch (error) {
       console.error("Не вдалося зберегти дані:", error);
     }
@@ -61,10 +88,12 @@ export default function AddAutoModal() {
 
 async function POST(url: string) {
   try {
+    const token = getCookie("token")
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...(token ? { "Authorization": `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
         mark: form.mark,
@@ -80,14 +109,14 @@ async function POST(url: string) {
       throw new Error(`Помилка сервера: ${response.status} ${response.statusText}`);
     }
 
-    const text = await response.text(); // Читаємо відповідь як чистий текст
-    const data = text ? JSON.parse(text) : null; // Парсимо тільки якщо текст не порожній
+    const text = await response.text(); 
+    const data = text ? JSON.parse(text) : null; 
     return data;
 
     
   } catch (error) {
     console.error("Помилка при додаванні автомобіля:", error);
-    throw error; // Прокидаємо помилку далі, щоб handleSave про неї дізнався
+    throw error; 
   }
 }
 

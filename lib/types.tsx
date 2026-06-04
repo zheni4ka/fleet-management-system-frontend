@@ -7,9 +7,9 @@ export interface Driver {
 }
 
 export type AutoStatus =
-  | 0
-  | 1
-  | 2
+  | "Available"
+  | "InService"
+  | "UnderMaintenance";
 
 export interface Auto {
   id: number
@@ -31,11 +31,7 @@ export type RouteStatus =
   | "Planned"
   | "InProgress"
   | "Completed"
-  | "Cancelled"
-  | 0
-  | 1
-  | 2
-  | 3
+  | "Cancelled";
 
 export interface Route {
   id: number
