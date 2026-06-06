@@ -1,26 +1,21 @@
-﻿import React from 'react';
-import { RouteCardProps, RouteStatus } from '@/lib/types';
-import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
+﻿import React from "react"
+import { RouteCardProps, RouteStatus } from "@/lib/types"
+import { Button } from "@/components/ui/button"
+import { Trash2, Play, CheckCircle, XCircle } from "lucide-react"
 
 interface ExtendedRouteCardProps extends RouteCardProps {
-  onStatusChange?: (e: React.MouseEvent, newStatus: RouteStatus) => void;
-  onDelete?: (e: React.MouseEvent) => void;
+  onStatusChange?: (e: React.MouseEvent, newStatus: RouteStatus) => void
+  onDelete?: (e: React.MouseEvent) => void
+  isLoading?: boolean
 }
 
-const statusLabel = (status: string | number | undefined) => {
-  // Конвертуємо в рядок для надійної перевірки
-  switch (String(status)) {
-    case '0':
-    case 'Planned': return 'Заплановано'
-    case '1':
-    case 'InProgress': return 'В процесі'
-    case '2':
-    case 'Completed': return 'Виконано'
-    case '3':
-    case 'Cancelled': return 'Скасовано'
-    default: return status ?? 'Невідомо'
-  }
+const getStatusText = (status: string | number | undefined) => {
+  const s = String(status)
+  if (s === "0" || s === "Planned") return "Заплановано"
+  if (s === "1" || s === "InProgress") return "В процесі"
+  if (s === "2" || s === "Completed") return "Виконано"
+  if (s === "3" || s === "Cancelled") return "Скасовано"
+  return "Невідомо"
 }
 
 export const RouteCard: React.FC<ExtendedRouteCardProps> = ({
@@ -34,53 +29,88 @@ export const RouteCard: React.FC<ExtendedRouteCardProps> = ({
   driverName,
   status,
   onStatusChange,
-  onDelete
+  onDelete,
+  isLoading = false,
 }) => {
-  const strStatus = String(status);
-  const isPlanned = strStatus === 'Planned';
-  const isInProgress = strStatus === 'InProgress';
-  const Completed = strStatus === 'Completed';
-  const Cancelled = strStatus === 'Cancelled'
-
+  const s = String(status)
   return (
-    <div className="p-4 border rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow duration-150">
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <h3 className="text-lg font-semibold">
-            {startLocationName ?? 'Невідома локація'} → {destinationLocationName ?? 'Невідома локація'}
-          </h3>
-          <p className="text-sm text-slate-600">Час відправлення: {new Date(departureTime).toLocaleString('uk-UA')}</p>
-          <p className="text-sm text-slate-600">Час прибуття: {new Date(arrivalTime).toLocaleString('uk-UA')}</p>
-          {status !== undefined && (
-            <p className="text-sm text-slate-600">
-              Статус: <span className="font-medium">{statusLabel(status)}</span>
-            </p>
-          )}
+    <div className="relative flex h-full flex-col rounded-2xl border bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-md">
+      <div className="flex-shrink-0 pl-3">
+        <h3 className="mb-2 text-lg leading-tight font-bold text-slate-800">
+          {startLocationName ?? "Невідома"} <br />
+          <span className="text-xs font-normal text-slate-400">до</span> <br />
+          {destinationLocationName ?? "Невідома"}
+        </h3>
+
+        <div className="mb-4 space-y-1">
+          <p className="text-xs text-slate-500">
+            Виїзд:{" "}
+            <span className="font-medium text-slate-700">
+              {new Date(departureTime).toLocaleString("uk-UA")}
+            </span>
+          </p>
+          <p className="text-xs text-slate-500">
+            Прибуття:{" "}
+            <span className="font-medium text-slate-700">
+              {new Date(arrivalTime).toLocaleString("uk-UA")}
+            </span>
+          </p>
+          <p className="text-xs text-slate-500">
+            Статус:{" "}
+            <span className="font-semibold text-indigo-600">
+              {getStatusText(status)}
+            </span>
+          </p>
         </div>
 
-        <div className="flex flex-col gap-2">
-            <Button  className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white" onClick={(e) => onStatusChange?.(e, 'InProgress')}>
-              Розпочати
-            </Button>
-            <Button className="h-8 text-xs bg-green-600 hover:bg-green-700 text-white" onClick={(e) => onStatusChange?.(e, 'Completed')}>
-              Завершити
-            </Button>
-            <Button className="h-8 text-xs border-orange-200 text-orange-600 hover:bg-orange-50" onClick={(e) => onStatusChange?.(e, 'Cancelled')}>
-              Скасувати
-            </Button>
-          
-            <Button className="h-8 text-xs bg-red-600 hover:bg-red-700 text-white mt-1" onClick={onDelete}>
-              <Trash2 className="w-3 h-3 mr-1" /> Видалити
-            </Button>
+        <div className="mb-5 space-y-1 rounded-xl border border-slate-100 bg-slate-50 p-2.5">
+          <p className="text-xs font-medium text-slate-600">
+            🚗 {autoName || `Авто ID: ${autoId}`}
+          </p>
+          <p className="text-xs font-medium text-slate-600">
+            👤 {driverName || `Водій ID: ${driverId}`}
+          </p>
         </div>
       </div>
-      
-      <div className="text-sm text-slate-700 space-y-1">
-        {autoName ? <p>Автомобіль: {autoName}</p> : (autoId !== undefined && <p>Авто ID: {autoId}</p>)}
-        {driverName ? <p>Водій: {driverName}</p> : (driverId !== undefined && <p>Водій ID: {driverId}</p>)}
+
+      <div className="mt-auto flex w-full flex-col gap-2 pt-4">
+
+        <button
+          type="button"
+          disabled={isLoading}
+          className="flex w-full items-center justify-center rounded-md bg-blue-600 p-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
+          onClick={(e) => onStatusChange?.(e, "InProgress")}
+        >
+          <Play className="mr-2 h-4 w-4" /> Розпочати
+        </button>
+
+        <a
+          type="button"
+          className="flex w-full items-center justify-center rounded-md bg-green-600 p-2.5 text-sm font-semibold text-black transition hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed disabled:opacity-60"
+          onClick={(e) => onStatusChange?.(e, "Completed")}
+        >
+          <CheckCircle className="mr-2 h-4 w-4" /> Завершити
+        </a>
+
+        <button
+          type="button"
+          disabled={isLoading}
+          className="flex w-full items-center justify-center rounded-md border border-orange-200 p-2.5 text-sm font-semibold text-orange-600 transition hover:bg-orange-50 disabled:border-orange-100 disabled:text-orange-400 disabled:cursor-not-allowed disabled:opacity-60"
+          onClick={(e) => onStatusChange?.(e, "Cancelled")}
+        >
+          <XCircle className="mr-2 h-4 w-4" /> Скасувати
+        </button>
+
+        <a
+          type="button"
+          className="mt-1 flex w-full items-center justify-center rounded-md bg-red-600 p-2.5 text-sm font-semibold text-black transition hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed disabled:opacity-60"
+          onClick={onDelete}
+        >
+          <Trash2 className="mr-2 h-4 w-4" /> Видалити
+        </a>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default RouteCard;
+export default RouteCard
