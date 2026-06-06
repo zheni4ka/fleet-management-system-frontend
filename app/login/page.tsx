@@ -54,60 +54,57 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex mt-5 w-full items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-md space-y-8 rounded-xl border bg-white p-8 shadow-sm">
-        <div className="text-center">
-          {" "}
-          {/* Додали text-center для заголовків */}
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900">
-            Вхід у систему
-          </h2>
-          <p className="mt-2 text-sm text-slate-600">Fleet Management System</p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-500">
-              ⚠️ {error}
-            </div>
-          )}
-          <div className="space-y-4 rounded-md">
-            <div>
-              <label className="text-sm font-medium text-slate-700">
-                Ім&apos;я користувача або Email
-              </label>
-              <Input
-                type="text"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="admin або admin@gmail.com"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-slate-700">
-                Пароль
-              </label>
-              <Input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="mt-1"
-              />
-            </div>
-          </div>
-
-          <Button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-blue-600 text-white transition-transform duration-200 hover:bg-blue-700 active:scale-95"
-          >
-            {isLoading ? "Вхід..." : "Увійти"}
-          </Button>
-        </form>
-      </div>
+    <div className="fixed inset-0 flex items-center justify-center bg-slate-50 px-4 py-12 sm:px-6 lg:px-8 z-50">
+  <div className="w-full max-w-md space-y-8 border bg-white p-8 rounded-xl shadow-sm">
+    <div className="text-center"> {/* Додано text-center, щоб заголовок теж був по центру форми */}
+      <h2 className="mt-6 text-3xl font-bold tracking-tight text-slate-900">
+        Вхід у систему
+      </h2>
+      <p className="mt-2 text-sm text-slate-600">
+        Fleet Management System
+      </p>
     </div>
+    
+    <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+      {error && (
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-500 border border-red-200">
+          ⚠️ {error}
+        </div>
+      )}
+      <div className="space-y-4 rounded-md">
+        <div>
+          <label className="text-sm font-medium text-slate-700">Ім&apos;я користувача або Email</label>
+          <Input
+            type="text"
+            required
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="admin або admin@gmail.com"
+            className="mt-1"
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-slate-700">Пароль</label>
+          <Input
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            className="mt-1"
+          />
+        </div>
+      </div>
+
+      <Button
+        type="submit"
+        disabled={isLoading}
+        className="w-full bg-blue-600 text-white hover:bg-blue-700 transition-transform duration-200 active:scale-95"
+      >
+        {isLoading ? "Вхід..." : "Увійти"}
+      </Button>
+    </form>
+  </div>
+</div>
   )
 }
