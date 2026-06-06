@@ -37,9 +37,7 @@ export const RouteCard: React.FC<ExtendedRouteCardProps> = ({
     <div className="relative flex h-full flex-col rounded-2xl border bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-md">
       <div className="flex-shrink-0 pl-3">
         <h3 className="mb-2 text-lg leading-tight font-bold text-slate-800">
-          {startLocationName ?? "Невідома"} <br />
-          <span className="text-xs font-normal text-slate-400">до</span> <br />
-          {destinationLocationName ?? "Невідома"}
+          {startLocationName ?? "Невідома"} → {destinationLocationName ?? "Невідома"} <br />
         </h3>
 
         <div className="mb-4 space-y-1">

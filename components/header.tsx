@@ -56,9 +56,7 @@ export const Header: React.FC<Props> = ({ className }) => {
               <Truck size={20} />
               <Link href="/">Головна</Link>
             </div>
-            
-            {/* Показуємо ці посилання ТІЛЬКИ якщо користувач = Admin */}
-            {role === 'Admin' && (
+            {role === "Admin" && (
               <>
                 <Link href="/driver" className={`${inter.className} hover:bg-slate-700 p-2 pl-2 rounded-2xl transition-transform hover:scale-105 duration-300`}>Водії</Link>
                 <Link href="/auto" className={`${inter.className} hover:bg-slate-700 p-2 pl-2 rounded-2xl transition-transform hover:scale-105 duration-300`}>Авто</Link>

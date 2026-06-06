@@ -76,3 +76,4 @@ export interface RouteCardProps {
 export interface DriversTableProps {
   data: Driver[]
 }
+

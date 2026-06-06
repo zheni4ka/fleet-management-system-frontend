@@ -4,6 +4,7 @@ import { env } from "process"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { getUserRole } from "@/lib/utils"
+import toast from "react-hot-toast"
 
 export default async function DriverPage() {
   const cookieStore = await cookies()

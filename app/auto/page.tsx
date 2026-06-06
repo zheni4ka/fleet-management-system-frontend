@@ -18,7 +18,6 @@ export default async function AutosPage({ className }: Props) {
     redirect("/login")
   }
 
-  // ПЕРЕВІРКА РОЛІ
   const role = getUserRole(token);
   if (role !== "Admin") {
     redirect("/") // Якщо це не адмін, викидаємо на головну сторінку

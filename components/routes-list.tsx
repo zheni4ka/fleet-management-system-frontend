@@ -6,6 +6,7 @@ import GoogleMapRoute from "@/components/google-map-route"
 import { Route, Location, RouteStatus } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
+import { Input } from "./ui/input"
 
 function getCookie(name: string): string | null {
   if (typeof document === "undefined") return null
@@ -40,6 +41,17 @@ export const RoutesList: React.FC<RoutesListProps> = ({
 
   const [localRoutes, setLocalRoutes] = useState<Route[]>(initialRoutes)
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+
+  // Фільтрація маршрутів в реальному часі
+  const visibleRoutes = localRoutes.filter((route) => {
+    const startCity = locationMap.get(route.startLocationId)?.toLowerCase() || ""
+    const destCity = locationMap.get(route.destinationLocationId)?.toLowerCase() || ""
+    const search = searchQuery.toLowerCase()
+    
+    // Шукаємо збіги у місті відправлення АБО місті прибуття
+    return startCity.includes(search) || destCity.includes(search)
+  })
 
   // Якщо дані з сервера змінилися - оновлюємо локальний стейт
   useEffect(() => {
@@ -154,35 +166,43 @@ export const RoutesList: React.FC<RoutesListProps> = ({
 
   return (
     <>
+      {/* 1. ПОШУК ВИРІВНЯНО ТА ВИНЕСЕНО ЗА МЕЖІ СІТКИ (тепер він зверху) */}
+      <div className="mb-6">
+        <Input
+          type="text"
+          placeholder="Пошук за містом відправлення або прибуття..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-md bg-white shadow-sm"
+        />
+      </div>
+
+      {/* 2. СІТКА З КАРТКАМИ */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Рендеримо localRoutes замість initialRoutes */}
-        {localRoutes.map((route) => (
-          <div
-            key={route.id}
-            className="cursor-pointer transition-transform hover:scale-[1.01]"
-            onClick={() => setSelectedRoute(route)}
-          >
+        {visibleRoutes.map((route) => (
+          <div key={route.id} onClick={() => setSelectedRoute(route)} className="h-full">
             <RouteCard
               startLocationName={locationMap.get(route.startLocationId)}
-              destinationLocationName={locationMap.get(
-                route.destinationLocationId
-              )}
+              destinationLocationName={locationMap.get(route.destinationLocationId)}
               departureTime={route.departureTime}
               arrivalTime={route.arrivalTime}
               autoId={route.autoId}
               driverId={route.driverId}
               autoName={route.autoId ? autoMap.get(route.autoId) : undefined}
-              driverName={
-                route.driverId ? driverMap.get(route.driverId) : undefined
-              }
+              driverName={route.driverId ? driverMap.get(route.driverId) : undefined}
               status={route.status}
-              onStatusChange={(e, newStatus) =>
-                handleStatusChange(e, route, newStatus)
-              }
+              onStatusChange={(e, newStatus) => handleStatusChange(e, route, newStatus)}
               onDelete={(e) => handleDeleteRoute(e, route.id)}
             />
           </div>
         ))}
+
+        {/* 3. ПОВІДОМЛЕННЯ, ЯКЩО ЗАПИСІВ НЕ ЗНАЙДЕНО */}
+        {visibleRoutes.length === 0 && localRoutes.length > 0 && (
+          <div className="col-span-full py-12 text-center text-slate-500 bg-white border border-dashed rounded-xl">
+            За вашим запитом <span className="font-semibold">"{searchQuery}"</span> нічого не знайдено.
+          </div>
+        )}
       </div>
 
       {selectedRoute && startLoc && destLoc && (
