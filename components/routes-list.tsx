@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import RouteCard from "@/components/route-card"
 import GoogleMapRoute from "@/components/google-map-route"
 import { Route, Location, RouteStatus } from "@/lib/types"
@@ -31,23 +31,23 @@ export const RoutesList: React.FC<RoutesListProps> = ({
   const router = useRouter()
   const autoMap = new Map(autoMapData)
   const driverMap = new Map(driverMapData)
-  const apiBase =
-    (process.env as { NEXT_PUBLIC_API_BASE_URL?: string })
-      .NEXT_PUBLIC_API_BASE_URL ?? ""
+  const apiBase = (process.env as { NEXT_PUBLIC_API_BASE_URL?: string }).NEXT_PUBLIC_API_BASE_URL ?? ""
 
   const locationMap = new Map<number, string>()
   locations.forEach((loc) =>
     locationMap.set(loc.id, `${loc.city}, ${loc.country}`)
   )
 
+  const [localRoutes, setLocalRoutes] = useState<Route[]>(initialRoutes)
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null)
 
+  // Якщо дані з сервера змінилися - оновлюємо локальний стейт
+  useEffect(() => {
+    setLocalRoutes(initialRoutes)
+  }, [initialRoutes])
+
   // Функція для зміни статусу
-  const handleStatusChange = async (
-    e: React.MouseEvent,
-    route: Route,
-    newStatus: RouteStatus
-  ) => {
+  const handleStatusChange = async (e: React.MouseEvent, route: Route, newStatus: RouteStatus) => {
     e.stopPropagation()
 
     const token = getCookie("token")
@@ -55,6 +55,9 @@ export const RoutesList: React.FC<RoutesListProps> = ({
       toast.error("Помилка авторизації. Увійдіть в систему.")
       return
     }
+    setLocalRoutes((prev) => 
+      prev.map((r) => (r.id === route.id ? { ...r, status: newStatus } : r))
+    )
 
     const updatePromise = fetch(
       apiBase ? `${apiBase}/api/Route/${route.id}` : `/api/Route/${route.id}`,
@@ -81,16 +84,16 @@ export const RoutesList: React.FC<RoutesListProps> = ({
     })
 
     toast.promise(updatePromise, {
-      loading: "Оновлення статусу...",
-      success: "Статус маршруту змінено!",
-      error: (err) => err.message || "Не вдалося змінити статус",
+      loading: "Оновлення статусу на сервері...",
+      success: "Статус маршруту збережено!",
+      error: "Не вдалося зберегти зміни",
     })
 
     try {
       await updatePromise
       router.refresh()
     } catch (error) {
-      console.error(error)
+      setLocalRoutes(initialRoutes)
     }
   }
 
@@ -106,6 +109,9 @@ export const RoutesList: React.FC<RoutesListProps> = ({
       toast.error("Помилка авторизації. Увійдіть в систему.")
       return
     }
+
+    // МИТТЄВЕ ВИДАЛЕННЯ З ІНТЕРФЕЙСУ (Optimistic Update)
+    setLocalRoutes((prev) => prev.filter((r) => r.id !== routeId))
 
     const deletePromise = fetch(
       apiBase ? `${apiBase}/api/Route/${routeId}` : `/api/Route/${routeId}`,
@@ -123,9 +129,9 @@ export const RoutesList: React.FC<RoutesListProps> = ({
     })
 
     toast.promise(deletePromise, {
-      loading: "Видалення маршруту...",
+      loading: "Видалення на сервері...",
       success: "Маршрут успішно видалено!",
-      error: (err) => err.message || "Не вдалося видалити маршрут",
+      error: "Не вдалося видалити маршрут",
     })
 
     try {
@@ -135,7 +141,7 @@ export const RoutesList: React.FC<RoutesListProps> = ({
       }
       router.refresh()
     } catch (error) {
-      console.error(error)
+       setLocalRoutes(initialRoutes)
     }
   }
 
@@ -149,7 +155,8 @@ export const RoutesList: React.FC<RoutesListProps> = ({
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {initialRoutes.map((route) => (
+        {/* Рендеримо localRoutes замість initialRoutes */}
+        {localRoutes.map((route) => (
           <div
             key={route.id}
             className="cursor-pointer transition-transform hover:scale-[1.01]"

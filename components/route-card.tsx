@@ -9,14 +9,15 @@ interface ExtendedRouteCardProps extends RouteCardProps {
 }
 
 const statusLabel = (status: string | number | undefined) => {
-  switch (status) {
-    case 0:
+  // Конвертуємо в рядок для надійної перевірки
+  switch (String(status)) {
+    case '0':
     case 'Planned': return 'Заплановано'
-    case 1:
+    case '1':
     case 'InProgress': return 'В процесі'
-    case 2:
+    case '2':
     case 'Completed': return 'Виконано'
-    case 3:
+    case '3':
     case 'Cancelled': return 'Скасовано'
     default: return status ?? 'Невідомо'
   }
@@ -35,8 +36,11 @@ export const RouteCard: React.FC<ExtendedRouteCardProps> = ({
   onStatusChange,
   onDelete
 }) => {
-  const isPlanned = String(status) === 'Planned' || String(status) === '0';
-  const isInProgress = String(status) === 'InProgress' || String(status) === '1';
+  const strStatus = String(status);
+  const isPlanned = strStatus === 'Planned';
+  const isInProgress = strStatus === 'InProgress';
+  const Completed = strStatus === 'Completed';
+  const Cancelled = strStatus === 'Cancelled'
 
   return (
     <div className="p-4 border rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow duration-150">
@@ -55,27 +59,19 @@ export const RouteCard: React.FC<ExtendedRouteCardProps> = ({
         </div>
 
         <div className="flex flex-col gap-2">
-          {isPlanned && (
-            <Button size="sm" className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white" onClick={(e) => onStatusChange?.(e, 'InProgress')}>
+            <Button  className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white" onClick={(e) => onStatusChange?.(e, 'InProgress')}>
               Розпочати
             </Button>
-          )}
-          {isInProgress && (
-            <Button size="sm" className="h-8 text-xs bg-green-600 hover:bg-green-700 text-white" onClick={(e) => onStatusChange?.(e, 'Completed')}>
+            <Button className="h-8 text-xs bg-green-600 hover:bg-green-700 text-white" onClick={(e) => onStatusChange?.(e, 'Completed')}>
               Завершити
             </Button>
-          )}
-          {(isPlanned || isInProgress) && (
-            <Button size="sm" variant="outline" className="h-8 text-xs border-orange-200 text-orange-600 hover:bg-orange-50" onClick={(e) => onStatusChange?.(e, 'Cancelled')}>
+            <Button className="h-8 text-xs border-orange-200 text-orange-600 hover:bg-orange-50" onClick={(e) => onStatusChange?.(e, 'Cancelled')}>
               Скасувати
             </Button>
-          )}
           
-          {onDelete && (
-            <Button size="sm" className="h-8 text-xs bg-red-600 hover:bg-red-700 text-white mt-1" onClick={onDelete}>
+            <Button className="h-8 text-xs bg-red-600 hover:bg-red-700 text-white mt-1" onClick={onDelete}>
               <Trash2 className="w-3 h-3 mr-1" /> Видалити
             </Button>
-          )}
         </div>
       </div>
       
