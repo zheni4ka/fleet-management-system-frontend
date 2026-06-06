@@ -3,12 +3,19 @@ import AddDriverModal from "@/components/add/add-driver-modal"
 import { env } from "process"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import { getUserRole } from "@/lib/utils"
 
 export default async function DriverPage() {
   const cookieStore = await cookies()
   const token = cookieStore.get("token")?.value
+
   if (!token) {
     redirect("/login")
+  }
+
+  const role = getUserRole(token);
+  if (role !== "Admin") {
+    redirect("/")
   }
 
   const response = await fetch(`${env.API_BASE_URL}/api/Driver/all`, {

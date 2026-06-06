@@ -1,23 +1,31 @@
 import React from 'react'
 import { cookies } from 'next/headers'
+import { Truck, Users, Map, Activity } from 'lucide-react' // Додаємо іконки
 
 interface KpiItem {
   label: string
   value: number | string
   description?: string
+  icon?: React.ReactNode
+  colorClass?: string
 }
 
 const KpiCard: React.FC<{item: KpiItem}> = ({ item }) => (
-  <div className="p-4 bg-zinc-900/40 rounded-xl shadow-sm border border-white/10 flex flex-col justify-between">
-    <div>
-      <span className="text-sm font-medium text-muted-foreground">{item.label}</span>
+  <div className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 transition-all hover:shadow-md hover:ring-indigo-100 flex-1">
+    <div className="flex items-center justify-between">
+      <span className="text-sm font-medium text-slate-500">{item.label}</span>
+      <div className={`rounded-xl p-2.5 transition-colors ${item.colorClass}`}>
+        {item.icon}
+      </div>
     </div>
-    <div className="mt-2 justify-center flex flex-col items-center">
-      <div className="text-3xl font-bold tracking-tight">{item.value}</div>
+    <div className="mt-4 flex flex-col">
+      <div className="text-4xl font-bold tracking-tight text-slate-900">{item.value}</div>
       {item.description && (
-        <p className="text-xs text-muted-foreground mt-1 font-medium">{item.description}</p>
+        <p className="text-sm text-slate-500 mt-1">{item.description}</p>
       )}
     </div>
+    {/* Декоративний градієнт знизу при наведенні */}
+    <div className="absolute inset-x-0 bottom-0 h-1 scale-x-0 bg-gradient-to-r from-indigo-500 to-blue-500 transition-transform duration-300 group-hover:scale-x-100" />
   </div>
 )
 
@@ -36,14 +44,9 @@ export const KpiPanel: React.FC<{data?: KpiItem[]}> = async ({ data }) => {
   ]);
     
   if (!resAuto.ok || !resDriver.ok || !resRoute.ok) {
-    console.error('Помилка завантаження даних для KPI:', {
-      auto: resAuto.status,
-      driver: resDriver.status,
-      route: resRoute.status,
-    });
     return (
-      <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg font-medium text-sm">
-        ❌ Не вдалося завантажити аналітичні дані для KPI панелі.
+      <div className="p-4 bg-red-50 text-red-600 rounded-2xl font-medium text-sm ring-1 ring-red-200">
+        ❌ Не вдалося завантажити аналітичні дані. Перевірте з`&apos`єднання з сервером.
       </div>
     );
   }
@@ -64,29 +67,37 @@ export const KpiPanel: React.FC<{data?: KpiItem[]}> = async ({ data }) => {
     { 
       label: 'Усього авто', 
       value: autos.length, 
-      description: 'Зареєстровано в базі'
+      description: 'Зареєстровано в базі',
+      icon: <Truck className="h-5 w-5" />,
+      colorClass: "bg-blue-50 text-blue-600 group-hover:bg-blue-100"
     },
     { 
       label: 'Активні водії', 
       value: drivers.length, 
-      description: 'Доступно для рейсів'
+      description: 'Доступно для рейсів',
+      icon: <Users className="h-5 w-5" />,
+      colorClass: "bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100"
     },
     { 
       label: 'Активні рейси', 
       value: activeRoutesCount, 
-      description: `Із ${routes.length} загальних маршрутів`
+      description: `Із ${routes.length} загальних маршрутів`,
+      icon: <Map className="h-5 w-5" />,
+      colorClass: "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100"
     },
     { 
       label: 'Завантаженість', 
       value: `${utilizationRate}%`, 
-      description: 'Відсоток активних маршрутів'
+      description: 'Відсоток активних маршрутів',
+      icon: <Activity className="h-5 w-5" />,
+      colorClass: "bg-orange-50 text-orange-600 group-hover:bg-orange-100"
     },
   ];
 
   const items = data ?? defaults;
 
   return (
-    <div className=" justify-center flex flex-row gap-4 w-full">
+    <div className="flex flex-col gap-4 sm:flex-row w-full justify-center">
       {items.map((it) => (
         <KpiCard key={it.label} item={it} />
       ))}

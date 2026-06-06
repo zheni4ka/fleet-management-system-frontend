@@ -46,7 +46,6 @@ export const RoutesPage: React.FC<PageProps> = async ({ className }) => {
   const drivers: Driver[] = await driversRes.json()
   const locations: Location[] = await locationsRes.json()
 
-  // Перетворюємо в масиви кортежів, оскільки об'єкт Map не можна напряму передати з серверного компонента в клієнтський
   const autoMapData: [number, string][] = autos.map((a) => [
     a.id,
     `${a.mark} ${a.model} ${a.number}`,

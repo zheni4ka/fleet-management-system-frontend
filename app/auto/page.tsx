@@ -4,12 +4,10 @@ import AddAutoModal from "@/components/add/add-auto-modal"
 import { env } from "process"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-
+import { getUserRole } from "@/lib/utils"
 interface Props {
   className?: string
 }
-
-
 
 
 export default async function AutosPage({ className }: Props) {
@@ -18,6 +16,12 @@ export default async function AutosPage({ className }: Props) {
 
   if (!token) {
     redirect("/login")
+  }
+
+  // ПЕРЕВІРКА РОЛІ
+  const role = getUserRole(token);
+  if (role !== "Admin") {
+    redirect("/") // Якщо це не адмін, викидаємо на головну сторінку
   }
 
   const response = await fetch(`${env.API_BASE_URL}/api/Auto/all`, {

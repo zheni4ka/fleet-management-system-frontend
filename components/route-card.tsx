@@ -1,28 +1,25 @@
 ﻿import React from 'react';
 import { RouteCardProps, RouteStatus } from '@/lib/types';
-import { Button } from '@/components/ui/button'; // Додаємо імпорт кнопок
+import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react'; // Іконка кошика
 
-// Розширюємо існуючі пропси, щоб додати функцію зміни статусу
 interface ExtendedRouteCardProps extends RouteCardProps {
   onStatusChange?: (e: React.MouseEvent, newStatus: RouteStatus) => void;
+  onDelete?: (e: React.MouseEvent) => void;
 }
 
 const statusLabel = (status: string | number | undefined) => {
+  // ... ваш існуючий код statusLabel ...
   switch (status) {
     case 0:
-    case 'Planned':
-      return 'Заплановано'
+    case 'Planned': return 'Заплановано'
     case 1:
-    case 'InProgress':
-      return 'В процесі'
+    case 'InProgress': return 'В процесі'
     case 2:
-    case 'Completed':
-      return 'Виконано'
+    case 'Completed': return 'Виконано'
     case 3:
-    case 'Cancelled':
-      return 'Скасовано'
-    default:
-      return status ?? 'Невідомо'
+    case 'Cancelled': return 'Скасовано'
+    default: return status ?? 'Невідомо'
   }
 }
 
@@ -36,7 +33,8 @@ export const RouteCard: React.FC<ExtendedRouteCardProps> = ({
   autoName,
   driverName,
   status,
-  onStatusChange 
+  onStatusChange,
+  onDelete
 }) => {
   return (
     <div className="p-4 border rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow duration-150">
@@ -66,8 +64,13 @@ export const RouteCard: React.FC<ExtendedRouteCardProps> = ({
             </Button>
           )}
           {(status === 'Planned' || status === 'InProgress') && (
-            <Button size="sm" variant="destructive" className="h-8 text-xs" onClick={(e) => onStatusChange?.(e, 'Cancelled')}>
+            <Button size="sm" variant="outline" className="h-8 text-xs border-orange-200 text-orange-600 hover:bg-orange-50" onClick={(e) => onStatusChange?.(e, 'Cancelled')}>
               Скасувати
+            </Button>
+          )}
+          {onDelete && (
+            <Button size="sm" variant="destructive" className="h-8 text-xs bg-red-600 hover:bg-red-700 text-white mt-1" onClick={onDelete}>
+              <Trash2 className="w-3 h-3 mr-1" /> Видалити
             </Button>
           )}
         </div>

@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import RouteCard from "@/components/route-card"
 import GoogleMapRoute from "@/components/google-map-route"
-import { Route, Location, RouteStatus } from "@/lib/types" // Додав RouteStatus
+import { Route, Location, RouteStatus } from "@/lib/types" 
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 
@@ -40,9 +40,9 @@ export const RoutesList: React.FC<RoutesListProps> = ({
 
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null)
 
-  // Нова функція для зміни статусу
+  // Функція для зміни статусу
   const handleStatusChange = async (e: React.MouseEvent, route: Route, newStatus: RouteStatus) => {
-    e.stopPropagation() // Блокуємо відкриття карти при кліку на кнопку
+    e.stopPropagation()
 
     const token = getCookie("token")
     if (!token) {
@@ -56,7 +56,6 @@ export const RoutesList: React.FC<RoutesListProps> = ({
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
-      // Відправляємо дані згідно з EditRouteModel
       body: JSON.stringify({
         id: route.id,
         startLocationId: route.startLocationId,
@@ -80,7 +79,50 @@ export const RoutesList: React.FC<RoutesListProps> = ({
 
     try {
       await updatePromise
-      router.refresh() // Оновлюємо сторінку після успіху
+      router.refresh()
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  // НОВА ФУНКЦІЯ: Видалення маршруту
+  const handleDeleteRoute = async (e: React.MouseEvent, routeId: number) => {
+    e.stopPropagation() // Блокуємо відкриття карти
+
+    // Запитуємо підтвердження у користувача
+    const confirmed = window.confirm("Ви впевнені, що хочете безповоротно видалити цей маршрут?")
+    if (!confirmed) return
+
+    const token = getCookie("token")
+    if (!token) {
+      toast.error("Помилка авторизації. Увійдіть в систему.")
+      return
+    }
+
+    const deletePromise = fetch(apiBase ? `${apiBase}/api/Route/${routeId}` : `/api/Route/${routeId}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    }).then(async (res) => {
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(text || "Помилка сервера при видаленні")
+      }
+    })
+
+    toast.promise(deletePromise, {
+      loading: "Видалення маршруту...",
+      success: "Маршрут успішно видалено!",
+      error: (err) => err.message || "Не вдалося видалити маршрут",
+    })
+
+    try {
+      await deletePromise
+      if (selectedRoute?.id === routeId) {
+        setSelectedRoute(null)
+      }
+      router.refresh() // Оновлюємо список маршрутів з сервера
     } catch (error) {
       console.error(error)
     }
@@ -114,7 +156,8 @@ export const RoutesList: React.FC<RoutesListProps> = ({
               autoName={route.autoId ? autoMap.get(route.autoId) : undefined}
               driverName={route.driverId ? driverMap.get(route.driverId) : undefined}
               status={route.status}
-              onStatusChange={(e, newStatus) => handleStatusChange(e, route, newStatus)} // Передаємо функцію
+              onStatusChange={(e, newStatus) => handleStatusChange(e, route, newStatus)}
+              onDelete={(e) => handleDeleteRoute(e, route.id)} /* Додаємо виклик видалення */
             />
           </div>
         ))}

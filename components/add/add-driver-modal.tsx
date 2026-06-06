@@ -58,6 +58,7 @@ export default function AddDriverModal() {
   }
 
 async function POST(url: string) {
+  
   try {
     const token = getCookie("token")
     const response = await fetch(url, {

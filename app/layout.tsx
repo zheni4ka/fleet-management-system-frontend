@@ -1,5 +1,5 @@
 import "./globals.css"
-import Header from '@/components/header'
+import {Header} from '@/components/header'
 import { Inter } from 'next/font/google'
 import { Metadata } from 'next'
 import { Toaster } from "react-hot-toast"
