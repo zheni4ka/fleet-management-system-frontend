@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import RouteCard from "@/components/route-card"
 import GoogleMapRoute from "@/components/google-map-route"
-import { Route, Location, RouteStatus } from "@/lib/types" 
+import { Route, Location, RouteStatus } from "@/lib/types"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 
@@ -31,7 +31,9 @@ export const RoutesList: React.FC<RoutesListProps> = ({
   const router = useRouter()
   const autoMap = new Map(autoMapData)
   const driverMap = new Map(driverMapData)
-  const apiBase = (process.env as { NEXT_PUBLIC_API_BASE_URL?: string }).NEXT_PUBLIC_API_BASE_URL ?? ""
+  const apiBase =
+    (process.env as { NEXT_PUBLIC_API_BASE_URL?: string })
+      .NEXT_PUBLIC_API_BASE_URL ?? ""
 
   const locationMap = new Map<number, string>()
   locations.forEach((loc) =>
@@ -41,7 +43,11 @@ export const RoutesList: React.FC<RoutesListProps> = ({
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null)
 
   // Функція для зміни статусу
-  const handleStatusChange = async (e: React.MouseEvent, route: Route, newStatus: RouteStatus) => {
+  const handleStatusChange = async (
+    e: React.MouseEvent,
+    route: Route,
+    newStatus: RouteStatus
+  ) => {
     e.stopPropagation()
 
     const token = getCookie("token")
@@ -50,21 +56,24 @@ export const RoutesList: React.FC<RoutesListProps> = ({
       return
     }
 
-    const updatePromise = fetch(apiBase ? `${apiBase}/api/Route/${route.id}` : `/api/Route/${route.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        id: route.id,
-        startLocationId: route.startLocationId,
-        destinationLocationId: route.destinationLocationId,
-        autoId: route.autoId,
-        driverId: route.driverId,
-        status: newStatus
-      })
-    }).then(async (res) => {
+    const updatePromise = fetch(
+      apiBase ? `${apiBase}/api/Route/${route.id}` : `/api/Route/${route.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          id: route.id,
+          startLocationId: route.startLocationId,
+          destinationLocationId: route.destinationLocationId,
+          autoId: route.autoId,
+          driverId: route.driverId,
+          status: newStatus,
+        }),
+      }
+    ).then(async (res) => {
       if (!res.ok) {
         const text = await res.text()
         throw new Error(text || "Помилка сервера")
@@ -85,12 +94,11 @@ export const RoutesList: React.FC<RoutesListProps> = ({
     }
   }
 
-  // НОВА ФУНКЦІЯ: Видалення маршруту
   const handleDeleteRoute = async (e: React.MouseEvent, routeId: number) => {
-    e.stopPropagation() // Блокуємо відкриття карти
-
-    // Запитуємо підтвердження у користувача
-    const confirmed = window.confirm("Ви впевнені, що хочете безповоротно видалити цей маршрут?")
+    e.stopPropagation()
+    const confirmed = window.confirm(
+      "Ви впевнені, що хочете безповоротно видалити цей маршрут?"
+    )
     if (!confirmed) return
 
     const token = getCookie("token")
@@ -99,12 +107,15 @@ export const RoutesList: React.FC<RoutesListProps> = ({
       return
     }
 
-    const deletePromise = fetch(apiBase ? `${apiBase}/api/Route/${routeId}` : `/api/Route/${routeId}`, {
-      method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${token}`
+    const deletePromise = fetch(
+      apiBase ? `${apiBase}/api/Route/${routeId}` : `/api/Route/${routeId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
-    }).then(async (res) => {
+    ).then(async (res) => {
       if (!res.ok) {
         const text = await res.text()
         throw new Error(text || "Помилка сервера при видаленні")
@@ -122,7 +133,7 @@ export const RoutesList: React.FC<RoutesListProps> = ({
       if (selectedRoute?.id === routeId) {
         setSelectedRoute(null)
       }
-      router.refresh() // Оновлюємо список маршрутів з сервера
+      router.refresh()
     } catch (error) {
       console.error(error)
     }
@@ -154,10 +165,14 @@ export const RoutesList: React.FC<RoutesListProps> = ({
               autoId={route.autoId}
               driverId={route.driverId}
               autoName={route.autoId ? autoMap.get(route.autoId) : undefined}
-              driverName={route.driverId ? driverMap.get(route.driverId) : undefined}
+              driverName={
+                route.driverId ? driverMap.get(route.driverId) : undefined
+              }
               status={route.status}
-              onStatusChange={(e, newStatus) => handleStatusChange(e, route, newStatus)}
-              onDelete={(e) => handleDeleteRoute(e, route.id)} /* Додаємо виклик видалення */
+              onStatusChange={(e, newStatus) =>
+                handleStatusChange(e, route, newStatus)
+              }
+              onDelete={(e) => handleDeleteRoute(e, route.id)}
             />
           </div>
         ))}

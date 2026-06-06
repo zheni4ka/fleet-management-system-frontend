@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Inter } from "next/font/google"
-import { Driver } from "@/lib/types"
 import EditDriverModal from "../edit/edit-driver-modal"
 import toast from "react-hot-toast"
 import { DriversTableProps } from "@/lib/types"

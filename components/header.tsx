@@ -31,9 +31,7 @@ export const Header: React.FC<Props> = ({ className }) => {
         const decoded = atob(payload); 
         const parsed = JSON.parse(decoded);
         const userRole = parsed['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || parsed.role;
-        
-        // ВИПРАВЛЕННЯ: Відкладаємо зміну стану в чергу макрозадач, 
-        // щоб уникнути "cascading renders" і прибрати помилку ESLint
+
         setTimeout(() => {
           setRole(userRole);
         }, 0);
