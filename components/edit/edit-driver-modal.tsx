@@ -37,42 +37,51 @@ export default function EditDriverModal({ driver }: { driver: Driver }) {
   const handleSave = async () => {
     const token = getCookie("token")
     if (!token) {
-        toast.error("Помилка авторизації. Увійдіть в систему.")
-        return
+      toast.error("Помилка авторизації. Увійдіть в систему.")
+      return
     }
 
     const updatePromise = fetch(`${apiBase ? apiBase : ""}/api/Driver`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-            id: driver.id,
-            name: form.name,
-            surname: form.surname,
-            patronymic: form.patronymic,
-            licenseNumber: form.licenseNumber,
-        }),
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        id: driver.id,
+        name: form.name,
+        surname: form.surname,
+        patronymic: form.patronymic,
+        licenseNumber: form.licenseNumber,
+      }),
     }).then(async (res) => {
-        if (!res.ok) {
-            const text = await res.text()
-            throw new Error(text || `Помилка сервера: ${res.status}`)
+      if (!res.ok) {
+        let errorMessage = `Помилка сервера: ${res.status}`
+        try {
+          const errorData = await res.json()
+          if (errorData.detail) errorMessage = errorData.detail
+          else if (errorData.title) errorMessage = errorData.title
+          else if (errorData.message) errorMessage = errorData.message // Для кастомних відповідей
+        } catch {
+          const text = await res.text()
+          if (text) errorMessage = text
         }
+        throw new Error(errorMessage)
+      }
     })
 
     toast.promise(updatePromise, {
-        loading: "Збереження змін...",
-        success: "Водія успішно оновлено!",
-        error: (err) => err.message || "Не вдалося оновити водія",
+      loading: "Збереження змін...",
+      success: "Водія успішно оновлено!",
+      error: (err) => err.message || "Не вдалося оновити водія",
     })
 
     try {
-        await updatePromise
-        setIsOpen(false)
-        router.refresh()
+      await updatePromise
+      setIsOpen(false)
+      router.refresh()
     } catch (error) {
-        console.error("Error occurred while updating driver:", error)
+      console.error("Error occurred while updating driver:", error)
     }
   }
 
@@ -100,13 +109,13 @@ export default function EditDriverModal({ driver }: { driver: Driver }) {
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
       >
-        <div className="flex flex-col w-full space-y-3">
+        <div className="flex w-full flex-col space-y-3">
           <input
             type="text"
             placeholder="Ім'я"
             value={form.name}
             onChange={handleChange("name")}
-            className="rounded-md border border-slate-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"  
+            className="rounded-md border border-slate-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
           <input
             type="text"
@@ -129,7 +138,8 @@ export default function EditDriverModal({ driver }: { driver: Driver }) {
             onChange={handleChange("licenseNumber")}
             className="rounded-md border border-slate-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
-          <Button onClick={handleSave}
+          <Button
+            onClick={handleSave}
             className="mt-2 bg-blue-600 text-white transition-transform duration-300 hover:scale-[1.02] hover:bg-blue-700"
           >
             Зберегти

@@ -43,25 +43,36 @@ export default function AddDispatcherModal() {
       return
     }
 
-    const base = (process.env as { NEXT_PUBLIC_API_BASE_URL?: string }).NEXT_PUBLIC_API_BASE_URL ?? ""
+    const base =
+      (process.env as { NEXT_PUBLIC_API_BASE_URL?: string })
+        .NEXT_PUBLIC_API_BASE_URL ?? ""
     const url = base ? `${base}/api/Account/register` : `/api/Account/register`
 
     const promise = fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         username: username,
         email: email,
         password: password,
-        role: "Dispatcher" 
+        role: "Dispatcher",
       }),
     }).then(async (res) => {
       if (!res.ok) {
-        const text = await res.text()
-        throw new Error(text || "Помилка при реєстрації")
+        let errorMessage = `Помилка сервера: ${res.status}`
+        try {
+          const errorData = await res.json()
+          if (errorData.detail) errorMessage = errorData.detail
+          else if (errorData.title) errorMessage = errorData.title
+          else if (errorData.message) errorMessage = errorData.message 
+        } catch {
+          const text = await res.text()
+          if (text) errorMessage = text
+        }
+        throw new Error(errorMessage)
       }
     })
 
@@ -92,13 +103,15 @@ export default function AddDispatcherModal() {
           + Додати диспетчера
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-0.5  bg-white">
+      <DialogContent className="w-0.5 bg-white">
         <DialogHeader>
           <DialogTitle>Реєстрація нового диспетчера</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label className="text-sm font-medium text-slate-700">Логін (Username)</label>
+            <label className="text-sm font-medium text-slate-700">
+              Логін (Username)
+            </label>
             <Input
               required
               value={username}
@@ -108,7 +121,9 @@ export default function AddDispatcherModal() {
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-slate-700">Електронна пошта</label>
+            <label className="text-sm font-medium text-slate-700">
+              Електронна пошта
+            </label>
             <Input
               required
               type="email"
@@ -130,10 +145,19 @@ export default function AddDispatcherModal() {
             />
           </div>
           <div className="flex justify-end pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} className="mr-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              className="mr-2"
+            >
               Скасувати
             </Button>
-            <Button type="submit" disabled={isLoading} className="bg-blue-600 text-white hover:bg-blue-700">
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="bg-blue-600 text-white hover:bg-blue-700"
+            >
               {isLoading ? "Збереження..." : "Зберегти"}
             </Button>
           </div>

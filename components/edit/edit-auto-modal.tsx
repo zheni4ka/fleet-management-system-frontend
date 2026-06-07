@@ -145,15 +145,7 @@ export default function EditAutoModal({ auto }: { auto: Auto }) {
                         placeholder="Місткість(кг)"
                         className="rounded-md border border-slate-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     />
-                    <select
-                        value={form.status}
-                        onChange={handleSelectChange}
-                        className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value="Available">Доступне</option>
-                        <option value="InService">В експлуатації</option>
-                        <option value="UnderMaintenance">На техобслуговуванні</option>
-                    </select>
+                   
                     <Button onClick={handleSave}
                     className="mt-2 bg-blue-600 text-white transition-transform duration-300 hover:scale-[1.02] hover:bg-blue-700">
                         Зберегти

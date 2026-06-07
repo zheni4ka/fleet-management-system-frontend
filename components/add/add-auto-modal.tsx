@@ -115,9 +115,17 @@ export default function AddAutoModal() {
       })
 
       if (!response.ok) {
-        throw new Error(
-          `Помилка сервера: ${response.status} ${response.statusText}`
-        )
+        let errorMessage = `Помилка сервера: ${response.status}`
+        try {
+          const errorData = await response.json()
+          if (errorData.detail) errorMessage = errorData.detail
+          else if (errorData.title) errorMessage = errorData.title
+          else if (errorData.message) errorMessage = errorData.message 
+        } catch {
+          const text = await response.text()
+          if (text) errorMessage = text
+        }
+        throw new Error(errorMessage)
       }
 
       const text = await response.text()
