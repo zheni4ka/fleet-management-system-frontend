@@ -97,10 +97,8 @@ export default function AutoMaintenanceModal({ autoId, autoTitle }: Props) {
           errorMessage = errorData.title;
         }
       } catch {
-        const text = await res.text();
-        if (text) errorMessage = text;
+        throw new Error(errorMessage);
       }
-      throw new Error(errorMessage);
     }
     })
 
