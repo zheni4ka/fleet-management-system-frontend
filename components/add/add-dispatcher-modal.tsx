@@ -13,6 +13,14 @@ import {
 } from "@/components/ui/dialog"
 import toast from "react-hot-toast"
 
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop()?.split(";").shift() ?? null
+  return null
+}
+
 export default function AddDispatcherModal() {
   const router = useRouter()
   const [open, setOpen] = useState(false)
@@ -27,6 +35,14 @@ export default function AddDispatcherModal() {
     e.preventDefault()
     setIsLoading(true)
 
+    // Отримуємо токен
+    const token = getCookie("token")
+    if (!token) {
+      toast.error("Помилка авторизації. Увійдіть в систему.")
+      setIsLoading(false)
+      return
+    }
+
     const base = (process.env as { NEXT_PUBLIC_API_BASE_URL?: string }).NEXT_PUBLIC_API_BASE_URL ?? ""
     const url = base ? `${base}/api/Account/register` : `/api/Account/register`
 
@@ -34,13 +50,13 @@ export default function AddDispatcherModal() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // Токен авторизації можна додати, якщо ви захистите ендпоінт атрибутом [Authorize]
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
         username: username,
         email: email,
         password: password,
-        role: "Dispatcher" // Жорстко задаємо роль, як того вимагає бекенд
+        role: "Dispatcher" 
       }),
     }).then(async (res) => {
       if (!res.ok) {
@@ -76,7 +92,7 @@ export default function AddDispatcherModal() {
           + Додати диспетчера
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-0.5 bg-white">
+      <DialogContent className="w-0.5  bg-white">
         <DialogHeader>
           <DialogTitle>Реєстрація нового диспетчера</DialogTitle>
         </DialogHeader>

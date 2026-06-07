@@ -21,7 +21,6 @@ export default async function DispatchersPage() {
   const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? ""
 
   try {
-    // ЗАПИТ ДО ВАШОГО ACCOUNT КОНТРОЛЕРА
     const res = await fetch(`${base}/api/Account/all`, {
       cache: "no-store",
       headers: {
