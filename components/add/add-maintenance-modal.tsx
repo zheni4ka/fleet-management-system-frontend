@@ -17,12 +17,14 @@ function getCookie(name: string): string | null {
 
 interface Props {
   autoId: number
-  autoTitle: string 
+  autoTitle: string
 }
 
 export default function AutoMaintenanceModal({ autoId, autoTitle }: Props) {
   const router = useRouter()
-  const base = (process.env as { NEXT_PUBLIC_API_BASE_URL?: string }).NEXT_PUBLIC_API_BASE_URL ?? ""
+  const base =
+    (process.env as { NEXT_PUBLIC_API_BASE_URL?: string })
+      .NEXT_PUBLIC_API_BASE_URL ?? ""
 
   const [isOpen, setIsOpen] = useState(false)
   const [history, setHistory] = useState<AutoMaintenance[]>([])
@@ -34,7 +36,6 @@ export default function AutoMaintenanceModal({ autoId, autoTitle }: Props) {
     serviceDate: "",
   })
 
-
   useEffect(() => {
     if (!isOpen) return
 
@@ -42,11 +43,14 @@ export default function AutoMaintenanceModal({ autoId, autoTitle }: Props) {
       setIsLoading(true)
       try {
         const token = getCookie("token")
-        const res = await fetch(`${base ? base : ""}/api/AutoMaintenance/auto/${autoId}`, {
-          headers: {
-             "Authorization": `Bearer ${token}`
+        const res = await fetch(
+          `${base ? base : ""}/api/AutoMaintenance/auto/${autoId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        })
+        )
         if (!res.ok) throw new Error("Не вдалося завантажити історію ТО")
         const data = await res.json()
         setHistory(data)
@@ -60,8 +64,59 @@ export default function AutoMaintenanceModal({ autoId, autoTitle }: Props) {
     fetchHistory()
   }, [isOpen, autoId, base])
 
-  const handleChange = (field: keyof typeof form) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm((prev) => ({ ...prev, [field]: e.target.value }))
+  const handleChange =
+    (field: keyof typeof form) =>
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setForm((prev) => ({ ...prev, [field]: e.target.value }))
+    }
+
+  const handleComplete = async (record: AutoMaintenance) => {
+    const token = getCookie("token")
+    const completePromise = fetch(`${base ? base : ""}/api/AutoMaintenance`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        id: record.id,
+        name: record.name,
+        description: record.description,
+        serviceDate: record.serviceDate,
+        autoId: record.autoId,
+        isCompleted: true,
+      }),
+    }).then(async (res) => {
+      if (!res.ok) {
+      let errorMessage = `Помилка сервера: ${res.status}`;
+      try {
+        const errorData = await res.json();
+        if (errorData.detail) {
+          errorMessage = errorData.detail;
+        } else if (errorData.title) {
+          errorMessage = errorData.title;
+        }
+      } catch {
+        const text = await res.text();
+        if (text) errorMessage = text;
+      }
+      throw new Error(errorMessage);
+    }
+    })
+
+    toast.promise(completePromise, {
+      loading: "Завершення ТО...",
+      success: "ТО успішно завершено! Авто знову доступне.",
+      error: "Помилка при завершенні ТО.",
+    })
+
+    try {
+      await completePromise
+      setIsOpen(false)
+      router.refresh()
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   const handleSave = async () => {
@@ -80,7 +135,7 @@ export default function AutoMaintenanceModal({ autoId, autoTitle }: Props) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         name: form.name,
@@ -105,7 +160,7 @@ export default function AutoMaintenanceModal({ autoId, autoTitle }: Props) {
       await savePromise
       setForm({ name: "", description: "", serviceDate: "" })
       setIsOpen(false)
-      router.refresh() 
+      router.refresh()
     } catch (error) {
       console.error(error)
     }
@@ -122,38 +177,78 @@ export default function AutoMaintenanceModal({ autoId, autoTitle }: Props) {
         ТО
       </Button>
 
-      <ModalWindow 
-        isOpen={isOpen} 
-        onClose={() => setIsOpen(false)} 
+      <ModalWindow
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
         title={`Технічне обслуговування: ${autoTitle}`}
       >
         <div className="space-y-5 px-2">
-          
           <div>
-            <div className="flex items-center gap-2 mb-3 border-b border-slate-100 pb-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
-              <h3 className="text-sm font-semibold text-slate-700">Історія обслуговування</h3>
+            <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-slate-500"
+              >
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+                <path d="M12 7v5l4 2" />
+              </svg>
+              <h3 className="text-sm font-semibold text-slate-700">
+                Історія обслуговування
+              </h3>
             </div>
-            
+
             {isLoading ? (
               <div className="flex justify-center py-4">
-                <p className="text-sm text-slate-500 animate-pulse">Завантаження...</p>
+                <p className="animate-pulse text-sm text-slate-500">
+                  Завантаження...
+                </p>
               </div>
             ) : history.length === 0 ? (
-              <div className="rounded-md border border-dashed border-slate-300 py-4 text-center bg-slate-50">
-                <p className="text-sm text-slate-500">Записів ще немає. Автомобіль справний.</p>
+              <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 py-4 text-center">
+                <p className="text-sm text-slate-500">
+                  Записів ще немає. Автомобіль справний.
+                </p>
               </div>
             ) : (
-              <div className="max-h-36 overflow-y-auto space-y-2 pr-2 scrollbar-thin scrollbar-thumb-slate-200">
+              <div className="max-h-36 scrollbar-thin scrollbar-thumb-slate-200 space-y-2 overflow-y-auto pr-2">
                 {history.map((record) => (
-                  <div key={record.id} className="rounded-md border border-slate-200 bg-slate-50 p-3">
-                    <div className="flex justify-between items-start mb-1">
-                      <span className="font-medium text-slate-800 text-sm">{record.name}</span>
-                      <span className="text-[11px] font-medium text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200">
-                        {new Date(record.serviceDate).toLocaleDateString('uk-UA')}
+                  <div
+                    key={record.id}
+                    className={`rounded-md border p-3 ${record.isCompleted ? "border-slate-200 bg-slate-50" : "border-orange-300 bg-orange-50"}`}
+                  >
+                    <div className="mb-1 flex items-start justify-between">
+                      <span className="text-sm font-medium text-slate-800">
+                        {record.name}{" "}
+                        {record.isCompleted ? "(Завершено)" : "(В процесі)"}
+                      </span>
+                      <span className="rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-500">
+                        {new Date(record.serviceDate).toLocaleDateString(
+                          "uk-UA"
+                        )}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-600">{record.description}</p>
+                    <p className="mb-2 text-xs text-slate-600">
+                      {record.description}
+                    </p>
+
+                    {!record.isCompleted && (
+                      <Button
+                        onClick={() => handleComplete(record)}
+                        size="sm"
+                        className="h-7 w-full bg-green-600 text-xs text-white hover:bg-green-700"
+                      >
+                        Завершити ремонт
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -161,11 +256,26 @@ export default function AutoMaintenanceModal({ autoId, autoTitle }: Props) {
           </div>
 
           <div>
-            <div className="flex items-center gap-2 mb-3 border-b border-slate-100 pb-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-              <h3 className="text-sm font-semibold text-slate-700">Відправити на ремонт</h3>
+            <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-blue-500"
+              >
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+              </svg>
+              <h3 className="text-sm font-semibold text-slate-700">
+                Відправити на ремонт
+              </h3>
             </div>
-            
+
             <div className="space-y-3">
               <div>
                 <input
@@ -173,7 +283,7 @@ export default function AutoMaintenanceModal({ autoId, autoTitle }: Props) {
                   placeholder="Тип робіт (напр., Заміна мастила)"
                   value={form.name}
                   onChange={handleChange("name")}
-                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
 
@@ -183,31 +293,32 @@ export default function AutoMaintenanceModal({ autoId, autoTitle }: Props) {
                   value={form.description}
                   onChange={handleChange("description")}
                   rows={2}
-                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                  className="w-full resize-none rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
 
-              <div className="space-y-1 text-left flex flex-col">
-                <label className="text-xs font-medium text-slate-600 block mb-1">Дата початку робіт</label>
+              <div className="flex flex-col space-y-1 text-left">
+                <label className="mb-1 block text-xs font-medium text-slate-600">
+                  Дата початку робіт
+                </label>
                 <input
                   type="datetime-local"
                   value={form.serviceDate}
                   onChange={handleChange("serviceDate")}
-                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
 
               <div className="pt-2">
-                <Button 
-                  onClick={handleSave} 
-                  className="w-full bg-blue-600 text-white hover:bg-blue-700 h-9"
+                <Button
+                  onClick={handleSave}
+                  className="h-9 w-full bg-blue-600 text-white hover:bg-blue-700"
                 >
                   Зареєструвати ТО
                 </Button>
               </div>
             </div>
           </div>
-
         </div>
       </ModalWindow>
     </>

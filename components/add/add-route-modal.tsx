@@ -149,12 +149,19 @@ export default function AddRouteModal() {
     })
 
     if (!response.ok) {
-      const text = await response.text()
-      throw new Error(
-        text
-          ? `Помилка сервера: ${text}`
-          : `Помилка сервера: ${response.status}`
-      )
+      let errorMessage = `Помилка сервера: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.detail) {
+          errorMessage = errorData.detail;
+        } else if (errorData.title) {
+          errorMessage = errorData.title;
+        }
+      } catch {
+        const text = await response.text();
+        if (text) errorMessage = text;
+      }
+      throw new Error(errorMessage);
     }
   }
 

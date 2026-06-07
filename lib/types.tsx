@@ -48,6 +48,7 @@ export interface AutoMaintenance {
   description: string
   serviceDate: string
   autoId: number
+  isCompleted: boolean
 }
 
 export interface Route {
