@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Trash2 } from "lucide-react"
+import { MapIcon, Trash2 } from "lucide-react"
 import { IconActionButton } from "@/components/icon-action-button"
 import { Button } from "@/components/ui/button"
 import {
@@ -50,7 +50,7 @@ export function RouteCard({
   ]
 
   return (
-    <article className="relative flex h-full flex-col gap-3 rounded-xl border bg-white p-4 shadow-sm transition-shadow duration-200 hover:shadow-md">
+    <article className="flex h-full flex-col gap-3 rounded-xl border bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="font-mono text-xs font-medium text-slate-500">
@@ -62,7 +62,13 @@ export function RouteCard({
             {routeStatusLabels[route.status]}
           </span>
         </div>
-        <div className="relative z-10 flex items-center gap-1">
+        <div className="flex items-center gap-1">
+          <IconActionButton
+            icon={MapIcon}
+            label={iconActionLabels.viewOnMap}
+            variant="outline"
+            onClick={onSelect}
+          />
           {editRouteAction}
           <IconActionButton
             icon={Trash2}
@@ -76,14 +82,7 @@ export function RouteCard({
       </div>
 
       <h3 className="leading-snug font-semibold text-slate-900">
-        <button
-          type="button"
-          onClick={onSelect}
-          title="Показати маршрут на карті"
-          className="cursor-pointer rounded-md text-left after:absolute after:inset-0 after:rounded-xl"
-        >
-          {startLocationName} → {destinationLocationName}
-        </button>
+        {startLocationName} → {destinationLocationName}
       </h3>
 
       <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-sm">
@@ -96,7 +95,7 @@ export function RouteCard({
       </dl>
 
       {availableRouteStatusActions.length > 0 && (
-        <div className="relative z-10 mt-auto flex gap-2 border-t border-slate-100 pt-3">
+        <div className="mt-auto flex gap-2 border-t border-slate-100 pt-3">
           {availableRouteStatusActions.map((routeStatusAction) => {
             const RouteStatusActionIcon = routeStatusAction.icon
             return (

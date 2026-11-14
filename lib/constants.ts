@@ -135,6 +135,7 @@ export const iconActionLabels = Object.freeze({
   edit: "Редагувати",
   delete: "Видалити",
   maintenance: "Технічне обслуговування",
+  viewOnMap: "Показати маршрут на карті",
 })
 
 export const routeFormSelectTexts = Object.freeze({
