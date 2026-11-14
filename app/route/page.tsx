@@ -1,6 +1,6 @@
 import AddRouteModal from "@/components/add/add-route-modal"
 import RoutesList from "@/components/routes-list"
-import { ListFilterForm } from "@/components/list-filter-form"
+import { ListFilterPanel } from "@/components/list-filter-panel"
 import { ListPagination } from "@/components/list-pagination"
 import { ListSortSelect } from "@/components/list-sort-select"
 import { LoadErrorMessage } from "@/components/load-error-message"
@@ -9,7 +9,6 @@ import { apiEndpoints, appRoutes, routeSortOptions } from "@/lib/constants"
 import { createRoutesListFilterFields } from "@/lib/forms/list-filter-fields"
 import {
   createListApiPath,
-  createListPageHref,
   getListFilterValuesFromPageSearchParams,
   getListQueryFromPageSearchParams,
   hasActiveListFilters,
@@ -104,8 +103,7 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
         />
       </PageHeader>
 
-      <ListFilterForm
-        key={createListPageHref(routesListPageState, {})}
+      <ListFilterPanel
         title="Розширений пошук маршрутів"
         listPageState={routesListPageState}
         listFilterFields={routesListFilterFields}

@@ -19,6 +19,14 @@ export const cookieNames = Object.freeze({
   authToken: "token",
 })
 
+export const browserStorageKeys = Object.freeze({
+  listFilterPanelState: "listFilterPanelState",
+})
+
+export const browserStorageChangeEventName = "browserStorageChange"
+
+export const floatingPanelVisibleEdgePixels = 64
+
 export const authCookieMaxAgeSeconds = 24 * 60 * 60
 
 export const jwtClaimNames = Object.freeze({

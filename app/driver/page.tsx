@@ -1,6 +1,6 @@
 import DriversTable from "@/components/tables/drivers-table"
 import AddDriverModal from "@/components/add/add-driver-modal"
-import { ListFilterForm } from "@/components/list-filter-form"
+import { ListFilterPanel } from "@/components/list-filter-panel"
 import { ListPagination } from "@/components/list-pagination"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
@@ -8,7 +8,6 @@ import { apiEndpoints, appRoutes } from "@/lib/constants"
 import { driversListFilterFields } from "@/lib/forms/list-filter-fields"
 import {
   createListApiPath,
-  createListPageHref,
   getListFilterValuesFromPageSearchParams,
   getListQueryFromPageSearchParams,
 } from "@/lib/search-params"
@@ -57,8 +56,7 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
         <AddDriverModal />
       </PageHeader>
 
-      <ListFilterForm
-        key={createListPageHref(driversListPageState, {})}
+      <ListFilterPanel
         title="Пошук водіїв"
         listPageState={driversListPageState}
         listFilterFields={driversListFilterFields}

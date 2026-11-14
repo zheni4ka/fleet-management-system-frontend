@@ -1,6 +1,6 @@
 import DispatchersTable from "@/components/tables/dispatchers-table"
 import AddDispatcherModal from "@/components/add/add-dispatcher-modal"
-import { ListFilterForm } from "@/components/list-filter-form"
+import { ListFilterPanel } from "@/components/list-filter-panel"
 import { ListPagination } from "@/components/list-pagination"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
@@ -8,7 +8,6 @@ import { apiEndpoints, appRoutes } from "@/lib/constants"
 import { dispatchersListFilterFields } from "@/lib/forms/list-filter-fields"
 import {
   createListApiPath,
-  createListPageHref,
   getListFilterValuesFromPageSearchParams,
   getListQueryFromPageSearchParams,
 } from "@/lib/search-params"
@@ -59,8 +58,7 @@ export default async function DispatchersPage({
         <AddDispatcherModal />
       </PageHeader>
 
-      <ListFilterForm
-        key={createListPageHref(dispatchersListPageState, {})}
+      <ListFilterPanel
         title="Пошук диспетчерів"
         listPageState={dispatchersListPageState}
         listFilterFields={dispatchersListFilterFields}

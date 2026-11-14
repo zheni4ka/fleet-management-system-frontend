@@ -58,15 +58,21 @@ export function getListFilterValuesFromPageSearchParams(
   )
 }
 
+export function getActiveListFiltersCount<TSortField extends string>(
+  listPageState: ListPageState<TSortField>
+): number {
+  const activeFilterValuesCount = Object.values(
+    listPageState.filterValues
+  ).filter((filterValue) => filterValue !== "").length
+  return listPageState.listQuery.search === ""
+    ? activeFilterValuesCount
+    : activeFilterValuesCount + 1
+}
+
 export function hasActiveListFilters<TSortField extends string>(
   listPageState: ListPageState<TSortField>
 ): boolean {
-  return (
-    listPageState.listQuery.search !== "" ||
-    Object.values(listPageState.filterValues).some(
-      (filterValue) => filterValue !== ""
-    )
-  )
+  return getActiveListFiltersCount(listPageState) > 0
 }
 
 export function getPageSearchParamValue(

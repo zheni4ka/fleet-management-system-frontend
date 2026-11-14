@@ -17,7 +17,6 @@ import {
 } from "@/lib/types"
 
 interface ListFilterFormProps<TSortField extends string> {
-  title: string
   listPageState: ListPageState<TSortField>
   listFilterFields: ReadonlyArray<ListFilterField>
 }
@@ -37,7 +36,6 @@ function createInitialListFilterFormValues<TSortField extends string>(
 }
 
 export function ListFilterForm<TSortField extends string>({
-  title,
   listPageState,
   listFilterFields,
 }: ListFilterFormProps<TSortField>) {
@@ -160,11 +158,7 @@ export function ListFilterForm<TSortField extends string>({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-3 rounded-xl border bg-white p-4 shadow-sm"
-    >
-      <h2 className="text-sm font-semibold text-slate-700">{title}</h2>
+    <form onSubmit={handleSubmit}>
       <div className="grid gap-3 md:grid-cols-4">
         {listFilterFields.map((listFilterField) => (
           <FormField key={listFilterField.name} label={listFilterField.label}>

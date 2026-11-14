@@ -1,6 +1,6 @@
 import AutosTable from "@/components/tables/autos-table"
 import AddAutoModal from "@/components/add/add-auto-modal"
-import { ListFilterForm } from "@/components/list-filter-form"
+import { ListFilterPanel } from "@/components/list-filter-panel"
 import { ListPagination } from "@/components/list-pagination"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
@@ -8,7 +8,6 @@ import { apiEndpoints, appRoutes } from "@/lib/constants"
 import { autosListFilterFields } from "@/lib/forms/list-filter-fields"
 import {
   createListApiPath,
-  createListPageHref,
   getListFilterValuesFromPageSearchParams,
   getListQueryFromPageSearchParams,
 } from "@/lib/search-params"
@@ -57,8 +56,7 @@ export default async function AutosPage({ searchParams }: AutosPageProps) {
         <AddAutoModal />
       </PageHeader>
 
-      <ListFilterForm
-        key={createListPageHref(autosListPageState, {})}
+      <ListFilterPanel
         title="Пошук автомобілів"
         listPageState={autosListPageState}
         listFilterFields={autosListFilterFields}
