@@ -23,7 +23,7 @@ function PageSkeletonLayout({ children }: PageSkeletonLayoutProps) {
     <div
       role="status"
       aria-busy="true"
-      className="mx-auto max-w-6xl space-y-6 p-8"
+      className="mx-auto max-w-6xl space-y-6 px-1 py-6 sm:p-8"
     >
       <span className="sr-only">Завантаження...</span>
       <div className="flex items-center justify-between gap-4">

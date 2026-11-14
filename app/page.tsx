@@ -11,7 +11,7 @@ export default async function HomePage() {
   const authToken = await getAuthTokenOrRedirect()
 
   return (
-    <div className="mx-auto flex min-h-svh w-full max-w-7xl flex-col space-y-8 bg-slate-50/50 p-6 pt-8">
+    <div className="mx-auto flex min-h-svh w-full max-w-7xl flex-col space-y-8 bg-slate-50/50 px-1 py-6 sm:p-6 sm:pt-8">
       <div className="relative overflow-hidden rounded-3xl p-8 text-black shadow-lg">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
           Огляд автопарку

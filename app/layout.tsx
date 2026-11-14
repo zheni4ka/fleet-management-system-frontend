@@ -3,7 +3,12 @@ import { Inter } from "next/font/google"
 import { Metadata } from "next"
 import { Toaster } from "react-hot-toast"
 import { Header } from "@/components/header"
-import { hasAuthTokenUserRole, isAuthTokenUnexpired } from "@/lib/auth-token"
+import {
+  getKnownUserRolesFromAuthToken,
+  getUserNameFromAuthToken,
+  hasAuthTokenUserRole,
+  isAuthTokenUnexpired,
+} from "@/lib/auth-token"
 import { getAuthTokenFromCookies } from "@/lib/server/api"
 import { UserRole } from "@/lib/types"
 
@@ -26,17 +31,25 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   const authToken = await getAuthTokenFromCookies()
+  const unexpiredAuthToken =
+    authToken !== null && isAuthTokenUnexpired(authToken) ? authToken : null
 
   return (
-    <html className={`${inter.className} p-6`} lang="uk">
+    <html className={`${inter.className} p-3 sm:p-6`} lang="uk">
       <body className="antialiased">
-        {authToken !== null && isAuthTokenUnexpired(authToken) && (
+        {unexpiredAuthToken !== null && (
           <Header
             className="fixed inset-x-0 top-0 z-1000 w-full"
-            isAdmin={hasAuthTokenUserRole(authToken, UserRole.Admin)}
+            isAdmin={hasAuthTokenUserRole(unexpiredAuthToken, UserRole.Admin)}
+            currentUserName={getUserNameFromAuthToken(unexpiredAuthToken)}
+            currentUserRoles={getKnownUserRolesFromAuthToken(
+              unexpiredAuthToken
+            )}
           />
         )}
-        <main>{children}</main>
+        <main className={unexpiredAuthToken === null ? undefined : "pt-8"}>
+          {children}
+        </main>
         <Toaster position="bottom-right" reverseOrder={false} />
       </body>
     </html>

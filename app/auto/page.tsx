@@ -48,7 +48,7 @@ export default async function AutosPage({ searchParams }: AutosPageProps) {
   )
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-8">
+    <div className="mx-auto max-w-6xl space-y-6 px-1 py-6 sm:p-8">
       <PageHeader
         title="Автомобілі"
         description="Управління автомобілями вашого автопарку та перегляд їхніх характеристик."

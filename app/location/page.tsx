@@ -50,7 +50,7 @@ export default async function LocationsPage({
   )
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-8">
+    <div className="mx-auto max-w-6xl space-y-6 px-1 py-6 sm:p-8">
       <PageHeader
         title="Локації"
         description="Довідник міст і країн, між якими прокладаються маршрути."

@@ -53,7 +53,7 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
     !locationsResult.isSucceeded
   ) {
     return (
-      <div className="mx-auto max-w-6xl space-y-6 p-8">
+      <div className="mx-auto max-w-6xl space-y-6 px-1 py-6 sm:p-8">
         <PageHeader
           title={routesPageTitle}
           description={routesPageDescription}
@@ -94,7 +94,7 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
   )
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-8">
+    <div className="mx-auto max-w-6xl space-y-6 px-1 py-6 sm:p-8">
       <PageHeader title={routesPageTitle} description={routesPageDescription}>
         <AddRouteModal
           autos={autosResult.data}

@@ -81,7 +81,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
     createRoutesPeriodFormValuesFromPageSearchParams(await searchParams)
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-8">
+    <div className="mx-auto max-w-6xl space-y-6 px-1 py-6 sm:p-8">
       <PageHeader
         title="Звіти"
         description="Статистика рейсів за обраний період: день, тиждень або місяць."
