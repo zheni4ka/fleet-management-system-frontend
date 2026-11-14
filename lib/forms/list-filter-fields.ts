@@ -45,7 +45,7 @@ function createListFilterOptionsFromLabels<TEnumValue extends string>(
 
 export const autosListFilterFields: ReadonlyArray<ListFilterField> =
   Object.freeze([
-    createListSearchFilterField("Марка, модель, колір або номер"),
+    createListSearchFilterField("ID, марка, модель, номер"),
     {
       kind: ListFilterFieldKind.Select,
       name: "status",
@@ -66,16 +66,14 @@ export const autosListFilterFields: ReadonlyArray<ListFilterField> =
   ])
 
 export const driversListFilterFields: ReadonlyArray<ListFilterField> =
-  Object.freeze([
-    createListSearchFilterField("Ім'я, прізвище, по батькові або посвідчення"),
-  ])
+  Object.freeze([createListSearchFilterField("ID, ПІБ або посвідчення")])
 
 export const dispatchersListFilterFields: ReadonlyArray<ListFilterField> =
-  Object.freeze([createListSearchFilterField("Логін або email")])
+  Object.freeze([createListSearchFilterField("ID, логін або email")])
 
 export const locationsListFilterFields: ReadonlyArray<ListFilterField> =
   Object.freeze([
-    createListSearchFilterField("Місто або країна"),
+    createListSearchFilterField("ID, місто або країна"),
     {
       kind: ListFilterFieldKind.Text,
       name: "country",
@@ -168,6 +166,6 @@ export function createRoutesListFilterFields(
         label: formatAutoTitleWithNumber(auto),
       })),
     },
-    createListSearchFilterField("Місто або країна відправлення чи прибуття"),
+    createListSearchFilterField("ID маршруту, місто або країна"),
   ]
 }
