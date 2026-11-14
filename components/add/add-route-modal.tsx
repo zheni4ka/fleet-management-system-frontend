@@ -7,23 +7,17 @@ import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
 import { FormField } from "@/components/ui/form-field"
 import ModalWindow from "@/components/ui/modal-window"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import { SubmitButton } from "@/components/ui/submit-button"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
 import { apiEndpoints, routeStatusLabels } from "@/lib/constants"
 import {
-  formatAutoTitleWithNumber,
-  formatDriverFullName,
-  formatLocationName,
-} from "@/lib/formatters"
-import {
-  Auto,
-  AutoStatus,
-  Driver,
-  HttpMethod,
-  Location,
-  RouteStatus,
-} from "@/lib/types"
+  createAutoSearchableSelectOptions,
+  createDriverSearchableSelectOptions,
+  createLocationSearchableSelectOptions,
+} from "@/lib/forms/searchable-select-options"
+import { Auto, Driver, HttpMethod, Location, RouteStatus } from "@/lib/types"
 import { parseEnumValue } from "@/lib/utils"
 
 interface AddRouteModalProps {
@@ -85,9 +79,7 @@ export default function AddRouteModal({
   )
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
 
-  const assignableAutos = autos.filter(
-    (auto) => auto.status !== AutoStatus.UnderMaintenance
-  )
+  const locationOptions = createLocationSearchableSelectOptions(locations)
 
   const updateRouteFormValues = (changedValues: Partial<RouteFormValues>) => {
     setRouteFormValues({ ...routeFormValues, ...changedValues })
@@ -125,13 +117,6 @@ export default function AddRouteModal({
     }
   }
 
-  const renderLocationOptions = () =>
-    locations.map((location) => (
-      <option key={location.id} value={location.id}>
-        {formatLocationName(location)}
-      </option>
-    ))
-
   return (
     <>
       <Button
@@ -148,28 +133,28 @@ export default function AddRouteModal({
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <FormField label="Початкова локація">
-              <NativeSelect
-                value={routeFormValues.startLocationId}
-                onChange={(event) =>
-                  updateRouteFormValues({ startLocationId: event.target.value })
+              <SearchableSelect
+                options={locationOptions}
+                selectedValue={routeFormValues.startLocationId}
+                onSelectedValueChange={(startLocationId) =>
+                  updateRouteFormValues({ startLocationId })
                 }
-              >
-                <option value="">Оберіть початкову локацію</option>
-                {renderLocationOptions()}
-              </NativeSelect>
+                placeholder="Оберіть початкову локацію"
+                searchPlaceholder="Пошук міста або країни..."
+                emptyMessage="Локацію не знайдено"
+              />
             </FormField>
             <FormField label="Кінцева локація">
-              <NativeSelect
-                value={routeFormValues.destinationLocationId}
-                onChange={(event) =>
-                  updateRouteFormValues({
-                    destinationLocationId: event.target.value,
-                  })
+              <SearchableSelect
+                options={locationOptions}
+                selectedValue={routeFormValues.destinationLocationId}
+                onSelectedValueChange={(destinationLocationId) =>
+                  updateRouteFormValues({ destinationLocationId })
                 }
-              >
-                <option value="">Оберіть кінцеву локацію</option>
-                {renderLocationOptions()}
-              </NativeSelect>
+                placeholder="Оберіть кінцеву локацію"
+                searchPlaceholder="Пошук міста або країни..."
+                emptyMessage="Локацію не знайдено"
+              />
             </FormField>
           </div>
 
@@ -196,34 +181,28 @@ export default function AddRouteModal({
 
           <div className="grid gap-3 sm:grid-cols-3">
             <FormField label="Водій">
-              <NativeSelect
-                value={routeFormValues.driverId}
-                onChange={(event) =>
-                  updateRouteFormValues({ driverId: event.target.value })
+              <SearchableSelect
+                options={createDriverSearchableSelectOptions(drivers)}
+                selectedValue={routeFormValues.driverId}
+                onSelectedValueChange={(driverId) =>
+                  updateRouteFormValues({ driverId })
                 }
-              >
-                <option value="">Оберіть водія</option>
-                {drivers.map((driver) => (
-                  <option key={driver.id} value={driver.id}>
-                    {formatDriverFullName(driver)}
-                  </option>
-                ))}
-              </NativeSelect>
+                placeholder="Оберіть водія"
+                searchPlaceholder="Пошук за ПІБ або посвідченням..."
+                emptyMessage="Водія не знайдено"
+              />
             </FormField>
             <FormField label="Автомобіль">
-              <NativeSelect
-                value={routeFormValues.autoId}
-                onChange={(event) =>
-                  updateRouteFormValues({ autoId: event.target.value })
+              <SearchableSelect
+                options={createAutoSearchableSelectOptions(autos, null)}
+                selectedValue={routeFormValues.autoId}
+                onSelectedValueChange={(autoId) =>
+                  updateRouteFormValues({ autoId })
                 }
-              >
-                <option value="">Оберіть авто</option>
-                {assignableAutos.map((auto) => (
-                  <option key={auto.id} value={auto.id}>
-                    {formatAutoTitleWithNumber(auto)}
-                  </option>
-                ))}
-              </NativeSelect>
+                placeholder="Оберіть авто"
+                searchPlaceholder="Пошук за маркою або номером..."
+                emptyMessage="Автомобіль не знайдено"
+              />
             </FormField>
             <FormField label="Статус маршруту">
               <NativeSelect

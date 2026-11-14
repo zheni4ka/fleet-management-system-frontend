@@ -6,6 +6,7 @@ import toast from "react-hot-toast"
 import { NativeSelect } from "@/components/ui/native-select"
 import { FormField } from "@/components/ui/form-field"
 import ModalWindow from "@/components/ui/modal-window"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import { SubmitButton } from "@/components/ui/submit-button"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
@@ -20,14 +21,13 @@ import {
   getEditRouteFormValidationError,
 } from "@/lib/forms/edit-route-form"
 import {
-  formatAutoTitleWithNumber,
-  formatDriverFullName,
-  formatLocationName,
-} from "@/lib/formatters"
+  createAutoSearchableSelectOptions,
+  createDriverSearchableSelectOptions,
+  createLocationSearchableSelectOptions,
+} from "@/lib/forms/searchable-select-options"
 import { isRouteStatusActive } from "@/lib/route-status"
 import {
   Auto,
-  AutoStatus,
   Driver,
   EditRouteFormValues,
   HttpMethod,
@@ -59,10 +59,7 @@ export default function EditRouteModal({
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
 
   const isRouteEditable = isRouteStatusActive(route.status)
-  const assignableAutos = autos.filter(
-    (auto) =>
-      auto.id === route.autoId || auto.status !== AutoStatus.UnderMaintenance
-  )
+  const locationOptions = createLocationSearchableSelectOptions(locations)
   const selectableRouteStatuses = [
     route.status,
     ...allowedRouteStatusTransitions[route.status],
@@ -106,12 +103,6 @@ export default function EditRouteModal({
     }
   }
 
-  const locationOptions = locations.map((location) => (
-    <option key={location.id} value={location.id}>
-      {formatLocationName(location)}
-    </option>
-  ))
-
   return (
     <>
       <button
@@ -135,59 +126,55 @@ export default function EditRouteModal({
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <FormField label="Початкова локація">
-              <NativeSelect
-                value={editRouteFormValues.startLocationId}
-                onChange={(event) =>
-                  updateEditRouteFormValues({
-                    startLocationId: event.target.value,
-                  })
+              <SearchableSelect
+                options={locationOptions}
+                selectedValue={editRouteFormValues.startLocationId}
+                onSelectedValueChange={(startLocationId) =>
+                  updateEditRouteFormValues({ startLocationId })
                 }
-              >
-                {locationOptions}
-              </NativeSelect>
+                placeholder="Оберіть початкову локацію"
+                searchPlaceholder="Пошук міста або країни..."
+                emptyMessage="Локацію не знайдено"
+              />
             </FormField>
             <FormField label="Кінцева локація">
-              <NativeSelect
-                value={editRouteFormValues.destinationLocationId}
-                onChange={(event) =>
-                  updateEditRouteFormValues({
-                    destinationLocationId: event.target.value,
-                  })
+              <SearchableSelect
+                options={locationOptions}
+                selectedValue={editRouteFormValues.destinationLocationId}
+                onSelectedValueChange={(destinationLocationId) =>
+                  updateEditRouteFormValues({ destinationLocationId })
                 }
-              >
-                {locationOptions}
-              </NativeSelect>
+                placeholder="Оберіть кінцеву локацію"
+                searchPlaceholder="Пошук міста або країни..."
+                emptyMessage="Локацію не знайдено"
+              />
             </FormField>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <FormField label="Водій">
-              <NativeSelect
-                value={editRouteFormValues.driverId}
-                onChange={(event) =>
-                  updateEditRouteFormValues({ driverId: event.target.value })
+              <SearchableSelect
+                options={createDriverSearchableSelectOptions(drivers)}
+                selectedValue={editRouteFormValues.driverId}
+                onSelectedValueChange={(driverId) =>
+                  updateEditRouteFormValues({ driverId })
                 }
-              >
-                {drivers.map((driver) => (
-                  <option key={driver.id} value={driver.id}>
-                    {formatDriverFullName(driver)}
-                  </option>
-                ))}
-              </NativeSelect>
+                placeholder="Оберіть водія"
+                searchPlaceholder="Пошук за ПІБ або посвідченням..."
+                emptyMessage="Водія не знайдено"
+              />
             </FormField>
             <FormField label="Автомобіль">
-              <NativeSelect
-                value={editRouteFormValues.autoId}
-                onChange={(event) =>
-                  updateEditRouteFormValues({ autoId: event.target.value })
+              <SearchableSelect
+                options={createAutoSearchableSelectOptions(autos, route.autoId)}
+                selectedValue={editRouteFormValues.autoId}
+                onSelectedValueChange={(autoId) =>
+                  updateEditRouteFormValues({ autoId })
                 }
-              >
-                {assignableAutos.map((auto) => (
-                  <option key={auto.id} value={auto.id}>
-                    {formatAutoTitleWithNumber(auto)}
-                  </option>
-                ))}
-              </NativeSelect>
+                placeholder="Оберіть авто"
+                searchPlaceholder="Пошук за маркою або номером..."
+                emptyMessage="Автомобіль не знайдено"
+              />
             </FormField>
           </div>
 
