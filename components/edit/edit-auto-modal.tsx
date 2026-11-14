@@ -2,13 +2,14 @@
 
 import { useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
-import { Button } from "@/components/ui/button"
+import { Pencil } from "lucide-react"
 import ModalWindow from "@/components/ui/modal-window"
 import { SubmitButton } from "@/components/ui/submit-button"
+import { TableRowActionButton } from "@/components/tables/table-row-action-button"
 import { AutoFormFields } from "@/components/forms/auto-form-fields"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints } from "@/lib/constants"
+import { apiEndpoints, tableRowActionLabels } from "@/lib/constants"
 import {
   createAutoFormValuesFromAuto,
   createAutoRequestBody,
@@ -59,14 +60,12 @@ export default function EditAutoModal({ auto }: EditAutoModalProps) {
 
   return (
     <>
-      <Button
+      <TableRowActionButton
+        icon={Pencil}
+        label={tableRowActionLabels.edit}
         variant="outline"
-        size="sm"
-        className="transition motion-safe:duration-300 motion-safe:hover:scale-105"
         onClick={handleOpen}
-      >
-        Редагувати
-      </Button>
+      />
       <ModalWindow
         title="Редагувати автомобіль"
         isOpen={isModalOpen}

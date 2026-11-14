@@ -131,6 +131,12 @@ export const homeLinkLabel = "На головну"
 
 export const closeButtonLabel = "Закрити"
 
+export const tableRowActionLabels = Object.freeze({
+  edit: "Редагувати",
+  delete: "Видалити",
+  maintenance: "Технічне обслуговування",
+})
+
 export const routeFormSelectTexts = Object.freeze({
   startLocationPlaceholder: "Оберіть початкову локацію",
   destinationLocationPlaceholder: "Оберіть кінцеву локацію",

@@ -2,11 +2,12 @@
 
 import { useState } from "react"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
+import { Trash2 } from "lucide-react"
 import EditDriverModal from "@/components/edit/edit-driver-modal"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
+import { TableRowActionButton } from "@/components/tables/table-row-action-button"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
 import { formatDriverFullName } from "@/lib/formatters"
@@ -15,6 +16,7 @@ import {
   apiEndpoints,
   driversTableColumns,
   nothingFoundMessage,
+  tableRowActionLabels,
 } from "@/lib/constants"
 import { Driver, DriverSortField, HttpMethod, ListPageState } from "@/lib/types"
 
@@ -81,15 +83,14 @@ export function DriversTable({ drivers, listPageState }: DriversTableProps) {
               <TableCell className="text-center">
                 <div className="flex justify-center gap-2">
                   <EditDriverModal driver={driver} />
-                  <Button
+                  <TableRowActionButton
+                    icon={Trash2}
+                    label={tableRowActionLabels.delete}
                     variant="destructive"
-                    size="sm"
                     className="text-red-700 hover:text-red-800"
                     onClick={() => setDriverPendingDeletion(driver)}
                     disabled={isApiMutationRunning}
-                  >
-                    Видалити
-                  </Button>
+                  />
                 </div>
               </TableCell>
             </TableRow>
