@@ -89,7 +89,6 @@ export function RoutesPeriodForm({
             type="button"
             variant="outline"
             size="sm"
-            className="cursor-pointer"
             onClick={() =>
               handlePresetClick(routesPeriodPreset.createFormValues())
             }
@@ -115,18 +114,19 @@ export function RoutesPeriodForm({
             type="date"
             value={routesPeriodFormValues.periodEndDate}
             onChange={(event) =>
-              updateRoutesPeriodFormValues({ periodEndDate: event.target.value })
+              updateRoutesPeriodFormValues({
+                periodEndDate: event.target.value,
+              })
             }
           />
         </FormField>
         <div className="flex items-end gap-2">
-          <Button type="submit" className="flex-1 cursor-pointer">
+          <Button type="submit" className="flex-1">
             Сформувати звіт
           </Button>
           <Button
             type="button"
             variant="outline"
-            className="cursor-pointer"
             onClick={() => window.print()}
           >
             Друк

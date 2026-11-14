@@ -11,7 +11,7 @@ export default function NotFoundPage() {
       title="Сторінку не знайдено"
       description="Можливо, адресу введено з помилкою або сторінку було переміщено."
     >
-      <Button asChild className="cursor-pointer">
+      <Button asChild>
         <Link href={appRoutes.home}>{homeLinkLabel}</Link>
       </Button>
     </StatusMessagePage>

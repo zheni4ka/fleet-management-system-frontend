@@ -168,7 +168,8 @@ export default function AutoMaintenanceModal({
                 onClick={() => handleComplete(maintenanceRecord)}
                 disabled={isApiMutationRunning}
                 size="sm"
-                className="h-7 w-full bg-green-700 text-xs text-white hover:bg-green-800"
+                variant="success"
+                className="w-full text-xs"
               >
                 Завершити ремонт
               </Button>
@@ -184,8 +185,7 @@ export default function AutoMaintenanceModal({
       <IconActionButton
         icon={Wrench}
         label={iconActionLabels.maintenance}
-        variant="outline"
-        className="border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 hover:text-orange-800"
+        variant="warning"
         onClick={handleOpen}
       />
 

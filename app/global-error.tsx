@@ -28,7 +28,7 @@ export default function GlobalErrorPage({
           title={errorPageTitle}
           description="Застосунок зіткнувся з помилкою. Спробуйте оновити сторінку."
         >
-          <Button type="button" className="cursor-pointer" onClick={reset}>
+          <Button type="button" onClick={reset}>
             {retryButtonLabel}
           </Button>
         </StatusMessagePage>

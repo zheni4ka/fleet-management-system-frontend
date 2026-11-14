@@ -89,7 +89,6 @@ export function DispatchersTable({
                   icon={Trash2}
                   label={iconActionLabels.delete}
                   variant="destructive"
-                  className="text-red-700 hover:text-red-800"
                   onClick={() => setDispatcherPendingDeletion(dispatcher)}
                   disabled={isApiMutationRunning}
                 />

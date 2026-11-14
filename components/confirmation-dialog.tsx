@@ -74,7 +74,6 @@ export function ConfirmationDialog({
             variant="outline"
             disabled={isConfirming}
             onClick={onCancel}
-            className="cursor-pointer disabled:cursor-not-allowed"
           >
             Скасувати
           </Button>
@@ -83,7 +82,7 @@ export function ConfirmationDialog({
             type="button"
             aria-disabled={isConfirming}
             onClick={isConfirming ? undefined : onConfirm}
-            className="cursor-pointer bg-red-600 text-white hover:bg-red-700 aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+            variant="destructive-solid"
           >
             {isConfirming ? confirmingLabel : confirmLabel}
           </Button>

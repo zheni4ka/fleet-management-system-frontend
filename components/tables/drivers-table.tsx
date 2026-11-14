@@ -87,7 +87,6 @@ export function DriversTable({ drivers, listPageState }: DriversTableProps) {
                     icon={Trash2}
                     label={iconActionLabels.delete}
                     variant="destructive"
-                    className="text-red-700 hover:text-red-800"
                     onClick={() => setDriverPendingDeletion(driver)}
                     disabled={isApiMutationRunning}
                   />

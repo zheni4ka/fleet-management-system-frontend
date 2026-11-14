@@ -123,10 +123,7 @@ export default function AddRouteModal({
 
   return (
     <>
-      <Button
-        className="transition hover:bg-gray-700 motion-safe:duration-300 motion-safe:hover:scale-105"
-        onClick={() => setIsModalOpen(true)}
-      >
+      <Button hoverEffect="grow" onClick={() => setIsModalOpen(true)}>
         Додати маршрут
       </Button>
       <ModalWindow

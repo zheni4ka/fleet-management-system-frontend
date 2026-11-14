@@ -172,7 +172,8 @@ export function LoginForm({ returnPath, isSessionExpired }: LoginFormProps) {
           <Button
             type="submit"
             disabled={isLoginRequestRunning}
-            className="w-full cursor-pointer bg-blue-600 text-white transition-transform duration-200 hover:bg-blue-700 disabled:cursor-not-allowed motion-safe:active:scale-95"
+            variant="accent"
+            className="w-full motion-safe:active:scale-95"
           >
             {isLoginRequestRunning ? "Вхід..." : "Увійти"}
           </Button>

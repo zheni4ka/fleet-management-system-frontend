@@ -28,10 +28,10 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
       title={errorPageTitle}
       description="Не вдалося відобразити сторінку. Спробуйте ще раз або поверніться на головну."
     >
-      <Button type="button" className="cursor-pointer" onClick={reset}>
+      <Button type="button" onClick={reset}>
         {retryButtonLabel}
       </Button>
-      <Button asChild variant="outline" className="cursor-pointer">
+      <Button asChild variant="outline">
         <Link href={appRoutes.home}>{homeLinkLabel}</Link>
       </Button>
     </StatusMessagePage>

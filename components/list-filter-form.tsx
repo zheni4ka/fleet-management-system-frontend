@@ -166,13 +166,13 @@ export function ListFilterForm<TSortField extends string>({
           </FormField>
         ))}
         <div className="flex items-end gap-2">
-          <Button type="submit" className="flex-1 cursor-pointer">
+          <Button type="submit" className="flex-1">
             Знайти
           </Button>
           <Button
             type="button"
             variant="outline"
-            className="flex-1 cursor-pointer"
+            className="flex-1"
             onClick={handleReset}
           >
             Скинути

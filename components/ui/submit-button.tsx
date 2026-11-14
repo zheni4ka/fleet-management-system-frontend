@@ -11,7 +11,10 @@ export function SubmitButton({ isSubmitting, children }: SubmitButtonProps) {
     <Button
       type="submit"
       disabled={isSubmitting}
-      className="mt-2 h-9 bg-blue-600 text-white transition hover:bg-blue-700 motion-safe:duration-300 motion-safe:hover:scale-[1.02]"
+      variant="accent"
+      size="lg"
+      hoverEffect="grow-subtle"
+      className="mt-2"
     >
       {isSubmitting ? "Збереження..." : children}
     </Button>

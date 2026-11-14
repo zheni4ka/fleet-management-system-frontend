@@ -74,7 +74,6 @@ export function RouteCard({
             icon={Trash2}
             label={iconActionLabels.delete}
             variant="destructive"
-            className="text-red-700 hover:text-red-800"
             disabled={isRouteUpdating}
             onClick={onDelete}
           />
@@ -104,7 +103,8 @@ export function RouteCard({
                 type="button"
                 size="sm"
                 disabled={isRouteUpdating}
-                className={`flex-1 cursor-pointer ${routeStatusAction.className}`}
+                variant={routeStatusAction.variant}
+                className="flex-1"
                 onClick={() =>
                   onStatusChange(routeStatusAction.targetRouteStatus)
                 }

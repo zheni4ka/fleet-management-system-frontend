@@ -86,7 +86,6 @@ export function LocationsTable({
                   icon={Trash2}
                   label={iconActionLabels.delete}
                   variant="destructive"
-                  className="text-red-700 hover:text-red-800"
                   onClick={() => setLocationPendingDeletion(location)}
                   disabled={isApiMutationRunning}
                 />

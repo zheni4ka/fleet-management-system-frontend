@@ -99,7 +99,6 @@ export function AutosTable({ autos, listPageState }: AutosTableProps) {
                     icon={Trash2}
                     label={iconActionLabels.delete}
                     variant="destructive"
-                    className="text-red-700 hover:text-red-800"
                     onClick={() => setAutoPendingDeletion(auto)}
                     disabled={isApiMutationRunning}
                   />

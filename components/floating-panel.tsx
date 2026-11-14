@@ -134,7 +134,6 @@ export function FloatingPanel({
             type="button"
             variant="ghost"
             size="sm"
-            className="cursor-pointer"
             onClick={() => saveFloatingPanelState({ position: null })}
           >
             <Pin />
@@ -148,7 +147,6 @@ export function FloatingPanel({
           aria-expanded={!isCollapsed}
           aria-label={isCollapsed ? "Розгорнути панель" : "Згорнути панель"}
           title={isCollapsed ? "Розгорнути панель" : "Згорнути панель"}
-          className="cursor-pointer"
           onClick={() => saveFloatingPanelState({ isCollapsed: !isCollapsed })}
         >
           {isCollapsed ? <ChevronDown /> : <ChevronUp />}

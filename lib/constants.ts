@@ -295,20 +295,19 @@ export const routeStatusActions: ReadonlyArray<RouteStatusAction> =
       targetRouteStatus: RouteStatus.InProgress,
       label: "Розпочати",
       icon: Play,
-      className: "bg-blue-600 text-white hover:bg-blue-700",
+      variant: "accent",
     },
     {
       targetRouteStatus: RouteStatus.Completed,
       label: "Завершити",
       icon: CheckCircle,
-      className: "bg-green-700 text-white hover:bg-green-800",
+      variant: "success",
     },
     {
       targetRouteStatus: RouteStatus.Cancelled,
       label: "Скасувати",
       icon: XCircle,
-      className:
-        "border-orange-200 bg-white text-orange-700 hover:bg-orange-50 hover:text-orange-800",
+      variant: "warning",
     },
   ])
 

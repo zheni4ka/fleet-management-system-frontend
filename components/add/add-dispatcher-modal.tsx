@@ -47,10 +47,7 @@ export default function AddDispatcherModal() {
 
   return (
     <>
-      <Button
-        className="bg-blue-600 text-white hover:bg-blue-700"
-        onClick={() => setIsModalOpen(true)}
-      >
+      <Button variant="accent" onClick={() => setIsModalOpen(true)}>
         + Додати диспетчера
       </Button>
       <ModalWindow
