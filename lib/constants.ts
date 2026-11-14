@@ -123,6 +123,27 @@ export const routeSortOptions: ReadonlyArray<SortOption<RouteSortField>> =
 
 export const nothingFoundMessage = "Нічого не знайдено за вашим запитом."
 
+export const errorPageTitle = "Щось пішло не так"
+
+export const retryButtonLabel = "Спробувати ще"
+
+export const homeLinkLabel = "На головну"
+
+export const closeButtonLabel = "Закрити"
+
+export const routeFormSelectTexts = Object.freeze({
+  startLocationPlaceholder: "Оберіть початкову локацію",
+  destinationLocationPlaceholder: "Оберіть кінцеву локацію",
+  locationSearchPlaceholder: "Пошук міста або країни...",
+  locationEmptyMessage: "Локацію не знайдено",
+  driverPlaceholder: "Оберіть водія",
+  driverSearchPlaceholder: "Пошук за ПІБ або посвідченням...",
+  driverEmptyMessage: "Водія не знайдено",
+  autoPlaceholder: "Оберіть авто",
+  autoSearchPlaceholder: "Пошук за маркою або номером...",
+  autoEmptyMessage: "Автомобіль не знайдено",
+})
+
 export const autoStatusLabels: Readonly<Record<AutoStatus, string>> =
   Object.freeze({
     [AutoStatus.Available]: "Доступне",

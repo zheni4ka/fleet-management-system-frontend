@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
+import { closeButtonLabel } from "@/lib/constants"
 
 interface ModalProps {
   isOpen: boolean
@@ -58,7 +59,7 @@ export default function ModalWindow({
         <button
           type="button"
           onClick={onClose}
-          aria-label="Закрити"
+          aria-label={closeButtonLabel}
           className="cursor-pointer rounded-md text-2xl leading-none font-bold text-gray-500 hover:text-gray-700"
         >
           <span aria-hidden="true">&times;</span>

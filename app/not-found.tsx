@@ -2,7 +2,7 @@ import Link from "next/link"
 import { SearchX } from "lucide-react"
 import { StatusMessagePage } from "@/components/status-message-page"
 import { Button } from "@/components/ui/button"
-import { appRoutes } from "@/lib/constants"
+import { appRoutes, homeLinkLabel } from "@/lib/constants"
 
 export default function NotFoundPage() {
   return (
@@ -12,7 +12,7 @@ export default function NotFoundPage() {
       description="Можливо, адресу введено з помилкою або сторінку було переміщено."
     >
       <Button asChild className="cursor-pointer">
-        <Link href={appRoutes.home}>На головну</Link>
+        <Link href={appRoutes.home}>{homeLinkLabel}</Link>
       </Button>
     </StatusMessagePage>
   )

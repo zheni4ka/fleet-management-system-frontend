@@ -13,6 +13,7 @@ import { sendApiRequest } from "@/lib/api-client"
 import {
   allowedRouteStatusTransitions,
   apiEndpoints,
+  routeFormSelectTexts,
   routeStatusLabels,
 } from "@/lib/constants"
 import {
@@ -132,9 +133,11 @@ export default function EditRouteModal({
                 onSelectedValueChange={(startLocationId) =>
                   updateEditRouteFormValues({ startLocationId })
                 }
-                placeholder="Оберіть початкову локацію"
-                searchPlaceholder="Пошук міста або країни..."
-                emptyMessage="Локацію не знайдено"
+                placeholder={routeFormSelectTexts.startLocationPlaceholder}
+                searchPlaceholder={
+                  routeFormSelectTexts.locationSearchPlaceholder
+                }
+                emptyMessage={routeFormSelectTexts.locationEmptyMessage}
               />
             </FormField>
             <FormField label="Кінцева локація">
@@ -144,9 +147,13 @@ export default function EditRouteModal({
                 onSelectedValueChange={(destinationLocationId) =>
                   updateEditRouteFormValues({ destinationLocationId })
                 }
-                placeholder="Оберіть кінцеву локацію"
-                searchPlaceholder="Пошук міста або країни..."
-                emptyMessage="Локацію не знайдено"
+                placeholder={
+                  routeFormSelectTexts.destinationLocationPlaceholder
+                }
+                searchPlaceholder={
+                  routeFormSelectTexts.locationSearchPlaceholder
+                }
+                emptyMessage={routeFormSelectTexts.locationEmptyMessage}
               />
             </FormField>
           </div>
@@ -159,9 +166,9 @@ export default function EditRouteModal({
                 onSelectedValueChange={(driverId) =>
                   updateEditRouteFormValues({ driverId })
                 }
-                placeholder="Оберіть водія"
-                searchPlaceholder="Пошук за ПІБ або посвідченням..."
-                emptyMessage="Водія не знайдено"
+                placeholder={routeFormSelectTexts.driverPlaceholder}
+                searchPlaceholder={routeFormSelectTexts.driverSearchPlaceholder}
+                emptyMessage={routeFormSelectTexts.driverEmptyMessage}
               />
             </FormField>
             <FormField label="Автомобіль">
@@ -171,9 +178,9 @@ export default function EditRouteModal({
                 onSelectedValueChange={(autoId) =>
                   updateEditRouteFormValues({ autoId })
                 }
-                placeholder="Оберіть авто"
-                searchPlaceholder="Пошук за маркою або номером..."
-                emptyMessage="Автомобіль не знайдено"
+                placeholder={routeFormSelectTexts.autoPlaceholder}
+                searchPlaceholder={routeFormSelectTexts.autoSearchPlaceholder}
+                emptyMessage={routeFormSelectTexts.autoEmptyMessage}
               />
             </FormField>
           </div>

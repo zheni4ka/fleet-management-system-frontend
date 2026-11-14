@@ -11,7 +11,11 @@ import { SearchableSelect } from "@/components/ui/searchable-select"
 import { SubmitButton } from "@/components/ui/submit-button"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints, routeStatusLabels } from "@/lib/constants"
+import {
+  apiEndpoints,
+  routeFormSelectTexts,
+  routeStatusLabels,
+} from "@/lib/constants"
 import {
   createAutoSearchableSelectOptions,
   createDriverSearchableSelectOptions,
@@ -139,9 +143,11 @@ export default function AddRouteModal({
                 onSelectedValueChange={(startLocationId) =>
                   updateRouteFormValues({ startLocationId })
                 }
-                placeholder="Оберіть початкову локацію"
-                searchPlaceholder="Пошук міста або країни..."
-                emptyMessage="Локацію не знайдено"
+                placeholder={routeFormSelectTexts.startLocationPlaceholder}
+                searchPlaceholder={
+                  routeFormSelectTexts.locationSearchPlaceholder
+                }
+                emptyMessage={routeFormSelectTexts.locationEmptyMessage}
               />
             </FormField>
             <FormField label="Кінцева локація">
@@ -151,9 +157,13 @@ export default function AddRouteModal({
                 onSelectedValueChange={(destinationLocationId) =>
                   updateRouteFormValues({ destinationLocationId })
                 }
-                placeholder="Оберіть кінцеву локацію"
-                searchPlaceholder="Пошук міста або країни..."
-                emptyMessage="Локацію не знайдено"
+                placeholder={
+                  routeFormSelectTexts.destinationLocationPlaceholder
+                }
+                searchPlaceholder={
+                  routeFormSelectTexts.locationSearchPlaceholder
+                }
+                emptyMessage={routeFormSelectTexts.locationEmptyMessage}
               />
             </FormField>
           </div>
@@ -187,9 +197,9 @@ export default function AddRouteModal({
                 onSelectedValueChange={(driverId) =>
                   updateRouteFormValues({ driverId })
                 }
-                placeholder="Оберіть водія"
-                searchPlaceholder="Пошук за ПІБ або посвідченням..."
-                emptyMessage="Водія не знайдено"
+                placeholder={routeFormSelectTexts.driverPlaceholder}
+                searchPlaceholder={routeFormSelectTexts.driverSearchPlaceholder}
+                emptyMessage={routeFormSelectTexts.driverEmptyMessage}
               />
             </FormField>
             <FormField label="Автомобіль">
@@ -199,9 +209,9 @@ export default function AddRouteModal({
                 onSelectedValueChange={(autoId) =>
                   updateRouteFormValues({ autoId })
                 }
-                placeholder="Оберіть авто"
-                searchPlaceholder="Пошук за маркою або номером..."
-                emptyMessage="Автомобіль не знайдено"
+                placeholder={routeFormSelectTexts.autoPlaceholder}
+                searchPlaceholder={routeFormSelectTexts.autoSearchPlaceholder}
+                emptyMessage={routeFormSelectTexts.autoEmptyMessage}
               />
             </FormField>
             <FormField label="Статус маршруту">
