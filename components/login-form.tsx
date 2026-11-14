@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState, type FormEvent } from "react"
+import { useEffect, useId, useState, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
+import { Eye, EyeOff } from "lucide-react"
 import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -34,6 +35,8 @@ export function LoginForm({ returnPath, isSessionExpired }: LoginFormProps) {
     null
   )
   const [isLoginRequestRunning, setIsLoginRequestRunning] = useState(false)
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false)
+  const passwordInputId = useId()
 
   useEffect(() => {
     if (!isSessionExpired) {
@@ -117,28 +120,59 @@ export function LoginForm({ returnPath, isSessionExpired }: LoginFormProps) {
               <Input
                 type="text"
                 required
+                autoFocus
                 autoComplete="username"
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
-                placeholder="admin або admin@gmail.com"
+                placeholder="Введіть ім'я користувача або email"
               />
             </FormField>
-            <FormField label="Пароль">
-              <Input
-                type="password"
-                required
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="••••••••"
-              />
-            </FormField>
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor={passwordInputId}
+                className="text-sm font-medium text-slate-700"
+              >
+                Пароль
+              </label>
+              <div className="relative">
+                <Input
+                  id={passwordInputId}
+                  type={isPasswordVisible ? "text" : "password"}
+                  required
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder="••••••••"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  aria-label={
+                    isPasswordVisible ? "Сховати пароль" : "Показати пароль"
+                  }
+                  aria-pressed={isPasswordVisible}
+                  aria-controls={passwordInputId}
+                  onClick={() =>
+                    setIsPasswordVisible(
+                      (isPasswordVisibleBefore) => !isPasswordVisibleBefore
+                    )
+                  }
+                  className="absolute inset-y-0 right-0 flex w-9 cursor-pointer items-center justify-center rounded-r-lg text-slate-500 hover:text-slate-800"
+                >
+                  {isPasswordVisible ? (
+                    <EyeOff aria-hidden="true" className="size-4" />
+                  ) : (
+                    <Eye aria-hidden="true" className="size-4" />
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
 
           <Button
             type="submit"
             disabled={isLoginRequestRunning}
-            className="w-full bg-blue-600 text-white transition-transform duration-200 hover:bg-blue-700 active:scale-95"
+            className="w-full cursor-pointer bg-blue-600 text-white transition-transform duration-200 hover:bg-blue-700 disabled:cursor-not-allowed motion-safe:active:scale-95"
           >
             {isLoginRequestRunning ? "Вхід..." : "Увійти"}
           </Button>
