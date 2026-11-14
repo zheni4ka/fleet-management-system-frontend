@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input"
 import { FormField } from "@/components/ui/form-field"
 import ModalWindow from "@/components/ui/modal-window"
 import { SubmitButton } from "@/components/ui/submit-button"
-import { TableRowActionButton } from "@/components/tables/table-row-action-button"
+import { IconActionButton } from "@/components/icon-action-button"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { fetchApiData, sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints, tableRowActionLabels } from "@/lib/constants"
+import { apiEndpoints, iconActionLabels } from "@/lib/constants"
 import { formatDate } from "@/lib/formatters"
 import { AutoMaintenance, HttpMethod, MaintenanceFormValues } from "@/lib/types"
 
@@ -181,9 +181,9 @@ export default function AutoMaintenanceModal({
 
   return (
     <>
-      <TableRowActionButton
+      <IconActionButton
         icon={Wrench}
-        label={tableRowActionLabels.maintenance}
+        label={iconActionLabels.maintenance}
         variant="outline"
         className="border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 hover:text-orange-800"
         onClick={handleOpen}

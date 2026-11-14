@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react"
 import { Pencil } from "lucide-react"
 import toast from "react-hot-toast"
+import { IconActionButton } from "@/components/icon-action-button"
 import { NativeSelect } from "@/components/ui/native-select"
 import { FormField } from "@/components/ui/form-field"
 import ModalWindow from "@/components/ui/modal-window"
@@ -13,6 +14,7 @@ import { sendApiRequest } from "@/lib/api-client"
 import {
   allowedRouteStatusTransitions,
   apiEndpoints,
+  iconActionLabels,
   routeFormSelectTexts,
   routeStatusLabels,
 } from "@/lib/constants"
@@ -104,21 +106,19 @@ export default function EditRouteModal({
     }
   }
 
+  if (!isRouteEditable) {
+    return null
+  }
+
   return (
     <>
-      <button
-        type="button"
-        disabled={isRouteUpdating || !isRouteEditable}
-        title={
-          isRouteEditable
-            ? undefined
-            : "Завершені та скасовані маршрути не редагуються"
-        }
-        className="flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 p-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+      <IconActionButton
+        icon={Pencil}
+        label={iconActionLabels.edit}
+        variant="outline"
+        disabled={isRouteUpdating}
         onClick={handleOpen}
-      >
-        <Pencil className="mr-2 h-4 w-4" /> Редагувати
-      </button>
+      />
       <ModalWindow
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

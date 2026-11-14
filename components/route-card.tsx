@@ -1,6 +1,13 @@
 import * as React from "react"
 import { Trash2 } from "lucide-react"
-import { routeStatusActions, routeStatusLabels } from "@/lib/constants"
+import { IconActionButton } from "@/components/icon-action-button"
+import { Button } from "@/components/ui/button"
+import {
+  iconActionLabels,
+  routeStatusActions,
+  routeStatusBadgeClassNames,
+  routeStatusLabels,
+} from "@/lib/constants"
 import { formatDateTime } from "@/lib/formatters"
 import { canRouteStatusChangeTo } from "@/lib/route-status"
 import { Route, RouteStatus } from "@/lib/types"
@@ -18,9 +25,6 @@ interface RouteCardProps {
   onDelete: () => void
 }
 
-const routeActionButtonClassName =
-  "flex w-full cursor-pointer items-center justify-center rounded-md p-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
-
 export function RouteCard({
   route,
   startLocationName,
@@ -33,93 +37,87 @@ export function RouteCard({
   onStatusChange,
   onDelete,
 }: RouteCardProps) {
-  const getIsStatusActionDisabled = (targetRouteStatus: RouteStatus) =>
-    isRouteUpdating || !canRouteStatusChangeTo(route.status, targetRouteStatus)
+  const availableRouteStatusActions = routeStatusActions.filter(
+    (routeStatusAction) =>
+      canRouteStatusChangeTo(route.status, routeStatusAction.targetRouteStatus)
+  )
 
   const routeDetailRows = [
-    {
-      label: "Виїзд",
-      value: formatDateTime(route.departureTime),
-      valueClassName: "font-medium text-slate-700",
-    },
-    {
-      label: "Прибуття",
-      value: formatDateTime(route.arrivalTime),
-      valueClassName: "font-medium text-slate-700",
-    },
-    {
-      label: "Статус",
-      value: routeStatusLabels[route.status],
-      valueClassName: "font-semibold text-indigo-600",
-    },
+    { label: "Виїзд", value: formatDateTime(route.departureTime) },
+    { label: "Прибуття", value: formatDateTime(route.arrivalTime) },
+    { label: "Авто", value: autoTitle },
+    { label: "Водій", value: driverFullName },
   ]
 
   return (
-    <div className="relative flex h-full flex-col rounded-2xl border bg-white p-5 shadow-sm transition-shadow duration-200 hover:shadow-md">
-      <div className="shrink-0 pl-3">
-        <h3 className="mb-2 text-lg leading-tight font-bold text-slate-800">
-          <button
-            type="button"
-            onClick={onSelect}
-            title="Показати маршрут на карті"
-            className="cursor-pointer rounded-md text-left after:absolute after:inset-0 after:rounded-2xl"
+    <article className="relative flex h-full flex-col gap-3 rounded-xl border bg-white p-4 shadow-sm transition-shadow duration-200 hover:shadow-md">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-xs font-medium text-slate-500">
+            #{route.id}
+          </span>
+          <span
+            className={`rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${routeStatusBadgeClassNames[route.status]}`}
           >
-            {startLocationName} → {destinationLocationName}
-          </button>
-        </h3>
-
-        <div className="mb-4 space-y-1">
-          {routeDetailRows.map((routeDetailRow) => (
-            <p key={routeDetailRow.label} className="text-xs text-slate-500">
-              {routeDetailRow.label}:{" "}
-              <span className={routeDetailRow.valueClassName}>
-                {routeDetailRow.value}
-              </span>
-            </p>
-          ))}
+            {routeStatusLabels[route.status]}
+          </span>
         </div>
-
-        <div className="mb-5 space-y-1 rounded-xl border border-slate-100 bg-slate-50 p-2.5">
-          <p className="text-xs font-medium text-slate-600">🚗 {autoTitle}</p>
-          <p className="text-xs font-medium text-slate-600">
-            👤 {driverFullName}
-          </p>
+        <div className="relative z-10 flex items-center gap-1">
+          {editRouteAction}
+          <IconActionButton
+            icon={Trash2}
+            label={iconActionLabels.delete}
+            variant="destructive"
+            className="text-red-700 hover:text-red-800"
+            disabled={isRouteUpdating}
+            onClick={onDelete}
+          />
         </div>
       </div>
 
-      <div className="relative z-10 mt-auto flex w-full cursor-default flex-col gap-2 pt-4">
-        {routeStatusActions.map((routeStatusAction) => {
-          const RouteStatusActionIcon = routeStatusAction.icon
-          return (
-            <button
-              key={routeStatusAction.targetRouteStatus}
-              type="button"
-              disabled={getIsStatusActionDisabled(
-                routeStatusAction.targetRouteStatus
-              )}
-              className={`${routeActionButtonClassName} ${routeStatusAction.className}`}
-              onClick={() =>
-                onStatusChange(routeStatusAction.targetRouteStatus)
-              }
-            >
-              <RouteStatusActionIcon className="mr-2 h-4 w-4" />{" "}
-              {routeStatusAction.label}
-            </button>
-          )
-        })}
-
-        {editRouteAction}
-
+      <h3 className="leading-snug font-semibold text-slate-900">
         <button
           type="button"
-          disabled={isRouteUpdating}
-          className={`${routeActionButtonClassName} mt-1 bg-red-600 text-white hover:bg-red-700`}
-          onClick={onDelete}
+          onClick={onSelect}
+          title="Показати маршрут на карті"
+          className="cursor-pointer rounded-md text-left after:absolute after:inset-0 after:rounded-xl"
         >
-          <Trash2 className="mr-2 h-4 w-4" /> Видалити
+          {startLocationName} → {destinationLocationName}
         </button>
-      </div>
-    </div>
+      </h3>
+
+      <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-sm">
+        {routeDetailRows.map((routeDetailRow) => (
+          <React.Fragment key={routeDetailRow.label}>
+            <dt className="text-slate-500">{routeDetailRow.label}</dt>
+            <dd className="truncate text-slate-800">{routeDetailRow.value}</dd>
+          </React.Fragment>
+        ))}
+      </dl>
+
+      {availableRouteStatusActions.length > 0 && (
+        <div className="relative z-10 mt-auto flex gap-2 border-t border-slate-100 pt-3">
+          {availableRouteStatusActions.map((routeStatusAction) => {
+            const RouteStatusActionIcon = routeStatusAction.icon
+            return (
+              <Button
+                key={routeStatusAction.targetRouteStatus}
+                type="button"
+                size="sm"
+                disabled={isRouteUpdating}
+                className={`flex-1 cursor-pointer ${routeStatusAction.className}`}
+                onClick={() =>
+                  onStatusChange(routeStatusAction.targetRouteStatus)
+                }
+              >
+                <RouteStatusActionIcon aria-hidden="true" />
+                {routeStatusAction.label}
+              </Button>
+            )
+          })}
+        </div>
+      )}
+    </article>
   )
 }
 

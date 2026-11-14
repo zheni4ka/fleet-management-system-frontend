@@ -5,11 +5,11 @@ import toast from "react-hot-toast"
 import { Pencil } from "lucide-react"
 import ModalWindow from "@/components/ui/modal-window"
 import { SubmitButton } from "@/components/ui/submit-button"
-import { TableRowActionButton } from "@/components/tables/table-row-action-button"
+import { IconActionButton } from "@/components/icon-action-button"
 import { AutoFormFields } from "@/components/forms/auto-form-fields"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints, tableRowActionLabels } from "@/lib/constants"
+import { apiEndpoints, iconActionLabels } from "@/lib/constants"
 import {
   createAutoFormValuesFromAuto,
   createAutoRequestBody,
@@ -60,9 +60,9 @@ export default function EditAutoModal({ auto }: EditAutoModalProps) {
 
   return (
     <>
-      <TableRowActionButton
+      <IconActionButton
         icon={Pencil}
-        label={tableRowActionLabels.edit}
+        label={iconActionLabels.edit}
         variant="outline"
         onClick={handleOpen}
       />

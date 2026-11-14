@@ -131,7 +131,7 @@ export const homeLinkLabel = "На головну"
 
 export const closeButtonLabel = "Закрити"
 
-export const tableRowActionLabels = Object.freeze({
+export const iconActionLabels = Object.freeze({
   edit: "Редагувати",
   delete: "Видалити",
   maintenance: "Технічне обслуговування",
@@ -163,6 +163,14 @@ export const routeStatusLabels: Readonly<Record<RouteStatus, string>> =
     [RouteStatus.InProgress]: "В процесі",
     [RouteStatus.Completed]: "Виконано",
     [RouteStatus.Cancelled]: "Скасовано",
+  })
+
+export const routeStatusBadgeClassNames: Readonly<Record<RouteStatus, string>> =
+  Object.freeze({
+    [RouteStatus.Planned]: "bg-indigo-50 text-indigo-700 ring-indigo-700/15",
+    [RouteStatus.InProgress]: "bg-blue-50 text-blue-700 ring-blue-700/15",
+    [RouteStatus.Completed]: "bg-green-50 text-green-700 ring-green-700/15",
+    [RouteStatus.Cancelled]: "bg-slate-100 text-slate-600 ring-slate-600/15",
   })
 
 export const activeRouteStatuses: ReadonlyArray<RouteStatus> = Object.freeze([
@@ -298,7 +306,8 @@ export const routeStatusActions: ReadonlyArray<RouteStatusAction> =
       targetRouteStatus: RouteStatus.Cancelled,
       label: "Скасувати",
       icon: XCircle,
-      className: "border border-orange-200 text-orange-700 hover:bg-orange-50",
+      className:
+        "border-orange-200 bg-white text-orange-700 hover:bg-orange-50 hover:text-orange-800",
     },
   ])
 

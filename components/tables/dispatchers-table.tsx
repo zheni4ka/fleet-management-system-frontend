@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Trash2 } from "lucide-react"
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
-import { TableRowActionButton } from "@/components/tables/table-row-action-button"
+import { IconActionButton } from "@/components/icon-action-button"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
 import { hasActiveListFilters } from "@/lib/search-params"
@@ -14,7 +14,7 @@ import {
   apiEndpoints,
   dispatchersTableColumns,
   nothingFoundMessage,
-  tableRowActionLabels,
+  iconActionLabels,
 } from "@/lib/constants"
 import {
   Dispatcher,
@@ -85,9 +85,9 @@ export function DispatchersTable({
               </TableCell>
               <TableCell>{dispatcher.email ?? "—"}</TableCell>
               <TableCell className="text-center">
-                <TableRowActionButton
+                <IconActionButton
                   icon={Trash2}
-                  label={tableRowActionLabels.delete}
+                  label={iconActionLabels.delete}
                   variant="destructive"
                   className="text-red-700 hover:text-red-800"
                   onClick={() => setDispatcherPendingDeletion(dispatcher)}
