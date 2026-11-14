@@ -63,7 +63,7 @@ export default function EditDriverModal({ driver }: EditDriverModalProps) {
       <Button
         variant="outline"
         size="sm"
-        className="transition-transform duration-300 hover:scale-105"
+        className="transition motion-safe:duration-300 motion-safe:hover:scale-105"
         onClick={handleOpen}
       >
         Редагувати

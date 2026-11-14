@@ -84,6 +84,7 @@ export function DriversTable({ drivers, listPageState }: DriversTableProps) {
                   <Button
                     variant="destructive"
                     size="sm"
+                    className="text-red-700 hover:text-red-800"
                     onClick={() => setDriverPendingDeletion(driver)}
                     disabled={isApiMutationRunning}
                   >

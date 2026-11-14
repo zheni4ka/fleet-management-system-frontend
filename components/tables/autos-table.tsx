@@ -96,6 +96,7 @@ export function AutosTable({ autos, listPageState }: AutosTableProps) {
                   <Button
                     variant="destructive"
                     size="sm"
+                    className="text-red-700 hover:text-red-800"
                     onClick={() => setAutoPendingDeletion(auto)}
                     disabled={isApiMutationRunning}
                   >

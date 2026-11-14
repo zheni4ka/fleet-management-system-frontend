@@ -48,7 +48,7 @@ export function AuditLogsTable({
               </TableCell>
               <TableCell>
                 {auditLog.dispatcherUsername ?? (
-                  <span className="text-slate-400 italic">
+                  <span className="text-slate-500 italic">
                     {deletedUserLabel}
                   </span>
                 )}

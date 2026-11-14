@@ -12,11 +12,7 @@ import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh
 import { fetchApiData, sendApiRequest } from "@/lib/api-client"
 import { apiEndpoints } from "@/lib/constants"
 import { formatDate } from "@/lib/formatters"
-import {
-  AutoMaintenance,
-  HttpMethod,
-  MaintenanceFormValues,
-} from "@/lib/types"
+import { AutoMaintenance, HttpMethod, MaintenanceFormValues } from "@/lib/types"
 
 interface AutoMaintenanceModalProps {
   autoId: number
@@ -171,7 +167,7 @@ export default function AutoMaintenanceModal({
                 onClick={() => handleComplete(maintenanceRecord)}
                 disabled={isApiMutationRunning}
                 size="sm"
-                className="h-7 w-full bg-green-600 text-xs text-white hover:bg-green-700"
+                className="h-7 w-full bg-green-700 text-xs text-white hover:bg-green-800"
               >
                 Завершити ремонт
               </Button>

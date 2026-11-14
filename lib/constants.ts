@@ -265,13 +265,13 @@ export const routeStatusActions: ReadonlyArray<RouteStatusAction> =
       targetRouteStatus: RouteStatus.Completed,
       label: "Завершити",
       icon: CheckCircle,
-      className: "bg-green-600 text-white hover:bg-green-700",
+      className: "bg-green-700 text-white hover:bg-green-800",
     },
     {
       targetRouteStatus: RouteStatus.Cancelled,
       label: "Скасувати",
       icon: XCircle,
-      className: "border border-orange-200 text-orange-600 hover:bg-orange-50",
+      className: "border border-orange-200 text-orange-700 hover:bg-orange-50",
     },
   ])
 

@@ -55,13 +55,17 @@ export function RouteCard({
   ]
 
   return (
-    <div
-      onClick={onSelect}
-      className="relative flex h-full cursor-pointer flex-col rounded-2xl border bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-md"
-    >
+    <div className="relative flex h-full flex-col rounded-2xl border bg-white p-5 shadow-sm transition-shadow duration-200 hover:shadow-md">
       <div className="shrink-0 pl-3">
         <h3 className="mb-2 text-lg leading-tight font-bold text-slate-800">
-          {startLocationName} → {destinationLocationName}
+          <button
+            type="button"
+            onClick={onSelect}
+            title="Показати маршрут на карті"
+            className="cursor-pointer rounded-md text-left after:absolute after:inset-0 after:rounded-2xl"
+          >
+            {startLocationName} → {destinationLocationName}
+          </button>
         </h3>
 
         <div className="mb-4 space-y-1">
@@ -83,10 +87,7 @@ export function RouteCard({
         </div>
       </div>
 
-      <div
-        className="mt-auto flex w-full cursor-default flex-col gap-2 pt-4"
-        onClick={(event) => event.stopPropagation()}
-      >
+      <div className="relative z-10 mt-auto flex w-full cursor-default flex-col gap-2 pt-4">
         {routeStatusActions.map((routeStatusAction) => {
           const RouteStatusActionIcon = routeStatusAction.icon
           return (

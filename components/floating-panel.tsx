@@ -115,7 +115,10 @@ export function FloatingPanel({
           onPointerCancel={handleDragHandlePointerRelease}
           className="flex min-w-0 flex-1 cursor-grab touch-none items-center gap-2 select-none active:cursor-grabbing"
         >
-          <GripVertical className="h-4 w-4 shrink-0 text-slate-400" />
+          <GripVertical
+            aria-hidden="true"
+            className="h-4 w-4 shrink-0 text-slate-500"
+          />
           <h2 className="truncate text-sm font-semibold text-slate-700">
             {title}
           </h2>

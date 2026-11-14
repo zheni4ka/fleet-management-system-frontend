@@ -53,7 +53,7 @@ export default function AddAutoModal() {
   return (
     <>
       <Button
-        className="transition-transform duration-300 hover:scale-105 hover:bg-gray-700"
+        className="transition hover:bg-gray-700 motion-safe:duration-300 motion-safe:hover:scale-105"
         onClick={() => setIsModalOpen(true)}
       >
         Додати автомобіль

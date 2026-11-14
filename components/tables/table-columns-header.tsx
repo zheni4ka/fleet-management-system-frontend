@@ -18,13 +18,18 @@ export function TableColumnsHeader<TSortField extends string>({
 }: TableColumnsHeaderProps<TSortField>) {
   const renderSortDirectionIcon = (sortField: TSortField) => {
     if (listPageState?.listQuery.sort !== sortField) {
-      return <ArrowUpDown className="h-3.5 w-3.5 text-slate-400" />
+      return (
+        <ArrowUpDown
+          aria-hidden="true"
+          className="h-3.5 w-3.5 text-slate-500"
+        />
+      )
     }
     return listPageState.listQuery.sortDirection ===
       SortDirection.Descending ? (
-      <ArrowDown className="h-3.5 w-3.5" />
+      <ArrowDown aria-hidden="true" className="h-3.5 w-3.5" />
     ) : (
-      <ArrowUp className="h-3.5 w-3.5" />
+      <ArrowUp aria-hidden="true" className="h-3.5 w-3.5" />
     )
   }
 

@@ -86,6 +86,7 @@ export function DispatchersTable({
                 <Button
                   variant="destructive"
                   size="sm"
+                  className="text-red-700 hover:text-red-800"
                   onClick={() => setDispatcherPendingDeletion(dispatcher)}
                   disabled={isApiMutationRunning}
                 >

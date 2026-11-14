@@ -40,7 +40,7 @@ function KpiCard({
         </div>
         <p className="mt-1 text-sm text-slate-500">{description}</p>
       </div>
-      <div className="absolute inset-x-0 bottom-0 h-1 scale-x-0 bg-linear-to-r from-indigo-500 to-blue-500 transition-transform duration-300 group-hover:scale-x-100" />
+      <div className="absolute inset-x-0 bottom-0 h-1 scale-x-0 bg-linear-to-r from-indigo-500 to-blue-500 group-hover:scale-x-100 motion-safe:transition-transform motion-safe:duration-300" />
     </div>
   )
 }

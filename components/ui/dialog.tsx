@@ -74,9 +74,8 @@ function DialogContent({
               className="absolute top-2 right-2"
               size="icon-sm"
             >
-              <XIcon
-              />
-              <span className="sr-only">Close</span>
+              <XIcon />
+              <span className="sr-only">Закрити</span>
             </Button>
           </DialogPrimitive.Close>
         )}
