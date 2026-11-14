@@ -1,5 +1,6 @@
-import { jwtClaimNames } from "@/lib/constants"
+import { jwtClaimNames, millisecondsPerSecond } from "@/lib/constants"
 import { UserRole } from "@/lib/types"
+import { findEnumValue } from "@/lib/utils"
 
 function decodeBase64UrlToText(base64UrlText: string): string {
   const base64Text = base64UrlText.replace(/-/g, "+").replace(/_/g, "/")
@@ -13,37 +14,60 @@ function decodeBase64UrlToText(base64UrlText: string): string {
   return new TextDecoder().decode(decodedBytes)
 }
 
-export function getUserRolesFromAuthToken(
+function decodeAuthTokenPayload(
   authToken: string
-): ReadonlyArray<string> {
+): Record<string, unknown> | null {
   const encodedAuthTokenPayload = authToken.split(".")[1]
   if (encodedAuthTokenPayload === undefined) {
     console.error("Токен авторизації має некоректний формат.")
-    return []
+    return null
   }
 
   try {
-    const authTokenPayload: Record<string, unknown> = JSON.parse(
+    const authTokenPayload: unknown = JSON.parse(
       decodeBase64UrlToText(encodedAuthTokenPayload)
     )
-    const roleClaim =
-      authTokenPayload[jwtClaimNames.role] ??
-      authTokenPayload[jwtClaimNames.shortRole]
-
-    if (typeof roleClaim === "string") {
-      return [roleClaim]
+    if (typeof authTokenPayload !== "object" || authTokenPayload === null) {
+      console.error("Вміст токена авторизації не є об'єктом.")
+      return null
     }
-    if (Array.isArray(roleClaim)) {
-      return roleClaim.filter(
-        (roleClaimValue): roleClaimValue is string =>
-          typeof roleClaimValue === "string"
-      )
-    }
-    return []
+    return authTokenPayload as Record<string, unknown>
   } catch (error) {
     console.error("Не вдалося розшифрувати токен авторизації:", error)
+    return null
+  }
+}
+
+export function getUserRolesFromAuthToken(
+  authToken: string
+): ReadonlyArray<string> {
+  const authTokenPayload = decodeAuthTokenPayload(authToken)
+  if (authTokenPayload === null) {
     return []
   }
+  const roleClaim =
+    authTokenPayload[jwtClaimNames.role] ??
+    authTokenPayload[jwtClaimNames.shortRole]
+
+  if (typeof roleClaim === "string") {
+    return [roleClaim]
+  }
+  if (Array.isArray(roleClaim)) {
+    return roleClaim.filter(
+      (roleClaimValue): roleClaimValue is string =>
+        typeof roleClaimValue === "string"
+    )
+  }
+  return []
+}
+
+export function getKnownUserRolesFromAuthToken(
+  authToken: string
+): ReadonlyArray<UserRole> {
+  return getUserRolesFromAuthToken(authToken).flatMap((userRoleName) => {
+    const knownUserRole = findEnumValue(UserRole, userRoleName)
+    return knownUserRole === null ? [] : [knownUserRole]
+  })
 }
 
 export function hasAuthTokenUserRole(
@@ -51,4 +75,21 @@ export function hasAuthTokenUserRole(
   userRole: UserRole
 ): boolean {
   return getUserRolesFromAuthToken(authToken).includes(userRole)
+}
+
+export function getUserNameFromAuthToken(authToken: string): string | null {
+  const userNameClaim =
+    decodeAuthTokenPayload(authToken)?.[jwtClaimNames.userName]
+  return typeof userNameClaim === "string" && userNameClaim !== ""
+    ? userNameClaim
+    : null
+}
+
+export function isAuthTokenUnexpired(authToken: string): boolean {
+  const expirationTimeClaim =
+    decodeAuthTokenPayload(authToken)?.[jwtClaimNames.expirationTime]
+  if (typeof expirationTimeClaim !== "number") {
+    return false
+  }
+  return expirationTimeClaim * millisecondsPerSecond > Date.now()
 }

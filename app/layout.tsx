@@ -3,7 +3,7 @@ import { Inter } from "next/font/google"
 import { Metadata } from "next"
 import { Toaster } from "react-hot-toast"
 import { Header } from "@/components/header"
-import { hasAuthTokenUserRole } from "@/lib/auth-token"
+import { hasAuthTokenUserRole, isAuthTokenUnexpired } from "@/lib/auth-token"
 import { getAuthTokenFromCookies } from "@/lib/server/api"
 import { UserRole } from "@/lib/types"
 
@@ -30,7 +30,7 @@ export default async function RootLayout({
   return (
     <html className={`${inter.className} p-6`} lang="uk">
       <body className="antialiased">
-        {authToken !== null && (
+        {authToken !== null && isAuthTokenUnexpired(authToken) && (
           <Header
             className="fixed inset-x-0 top-0 z-1000 w-full"
             isAdmin={hasAuthTokenUserRole(authToken, UserRole.Admin)}

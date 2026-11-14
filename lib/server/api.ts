@@ -3,7 +3,8 @@ import { redirect } from "next/navigation"
 import { appRoutes, cookieNames } from "@/lib/constants"
 import { getApiErrorMessage } from "@/lib/api-error-message"
 import { hasAuthTokenUserRole } from "@/lib/auth-token"
-import { ApiFetchResult, UserRole } from "@/lib/types"
+import { createLoginPath } from "@/lib/login-redirect"
+import { ApiFetchResult, LoginRedirectReason, UserRole } from "@/lib/types"
 
 function getServerApiBaseUrl(): string {
   const serverApiBaseUrl = process.env.API_BASE_URL
@@ -53,7 +54,7 @@ export async function fetchFromApi<TData>(
   }
 
   if (response.status === 401) {
-    redirect(appRoutes.login)
+    redirect(createLoginPath(null, LoginRedirectReason.SessionExpired))
   }
   if (!response.ok) {
     return {

@@ -14,6 +14,7 @@ import { RouteStatusAction } from "@/lib/types/route-status-action"
 import { SortDirection } from "@/lib/types/sort-direction"
 import { SortOption } from "@/lib/types/sort-option"
 import { TableColumn } from "@/lib/types/table-column"
+import { UserRole } from "@/lib/types/user-role"
 
 export const cookieNames = Object.freeze({
   authToken: "token",
@@ -32,7 +33,26 @@ export const authCookieMaxAgeSeconds = 24 * 60 * 60
 export const jwtClaimNames = Object.freeze({
   role: "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
   shortRole: "role",
+  userName: "unique_name",
+  expirationTime: "exp",
 })
+
+export const millisecondsPerSecond = 1000
+
+export const loginSearchParamNames = Object.freeze({
+  returnUrl: "returnUrl",
+  reason: "reason",
+})
+
+export const sessionExpiredMessage =
+  "Сесія завершилась. Увійдіть у систему повторно."
+
+export const userRoleLabels: Readonly<Record<UserRole, string>> = Object.freeze(
+  {
+    [UserRole.Admin]: "Адміністратор",
+    [UserRole.Dispatcher]: "Диспетчер",
+  }
+)
 
 export const displayLocale = "uk-UA"
 

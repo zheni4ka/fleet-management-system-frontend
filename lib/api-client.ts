@@ -1,10 +1,12 @@
 import { cookieNames } from "@/lib/constants"
 import { getApiErrorMessage } from "@/lib/api-error-message"
-import { getBrowserCookieValue } from "@/lib/browser-cookies"
-import { HttpMethod } from "@/lib/types"
-
-const expiredSessionErrorMessage =
-  "Сесія завершилась. Увійдіть у систему повторно."
+import {
+  deleteBrowserCookie,
+  getBrowserCookieValue,
+} from "@/lib/browser-cookies"
+import { createLoginPath } from "@/lib/login-redirect"
+import { SessionExpiredError } from "@/lib/session-expired-error"
+import { HttpMethod, LoginRedirectReason } from "@/lib/types"
 
 export function getClientApiBaseUrl(): string {
   const clientApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
@@ -16,10 +18,19 @@ export function getClientApiBaseUrl(): string {
   return clientApiBaseUrl
 }
 
+function endExpiredSession(): SessionExpiredError {
+  deleteBrowserCookie(cookieNames.authToken)
+  const currentPath = `${window.location.pathname}${window.location.search}`
+  window.location.assign(
+    createLoginPath(currentPath, LoginRedirectReason.SessionExpired)
+  )
+  return new SessionExpiredError()
+}
+
 function createAuthorizedRequestHeaders(): HeadersInit {
   const authToken = getBrowserCookieValue(cookieNames.authToken)
   if (authToken === null) {
-    throw new Error(expiredSessionErrorMessage)
+    throw endExpiredSession()
   }
   return {
     "Content-Type": "application/json",
@@ -39,7 +50,7 @@ async function sendAuthorizedRequest(
   })
 
   if (response.status === 401) {
-    throw new Error(expiredSessionErrorMessage)
+    throw endExpiredSession()
   }
   if (!response.ok) {
     throw new Error(await getApiErrorMessage(response))

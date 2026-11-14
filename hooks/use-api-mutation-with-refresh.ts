@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
+import { SessionExpiredError } from "@/lib/session-expired-error"
 import { ApiMutationToastMessages } from "@/lib/types"
 
 export function useApiMutationWithRefresh() {
@@ -14,19 +15,24 @@ export function useApiMutationWithRefresh() {
     toastMessages: ApiMutationToastMessages
   ): Promise<boolean> => {
     setIsApiMutationRunning(true)
+    const mutationToastId = toast.loading(toastMessages.loading)
     try {
-      await toast.promise(createApiMutationRequest(), {
-        loading: toastMessages.loading,
-        success: toastMessages.success,
-        error: (error: unknown) =>
-          error instanceof Error && error.message
-            ? error.message
-            : toastMessages.error,
-      })
+      await createApiMutationRequest()
+      toast.success(toastMessages.success, { id: mutationToastId })
       router.refresh()
       return true
     } catch (error) {
+      if (error instanceof SessionExpiredError) {
+        toast.dismiss(mutationToastId)
+        return false
+      }
       console.error(toastMessages.error, error)
+      toast.error(
+        error instanceof Error && error.message
+          ? error.message
+          : toastMessages.error,
+        { id: mutationToastId }
+      )
       return false
     } finally {
       setIsApiMutationRunning(false)
