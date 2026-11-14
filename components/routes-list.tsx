@@ -4,10 +4,13 @@ import { useMemo, useState } from "react"
 import RouteCard from "@/components/route-card"
 import GoogleMapRoute from "@/components/google-map-route"
 import EditRouteModal from "@/components/edit/edit-route-modal"
-import { Input } from "@/components/ui/input"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints, unknownLocationLabel } from "@/lib/constants"
+import {
+  apiEndpoints,
+  nothingFoundMessage,
+  unknownLocationLabel,
+} from "@/lib/constants"
 import {
   formatAutoTitleWithNumber,
   formatDriverFullName,
@@ -21,13 +24,13 @@ import {
   Route,
   RouteStatus,
 } from "@/lib/types"
-import { isMatchingSearchQuery } from "@/lib/utils"
 
 interface RoutesListProps {
   routes: Route[]
   locations: Location[]
   autos: Auto[]
   drivers: Driver[]
+  isRoutesListFiltered: boolean
 }
 
 export function RoutesList({
@@ -35,6 +38,7 @@ export function RoutesList({
   locations,
   autos,
   drivers,
+  isRoutesListFiltered,
 }: RoutesListProps) {
   const [serverRoutesSnapshot, setServerRoutesSnapshot] = useState(routes)
   const [routeStatusOverrides, setRouteStatusOverrides] = useState<
@@ -45,7 +49,6 @@ export function RoutesList({
   )
   const [selectedRouteId, setSelectedRouteId] = useState<number | null>(null)
   const [updatingRouteId, setUpdatingRouteId] = useState<number | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
   const { runApiMutation } = useApiMutationWithRefresh()
 
   if (serverRoutesSnapshot !== routes) {
@@ -100,13 +103,6 @@ export function RoutesList({
       ? `Водій ID: ${driverId}`
       : formatDriverFullName(driver)
   }
-
-  const visibleRoutes = displayedRoutes.filter((route) =>
-    isMatchingSearchQuery(searchQuery, [
-      getLocationName(route.startLocationId),
-      getLocationName(route.destinationLocationId),
-    ])
-  )
 
   const updateRouteStatusOverride = (
     routeId: number,
@@ -201,32 +197,10 @@ export function RoutesList({
   const selectedRouteDestinationLocation =
     selectedRoute && locationsById.get(selectedRoute.destinationLocationId)
 
-  const renderEmptyRoutesMessage = () => {
-    if (displayedRoutes.length === 0) {
-      return "Маршрутів поки немає."
-    }
-    return (
-      <>
-        За вашим запитом <span className="font-semibold">«{searchQuery}»</span>{" "}
-        нічого не знайдено.
-      </>
-    )
-  }
-
   return (
     <>
-      <div className="mb-6">
-        <Input
-          type="text"
-          placeholder="Пошук за містом відправлення або прибуття..."
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          className="max-w-md bg-white shadow-sm"
-        />
-      </div>
-
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {visibleRoutes.map((route) => (
+        {displayedRoutes.map((route) => (
           <RouteCard
             key={route.id}
             route={route}
@@ -254,9 +228,11 @@ export function RoutesList({
           />
         ))}
 
-        {visibleRoutes.length === 0 && (
+        {displayedRoutes.length === 0 && (
           <div className="col-span-full rounded-xl border border-dashed bg-white py-12 text-center text-slate-500">
-            {renderEmptyRoutesMessage()}
+            {isRoutesListFiltered
+              ? nothingFoundMessage
+              : "Маршрутів поки немає."}
           </div>
         )}
       </div>

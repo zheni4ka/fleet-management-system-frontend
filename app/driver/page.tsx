@@ -1,15 +1,42 @@
 import DriversTable from "@/components/tables/drivers-table"
 import AddDriverModal from "@/components/add/add-driver-modal"
+import { ListPagination } from "@/components/list-pagination"
+import { ListSearchForm } from "@/components/list-search-form"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
-import { apiEndpoints } from "@/lib/constants"
+import { apiEndpoints, appRoutes } from "@/lib/constants"
+import {
+  createListApiPath,
+  getListQueryFromPageSearchParams,
+} from "@/lib/search-params"
 import { fetchFromApi, getAdminAuthTokenOrRedirect } from "@/lib/server/api"
-import { Driver } from "@/lib/types"
+import {
+  Driver,
+  DriverSortField,
+  ListPageState,
+  PageSearchParams,
+  PagedList,
+} from "@/lib/types"
 
-export default async function DriversPage() {
+interface DriversPageProps {
+  searchParams: Promise<PageSearchParams>
+}
+
+export default async function DriversPage({ searchParams }: DriversPageProps) {
   const authToken = await getAdminAuthTokenOrRedirect()
-  const driversResult = await fetchFromApi<Driver[]>(
-    apiEndpoints.allDrivers,
+  const driversListPageState: ListPageState<DriverSortField> = {
+    path: appRoutes.drivers,
+    listQuery: getListQueryFromPageSearchParams(
+      await searchParams,
+      DriverSortField
+    ),
+    filterValues: {},
+  }
+  const driversPageResult = await fetchFromApi<PagedList<Driver>>(
+    createListApiPath(
+      apiEndpoints.driversPagedList,
+      driversListPageState.listQuery
+    ),
     authToken
   )
 
@@ -22,10 +49,25 @@ export default async function DriversPage() {
         <AddDriverModal />
       </PageHeader>
 
-      {driversResult.isSucceeded ? (
-        <DriversTable drivers={driversResult.data} />
+      <ListSearchForm
+        key={driversListPageState.listQuery.search}
+        listPageState={driversListPageState}
+        placeholder="Пошук водія (ім'я, прізвище, ліцензія)..."
+      />
+
+      {driversPageResult.isSucceeded ? (
+        <>
+          <DriversTable
+            drivers={driversPageResult.data.items}
+            listPageState={driversListPageState}
+          />
+          <ListPagination
+            listPageState={driversListPageState}
+            totalCount={driversPageResult.data.totalCount}
+          />
+        </>
       ) : (
-        <LoadErrorMessage errorMessage={driversResult.errorMessage} />
+        <LoadErrorMessage errorMessage={driversPageResult.errorMessage} />
       )}
     </div>
   )

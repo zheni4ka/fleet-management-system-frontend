@@ -1,9 +1,7 @@
 "use client"
 
-import { useState } from "react"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import EditAutoModal from "@/components/edit/edit-auto-modal"
 import AutoMaintenanceModal from "@/components/add/add-maintenance-modal"
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
@@ -14,27 +12,18 @@ import {
   apiEndpoints,
   autoStatusLabels,
   autosTableColumns,
+  nothingFoundMessage,
 } from "@/lib/constants"
 import { formatAutoTitle } from "@/lib/formatters"
-import { Auto, HttpMethod } from "@/lib/types"
-import { isMatchingSearchQuery } from "@/lib/utils"
+import { Auto, AutoSortField, HttpMethod, ListPageState } from "@/lib/types"
 
 interface AutosTableProps {
   autos: Auto[]
+  listPageState: ListPageState<AutoSortField>
 }
 
-export function AutosTable({ autos }: AutosTableProps) {
-  const [searchQuery, setSearchQuery] = useState("")
+export function AutosTable({ autos, listPageState }: AutosTableProps) {
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
-
-  const filteredAutos = autos.filter((auto) =>
-    isMatchingSearchQuery(searchQuery, [
-      auto.mark,
-      auto.model,
-      auto.number,
-      auto.color,
-    ])
-  )
 
   const handleDelete = async (autoId: number) => {
     if (!window.confirm("Ви впевнені, що хочете видалити автомобіль?")) {
@@ -52,66 +41,60 @@ export function AutosTable({ autos }: AutosTableProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <Input
-        placeholder="Пошук авто (марка, модель, колір, номер)..."
-        value={searchQuery}
-        onChange={(event) => setSearchQuery(event.target.value)}
-        className="max-w-sm bg-white shadow-sm"
-      />
-
-      <div className="overflow-hidden rounded-md border bg-white">
-        <Table>
-          <TableColumnsHeader tableColumns={autosTableColumns} />
-          <TableBody>
-            {filteredAutos.length === 0 && (
-              <EmptyTableRow
-                columnCount={autosTableColumns.length}
-                message={
-                  autos.length === 0
-                    ? "Автомобілів поки немає в системі."
-                    : "Нічого не знайдено за вашим запитом."
-                }
-              />
-            )}
-            {filteredAutos.map((auto) => (
-              <TableRow key={auto.id} className="hover:bg-slate-50/50">
-                <TableCell className="font-mono text-xs">{auto.id}</TableCell>
-                <TableCell className="font-medium">{auto.mark}</TableCell>
-                <TableCell>{auto.model}</TableCell>
-                <TableCell>{auto.color}</TableCell>
-                <TableCell>
-                  <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-slate-700/10 ring-inset">
-                    {autoStatusLabels[auto.status]}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-700/10 ring-inset">
-                    {auto.number}
-                  </span>
-                </TableCell>
-                <TableCell className="text-center">
-                  <div className="flex justify-center gap-2">
-                    <AutoMaintenanceModal
-                      autoId={auto.id}
-                      autoTitle={formatAutoTitle(auto)}
-                    />
-                    <EditAutoModal auto={auto} />
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(auto.id)}
-                      disabled={isApiMutationRunning}
-                    >
-                      Видалити
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+    <div className="overflow-hidden rounded-md border bg-white">
+      <Table>
+        <TableColumnsHeader
+          tableColumns={autosTableColumns}
+          listPageState={listPageState}
+        />
+        <TableBody>
+          {autos.length === 0 && (
+            <EmptyTableRow
+              columnCount={autosTableColumns.length}
+              message={
+                listPageState.listQuery.search === ""
+                  ? "Автомобілів поки немає в системі."
+                  : nothingFoundMessage
+              }
+            />
+          )}
+          {autos.map((auto) => (
+            <TableRow key={auto.id} className="hover:bg-slate-50/50">
+              <TableCell className="font-mono text-xs">{auto.id}</TableCell>
+              <TableCell className="font-medium">{auto.mark}</TableCell>
+              <TableCell>{auto.model}</TableCell>
+              <TableCell>{auto.color}</TableCell>
+              <TableCell>
+                <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 ring-1 ring-slate-700/10 ring-inset">
+                  {autoStatusLabels[auto.status]}
+                </span>
+              </TableCell>
+              <TableCell>
+                <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-700/10 ring-inset">
+                  {auto.number}
+                </span>
+              </TableCell>
+              <TableCell className="text-center">
+                <div className="flex justify-center gap-2">
+                  <AutoMaintenanceModal
+                    autoId={auto.id}
+                    autoTitle={formatAutoTitle(auto)}
+                  />
+                  <EditAutoModal auto={auto} />
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDelete(auto.id)}
+                    disabled={isApiMutationRunning}
+                  >
+                    Видалити
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   )
 }

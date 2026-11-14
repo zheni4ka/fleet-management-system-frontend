@@ -7,25 +7,31 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
 import { FormField } from "@/components/ui/form-field"
-import { appRoutes, routeStatusLabels } from "@/lib/constants"
+import { appRoutes, firstListPage, routeStatusLabels } from "@/lib/constants"
 import {
   formatAutoTitleWithNumber,
   formatDriverFullName,
 } from "@/lib/formatters"
+import { createListPageHref } from "@/lib/search-params"
 import {
-  createPathWithSearchParams,
-  createSearchParamsFromFormValues,
-} from "@/lib/search-params"
-import { Auto, Driver, RouteStatus, RoutesSearchFormValues } from "@/lib/types"
+  Auto,
+  Driver,
+  ListPageState,
+  RouteSortField,
+  RouteStatus,
+  RoutesSearchFormValues,
+} from "@/lib/types"
 
 interface RoutesSearchFormProps {
   initialRoutesSearchFormValues: RoutesSearchFormValues
+  routesListPageState: ListPageState<RouteSortField>
   autos: Auto[]
   drivers: Driver[]
 }
 
 export function RoutesSearchForm({
   initialRoutesSearchFormValues,
+  routesListPageState,
   autos,
   drivers,
 }: RoutesSearchFormProps) {
@@ -52,9 +58,10 @@ export function RoutesSearchForm({
       return
     }
     router.push(
-      createPathWithSearchParams(
-        appRoutes.routes,
-        createSearchParamsFromFormValues(routesSearchFormValues)
+      createListPageHref(
+        routesListPageState,
+        { page: firstListPage },
+        routesSearchFormValues
       )
     )
   }

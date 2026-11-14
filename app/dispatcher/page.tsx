@@ -1,15 +1,44 @@
 import DispatchersTable from "@/components/tables/dispatchers-table"
 import AddDispatcherModal from "@/components/add/add-dispatcher-modal"
+import { ListPagination } from "@/components/list-pagination"
+import { ListSearchForm } from "@/components/list-search-form"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
-import { apiEndpoints } from "@/lib/constants"
+import { apiEndpoints, appRoutes } from "@/lib/constants"
+import {
+  createListApiPath,
+  getListQueryFromPageSearchParams,
+} from "@/lib/search-params"
 import { fetchFromApi, getAdminAuthTokenOrRedirect } from "@/lib/server/api"
-import { Dispatcher } from "@/lib/types"
+import {
+  Dispatcher,
+  DispatcherSortField,
+  ListPageState,
+  PageSearchParams,
+  PagedList,
+} from "@/lib/types"
 
-export default async function DispatchersPage() {
+interface DispatchersPageProps {
+  searchParams: Promise<PageSearchParams>
+}
+
+export default async function DispatchersPage({
+  searchParams,
+}: DispatchersPageProps) {
   const authToken = await getAdminAuthTokenOrRedirect()
-  const dispatchersResult = await fetchFromApi<Dispatcher[]>(
-    apiEndpoints.allAccounts,
+  const dispatchersListPageState: ListPageState<DispatcherSortField> = {
+    path: appRoutes.dispatchers,
+    listQuery: getListQueryFromPageSearchParams(
+      await searchParams,
+      DispatcherSortField
+    ),
+    filterValues: {},
+  }
+  const dispatchersPageResult = await fetchFromApi<PagedList<Dispatcher>>(
+    createListApiPath(
+      apiEndpoints.dispatchersPagedList,
+      dispatchersListPageState.listQuery
+    ),
     authToken
   )
 
@@ -22,10 +51,25 @@ export default async function DispatchersPage() {
         <AddDispatcherModal />
       </PageHeader>
 
-      {dispatchersResult.isSucceeded ? (
-        <DispatchersTable dispatchers={dispatchersResult.data} />
+      <ListSearchForm
+        key={dispatchersListPageState.listQuery.search}
+        listPageState={dispatchersListPageState}
+        placeholder="Пошук диспетчера (логін, email)..."
+      />
+
+      {dispatchersPageResult.isSucceeded ? (
+        <>
+          <DispatchersTable
+            dispatchers={dispatchersPageResult.data.items}
+            listPageState={dispatchersListPageState}
+          />
+          <ListPagination
+            listPageState={dispatchersListPageState}
+            totalCount={dispatchersPageResult.data.totalCount}
+          />
+        </>
       ) : (
-        <LoadErrorMessage errorMessage={dispatchersResult.errorMessage} />
+        <LoadErrorMessage errorMessage={dispatchersPageResult.errorMessage} />
       )}
     </div>
   )

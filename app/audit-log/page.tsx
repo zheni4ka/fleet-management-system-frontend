@@ -1,14 +1,62 @@
 import AuditLogsTable from "@/components/tables/audit-logs-table"
+import { AuditLogActionSelect } from "@/components/audit-log-action-select"
+import { ListPagination } from "@/components/list-pagination"
+import { ListSearchForm } from "@/components/list-search-form"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
-import { apiEndpoints } from "@/lib/constants"
+import {
+  apiEndpoints,
+  appRoutes,
+  auditLogFilterSearchParamNames,
+} from "@/lib/constants"
+import {
+  createListApiPath,
+  getListQueryFromPageSearchParams,
+  getPageSearchParamValue,
+} from "@/lib/search-params"
 import { fetchFromApi, getAdminAuthTokenOrRedirect } from "@/lib/server/api"
-import { AuditLog } from "@/lib/types"
+import {
+  AuditAction,
+  AuditLog,
+  AuditLogSortField,
+  ListPageState,
+  PageSearchParams,
+  PagedList,
+} from "@/lib/types"
+import { findEnumValue } from "@/lib/utils"
 
-export default async function AuditLogsPage() {
+interface AuditLogsPageProps {
+  searchParams: Promise<PageSearchParams>
+}
+
+export default async function AuditLogsPage({
+  searchParams,
+}: AuditLogsPageProps) {
   const authToken = await getAdminAuthTokenOrRedirect()
-  const auditLogsResult = await fetchFromApi<AuditLog[]>(
-    apiEndpoints.allAuditLogs,
+  const pageSearchParams = await searchParams
+  const selectedAuditAction = findEnumValue(
+    AuditAction,
+    getPageSearchParamValue(
+      pageSearchParams,
+      auditLogFilterSearchParamNames.action
+    )
+  )
+  const auditLogsListPageState: ListPageState<AuditLogSortField> = {
+    path: appRoutes.auditLogs,
+    listQuery: getListQueryFromPageSearchParams(
+      pageSearchParams,
+      AuditLogSortField
+    ),
+    filterValues: {
+      [auditLogFilterSearchParamNames.action]: selectedAuditAction ?? "",
+    },
+  }
+  const auditLogsPageResult = await fetchFromApi<PagedList<AuditLog>>(
+    createListApiPath(
+      apiEndpoints.auditLogsPagedList,
+      auditLogsListPageState.listQuery,
+      auditLogsListPageState.filterValues
+    ),
     authToken
   )
 
@@ -19,10 +67,35 @@ export default async function AuditLogsPage() {
         description="Історія змін у системі: хто, коли і що створив, змінив або видалив."
       />
 
-      {auditLogsResult.isSucceeded ? (
-        <AuditLogsTable auditLogs={auditLogsResult.data} />
+      <div className="flex flex-wrap gap-3">
+        <ListSearchForm
+          key={auditLogsListPageState.listQuery.search}
+          listPageState={auditLogsListPageState}
+          placeholder="Пошук (користувач, ID об'єкта)..."
+        />
+        <AuditLogActionSelect
+          listPageState={auditLogsListPageState}
+          selectedAuditAction={selectedAuditAction}
+        />
+      </div>
+
+      {auditLogsPageResult.isSucceeded ? (
+        <>
+          <AuditLogsTable
+            auditLogs={auditLogsPageResult.data.items}
+            listPageState={auditLogsListPageState}
+            isAuditLogsListFiltered={
+              selectedAuditAction !== null ||
+              auditLogsListPageState.listQuery.search !== ""
+            }
+          />
+          <ListPagination
+            listPageState={auditLogsListPageState}
+            totalCount={auditLogsPageResult.data.totalCount}
+          />
+        </>
       ) : (
-        <LoadErrorMessage errorMessage={auditLogsResult.errorMessage} />
+        <LoadErrorMessage errorMessage={auditLogsPageResult.errorMessage} />
       )}
     </div>
   )

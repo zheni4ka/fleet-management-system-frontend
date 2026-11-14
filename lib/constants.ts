@@ -1,10 +1,18 @@
 import { CheckCircle, Play, XCircle } from "lucide-react"
 import { AuditAction } from "@/lib/types/audit-action"
+import { AuditLogSortField } from "@/lib/types/audit-log-sort-field"
+import { AutoSortField } from "@/lib/types/auto-sort-field"
 import { AutoStatus } from "@/lib/types/auto-status"
+import { DispatcherSortField } from "@/lib/types/dispatcher-sort-field"
 import { DriverFormField } from "@/lib/types/driver-form-field"
+import { DriverSortField } from "@/lib/types/driver-sort-field"
+import { LocationSortField } from "@/lib/types/location-sort-field"
 import { NavigationLink } from "@/lib/types/navigation-link"
+import { RouteSortField } from "@/lib/types/route-sort-field"
 import { RouteStatus } from "@/lib/types/route-status"
 import { RouteStatusAction } from "@/lib/types/route-status-action"
+import { SortDirection } from "@/lib/types/sort-direction"
+import { SortOption } from "@/lib/types/sort-option"
 import { TableColumn } from "@/lib/types/table-column"
 
 export const cookieNames = Object.freeze({
@@ -36,7 +44,6 @@ export const apiEndpoints = Object.freeze({
   login: "/api/Account/login",
   registerAccount: "/api/Account/register",
   accounts: "/api/Account",
-  allAccounts: "/api/Account/all",
   autos: "/api/Auto",
   allAutos: "/api/Auto/all",
   drivers: "/api/Driver",
@@ -45,12 +52,52 @@ export const apiEndpoints = Object.freeze({
   allRoutes: "/api/Route/all",
   locations: "/api/Location",
   allLocations: "/api/Location/all",
-  routesSearch: "/api/Route/search",
   routesPeriodReport: "/api/Route/periodReport",
-  allAuditLogs: "/api/AuditLog/all",
   autoMaintenance: "/api/AutoMaintenance",
   autoMaintenanceByAuto: "/api/AutoMaintenance/auto",
+  autosPagedList: "/api/Auto/pagedList",
+  driversPagedList: "/api/Driver/pagedList",
+  locationsPagedList: "/api/Location/pagedList",
+  dispatchersPagedList: "/api/Account/dispatchersPagedList",
+  routesPagedList: "/api/Route/pagedList",
+  auditLogsPagedList: "/api/AuditLog/pagedList",
 })
+
+export const listSearchParamNames = Object.freeze({
+  page: "page",
+  pageSize: "pageSize",
+  sort: "sort",
+  sortDirection: "sortDirection",
+  search: "search",
+})
+
+export const auditLogFilterSearchParamNames = Object.freeze({
+  action: "action",
+})
+
+export const firstListPage = 1
+
+export const defaultListPageSize = 20
+
+export const listPageSizeOptions: ReadonlyArray<number> = Object.freeze([
+  10, 20, 50, 100,
+])
+
+export const sortDirectionLabels: Readonly<Record<SortDirection, string>> =
+  Object.freeze({
+    [SortDirection.Ascending]: "За зростанням",
+    [SortDirection.Descending]: "За спаданням",
+  })
+
+export const routeSortOptions: ReadonlyArray<SortOption<RouteSortField>> =
+  Object.freeze([
+    { sortField: RouteSortField.DepartureTime, label: "Час відправлення" },
+    { sortField: RouteSortField.ArrivalTime, label: "Час прибуття" },
+    { sortField: RouteSortField.Status, label: "Статус" },
+    { sortField: RouteSortField.Id, label: "ID" },
+  ])
+
+export const nothingFoundMessage = "Нічого не знайдено за вашим запитом."
 
 export const autoStatusLabels: Readonly<Record<AutoStatus, string>> =
   Object.freeze({
@@ -120,32 +167,51 @@ export const fastAccessNavigationLinks: ReadonlyArray<NavigationLink> =
     },
   ])
 
-export const autosTableColumns: ReadonlyArray<TableColumn> = Object.freeze([
-  { label: "ID", className: "w-1/12" },
-  { label: "Марка", className: "w-1/6" },
-  { label: "Модель", className: "w-1/6" },
-  { label: "Колір", className: "w-1/6" },
-  { label: "Статус", className: "w-1/6" },
-  { label: "Номер", className: "w-1/6" },
-  { label: "Операції", className: "w-1/6 text-center" },
-])
-
-export const driversTableColumns: ReadonlyArray<TableColumn> = Object.freeze([
-  { label: "ID", className: "w-1/6" },
-  { label: "Ім'я", className: "w-1/6" },
-  { label: "Прізвище", className: "w-1/6" },
-  { label: "По батькові", className: "w-1/6" },
-  { label: "Посвідчення водія", className: "w-1/6" },
-  { label: "Операції", className: "w-1/6 text-center" },
-])
-
-export const dispatchersTableColumns: ReadonlyArray<TableColumn> =
+export const autosTableColumns: ReadonlyArray<TableColumn<AutoSortField>> =
   Object.freeze([
-    { label: "ID", className: "w-1/4" },
-    { label: "Логін", className: "w-1/4" },
-    { label: "Email", className: "w-1/4" },
-    { label: "Операції", className: "w-1/4 text-center" },
+    { label: "ID", className: "w-1/12", sortField: AutoSortField.Id },
+    { label: "Марка", className: "w-1/6", sortField: AutoSortField.Mark },
+    { label: "Модель", className: "w-1/6", sortField: AutoSortField.Model },
+    { label: "Колір", className: "w-1/6", sortField: AutoSortField.Color },
+    { label: "Статус", className: "w-1/6", sortField: AutoSortField.Status },
+    { label: "Номер", className: "w-1/6", sortField: AutoSortField.Number },
+    { label: "Операції", className: "w-1/6 text-center" },
   ])
+
+export const driversTableColumns: ReadonlyArray<TableColumn<DriverSortField>> =
+  Object.freeze([
+    { label: "ID", className: "w-1/6", sortField: DriverSortField.Id },
+    { label: "Ім'я", className: "w-1/6", sortField: DriverSortField.Name },
+    {
+      label: "Прізвище",
+      className: "w-1/6",
+      sortField: DriverSortField.Surname,
+    },
+    {
+      label: "По батькові",
+      className: "w-1/6",
+      sortField: DriverSortField.Patronymic,
+    },
+    {
+      label: "Посвідчення водія",
+      className: "w-1/6",
+      sortField: DriverSortField.LicenseNumber,
+    },
+    { label: "Операції", className: "w-1/6 text-center" },
+  ])
+
+export const dispatchersTableColumns: ReadonlyArray<
+  TableColumn<DispatcherSortField>
+> = Object.freeze([
+  { label: "ID", className: "w-1/4", sortField: DispatcherSortField.Id },
+  {
+    label: "Логін",
+    className: "w-1/4",
+    sortField: DispatcherSortField.Username,
+  },
+  { label: "Email", className: "w-1/4", sortField: DispatcherSortField.Email },
+  { label: "Операції", className: "w-1/4 text-center" },
+])
 
 export const recentRoutesTableColumns: ReadonlyArray<TableColumn> =
   Object.freeze([
@@ -185,18 +251,30 @@ export const routeStatusActions: ReadonlyArray<RouteStatusAction> =
     },
   ])
 
-export const locationsTableColumns: ReadonlyArray<TableColumn> = Object.freeze([
-  { label: "ID", className: "w-1/6" },
-  { label: "Місто", className: "w-1/3" },
-  { label: "Країна", className: "w-1/3" },
+export const locationsTableColumns: ReadonlyArray<
+  TableColumn<LocationSortField>
+> = Object.freeze([
+  { label: "ID", className: "w-1/6", sortField: LocationSortField.Id },
+  { label: "Місто", className: "w-1/3", sortField: LocationSortField.City },
+  { label: "Країна", className: "w-1/3", sortField: LocationSortField.Country },
   { label: "Операції", className: "w-1/6 text-center" },
 ])
 
-export const auditLogsTableColumns: ReadonlyArray<TableColumn> = Object.freeze([
-  { label: "Час", className: "w-1/5" },
-  { label: "Дія", className: "w-2/5" },
-  { label: "Користувач", className: "w-1/5" },
-  { label: "ID об'єкта", className: "w-1/5" },
+export const auditLogsTableColumns: ReadonlyArray<
+  TableColumn<AuditLogSortField>
+> = Object.freeze([
+  { label: "Час", className: "w-1/5", sortField: AuditLogSortField.Time },
+  { label: "Дія", className: "w-2/5", sortField: AuditLogSortField.Action },
+  {
+    label: "Користувач",
+    className: "w-1/5",
+    sortField: AuditLogSortField.DispatcherUsername,
+  },
+  {
+    label: "ID об'єкта",
+    className: "w-1/5",
+    sortField: AuditLogSortField.EntityId,
+  },
 ])
 
 export const reportDriverSummariesTableColumns: ReadonlyArray<TableColumn> =
