@@ -1,111 +1,122 @@
-﻿import React from "react"
-import { RouteCardProps, RouteStatus } from "@/lib/types"
-import { Button } from "@/components/ui/button"
-import { Trash2, Play, CheckCircle, XCircle } from "lucide-react"
+import * as React from "react"
+import { Trash2 } from "lucide-react"
+import { routeStatusActions, routeStatusLabels } from "@/lib/constants"
+import { formatDateTime } from "@/lib/formatters"
+import { canRouteStatusChangeTo } from "@/lib/route-status"
+import { Route, RouteStatus } from "@/lib/types"
 
-interface ExtendedRouteCardProps extends RouteCardProps {
-  onStatusChange?: (e: React.MouseEvent, newStatus: RouteStatus) => void
-  onDelete?: (e: React.MouseEvent) => void
-  isLoading?: boolean
+interface RouteCardProps {
+  route: Route
+  startLocationName: string
+  destinationLocationName: string
+  autoTitle: string
+  driverFullName: string
+  isRouteUpdating: boolean
+  editRouteAction: React.ReactNode
+  onSelect: () => void
+  onStatusChange: (targetRouteStatus: RouteStatus) => void
+  onDelete: () => void
 }
 
-const getStatusText = (status: string | number | undefined) => {
-  const s = String(status)
-  if (s === "0" || s === "Planned") return "Заплановано"
-  if (s === "1" || s === "InProgress") return "В процесі"
-  if (s === "2" || s === "Completed") return "Виконано"
-  if (s === "3" || s === "Cancelled") return "Скасовано"
-  return "Невідомо"
-}
+const routeActionButtonClassName =
+  "flex w-full cursor-pointer items-center justify-center rounded-md p-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
 
-export const RouteCard: React.FC<ExtendedRouteCardProps> = ({
+export function RouteCard({
+  route,
   startLocationName,
   destinationLocationName,
-  departureTime,
-  arrivalTime,
-  autoId,
-  driverId,
-  autoName,
-  driverName,
-  status,
+  autoTitle,
+  driverFullName,
+  isRouteUpdating,
+  editRouteAction,
+  onSelect,
   onStatusChange,
   onDelete,
-  isLoading = false,
-}) => {
-  const s = String(status)
+}: RouteCardProps) {
+  const getIsStatusActionDisabled = (targetRouteStatus: RouteStatus) =>
+    isRouteUpdating || !canRouteStatusChangeTo(route.status, targetRouteStatus)
+
+  const routeDetailRows = [
+    {
+      label: "Виїзд",
+      value: formatDateTime(route.departureTime),
+      valueClassName: "font-medium text-slate-700",
+    },
+    {
+      label: "Прибуття",
+      value: formatDateTime(route.arrivalTime),
+      valueClassName: "font-medium text-slate-700",
+    },
+    {
+      label: "Статус",
+      value: routeStatusLabels[route.status],
+      valueClassName: "font-semibold text-indigo-600",
+    },
+  ]
+
   return (
-    <div className="relative flex h-full flex-col rounded-2xl border bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-md">
-      <div className="flex-shrink-0 pl-3">
+    <div
+      onClick={onSelect}
+      className="relative flex h-full cursor-pointer flex-col rounded-2xl border bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-md"
+    >
+      <div className="shrink-0 pl-3">
         <h3 className="mb-2 text-lg leading-tight font-bold text-slate-800">
-          {startLocationName ?? "Невідома"} → {destinationLocationName ?? "Невідома"} <br />
+          {startLocationName} → {destinationLocationName}
         </h3>
 
         <div className="mb-4 space-y-1">
-          <p className="text-xs text-slate-500">
-            Виїзд:{" "}
-            <span className="font-medium text-slate-700">
-              {new Date(departureTime).toLocaleString("uk-UA")}
-            </span>
-          </p>
-          <p className="text-xs text-slate-500">
-            Прибуття:{" "}
-            <span className="font-medium text-slate-700">
-              {new Date(arrivalTime).toLocaleString("uk-UA")}
-            </span>
-          </p>
-          <p className="text-xs text-slate-500">
-            Статус:{" "}
-            <span className="font-semibold text-indigo-600">
-              {getStatusText(status)}
-            </span>
-          </p>
+          {routeDetailRows.map((routeDetailRow) => (
+            <p key={routeDetailRow.label} className="text-xs text-slate-500">
+              {routeDetailRow.label}:{" "}
+              <span className={routeDetailRow.valueClassName}>
+                {routeDetailRow.value}
+              </span>
+            </p>
+          ))}
         </div>
 
         <div className="mb-5 space-y-1 rounded-xl border border-slate-100 bg-slate-50 p-2.5">
+          <p className="text-xs font-medium text-slate-600">🚗 {autoTitle}</p>
           <p className="text-xs font-medium text-slate-600">
-            🚗 {autoName || `Авто ID: ${autoId}`}
-          </p>
-          <p className="text-xs font-medium text-slate-600">
-            👤 {driverName || `Водій ID: ${driverId}`}
+            👤 {driverFullName}
           </p>
         </div>
       </div>
 
-      <div className="mt-auto flex w-full flex-col gap-2 pt-4">
+      <div
+        className="mt-auto flex w-full cursor-default flex-col gap-2 pt-4"
+        onClick={(event) => event.stopPropagation()}
+      >
+        {routeStatusActions.map((routeStatusAction) => {
+          const RouteStatusActionIcon = routeStatusAction.icon
+          return (
+            <button
+              key={routeStatusAction.targetRouteStatus}
+              type="button"
+              disabled={getIsStatusActionDisabled(
+                routeStatusAction.targetRouteStatus
+              )}
+              className={`${routeActionButtonClassName} ${routeStatusAction.className}`}
+              onClick={() =>
+                onStatusChange(routeStatusAction.targetRouteStatus)
+              }
+            >
+              <RouteStatusActionIcon className="mr-2 h-4 w-4" />{" "}
+              {routeStatusAction.label}
+            </button>
+          )
+        })}
+
+        {editRouteAction}
 
         <button
           type="button"
-          disabled={isLoading}
-          className="flex w-full items-center justify-center rounded-md bg-blue-600 p-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
-          onClick={(e) => onStatusChange?.(e, "InProgress")}
-        >
-          <Play className="mr-2 h-4 w-4" /> Розпочати
-        </button>
-
-        <a
-          type="button"
-          className="flex w-full items-center justify-center rounded-md bg-green-600 p-2.5 text-sm font-semibold text-black transition hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed disabled:opacity-60"
-          onClick={(e) => onStatusChange?.(e, "Completed")}
-        >
-          <CheckCircle className="mr-2 h-4 w-4" /> Завершити
-        </a>
-
-        <button
-          type="button"
-          disabled={isLoading}
-          className="flex w-full items-center justify-center rounded-md border border-orange-200 p-2.5 text-sm font-semibold text-orange-600 transition hover:bg-orange-50 disabled:border-orange-100 disabled:text-orange-400 disabled:cursor-not-allowed disabled:opacity-60"
-          onClick={(e) => onStatusChange?.(e, "Cancelled")}
-        >
-          <XCircle className="mr-2 h-4 w-4" /> Скасувати
-        </button>
-
-        <a
-          type="button"
-          className="mt-1 flex w-full items-center justify-center rounded-md bg-red-600 p-2.5 text-sm font-semibold text-black transition hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={isRouteUpdating}
+          className={`${routeActionButtonClassName} mt-1 bg-red-600 text-white hover:bg-red-700`}
           onClick={onDelete}
         >
           <Trash2 className="mr-2 h-4 w-4" /> Видалити
-        </a>
+        </button>
       </div>
     </div>
   )

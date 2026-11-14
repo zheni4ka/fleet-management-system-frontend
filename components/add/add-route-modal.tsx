@@ -1,306 +1,252 @@
 "use client"
-import { ChangeEvent, useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import ModalWindow from "@/components/ui/modal-window"
-import { Auto, Driver, Location } from "@/lib/types"
-import { useRouter } from "next/navigation"
+
+import { useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { NativeSelect } from "@/components/ui/native-select"
+import { FormField } from "@/components/ui/form-field"
+import ModalWindow from "@/components/ui/modal-window"
+import { SubmitButton } from "@/components/ui/submit-button"
+import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
+import { sendApiRequest } from "@/lib/api-client"
+import { apiEndpoints, routeStatusLabels } from "@/lib/constants"
+import {
+  formatAutoTitleWithNumber,
+  formatDriverFullName,
+  formatLocationName,
+} from "@/lib/formatters"
+import {
+  Auto,
+  AutoStatus,
+  Driver,
+  HttpMethod,
+  Location,
+  RouteStatus,
+} from "@/lib/types"
+import { parseEnumValue } from "@/lib/utils"
 
-const routeStatuses = [
-  { value: "Planned", label: "Заплановано" },
-  { value: "InProgress", label: "В процесі" },
-  { value: "Completed", label: "Виконано" },
-  { value: "Cancelled", label: "Скасовано" },
-]
+interface AddRouteModalProps {
+  autos: Auto[]
+  drivers: Driver[]
+  locations: Location[]
+}
 
-function getCookie(name: string): string | null {
-  if (typeof document === "undefined") return null
-  const value = `; ${document.cookie}`
-  const parts = value.split(`; ${name}=`)
-  if (parts.length === 2) return parts.pop()?.split(";").shift() ?? null
+function createEmptyRouteFormValues() {
+  return {
+    startLocationId: "",
+    destinationLocationId: "",
+    departureTime: "",
+    arrivalTime: "",
+    autoId: "",
+    driverId: "",
+    status: RouteStatus.Planned,
+  }
+}
+
+type RouteFormValues = ReturnType<typeof createEmptyRouteFormValues>
+
+function getRouteFormValidationError(
+  routeFormValues: RouteFormValues
+): string | null {
+  const hasEmptyRequiredField = [
+    routeFormValues.startLocationId,
+    routeFormValues.destinationLocationId,
+    routeFormValues.departureTime,
+    routeFormValues.arrivalTime,
+    routeFormValues.autoId,
+    routeFormValues.driverId,
+  ].some((requiredFieldValue) => requiredFieldValue === "")
+  if (hasEmptyRequiredField) {
+    return "Будь ласка, заповніть всі поля форми перед збереженням."
+  }
+  if (
+    routeFormValues.startLocationId === routeFormValues.destinationLocationId
+  ) {
+    return "Початкова та кінцева локації мають відрізнятися."
+  }
+  if (
+    new Date(routeFormValues.arrivalTime) <=
+    new Date(routeFormValues.departureTime)
+  ) {
+    return "Час прибуття має бути пізніше за час відправлення."
+  }
   return null
 }
 
-export default function AddRouteModal() {
-  const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
-  const [form, setForm] = useState({
-    startLocationId: 0,
-    destinationLocationId: 0,
-    departureTime: "",
-    arrivalTime: "",
-    autoId: 0,
-    driverId: 0,
-    status: "Planned"
-  })
+export default function AddRouteModal({
+  autos,
+  drivers,
+  locations,
+}: AddRouteModalProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [routeFormValues, setRouteFormValues] = useState(
+    createEmptyRouteFormValues
+  )
+  const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
 
-  const apiBase =
-    (process.env as { NEXT_PUBLIC_API_BASE_URL?: string })
-      .NEXT_PUBLIC_API_BASE_URL ?? ""
+  const assignableAutos = autos.filter(
+    (auto) => auto.status !== AutoStatus.UnderMaintenance
+  )
 
-  const [drivers, setDrivers] = useState<Driver[]>([])
-  const [autos, setAutos] = useState<Auto[]>([])
-  const [locations, setLocations] = useState<Location[]>([])
-
-  useEffect(() => {
-    if (!isOpen) return
-
-    const loadRouteDropdowns = async () => {
-      const endpoints = [
-        { url: `${apiBase}/api/Driver/all`, setter: setDrivers },
-        { url: `${apiBase}/api/Auto/all`, setter: setAutos },
-        { url: `${apiBase}/api/Location/all`, setter: setLocations },
-      ]
-
-      await Promise.all(
-        endpoints.map(async ({ url, setter }) => {
-          try {
-            const res = await fetch(url)
-            if (!res.ok) {
-              throw new Error(`Failed to load ${url}`)
-            }
-            setter(await res.json())
-          } catch (error) {
-            console.error("Error fetching route dropdown data:", error)
-          }
-        })
-      )
-    }
-
-    loadRouteDropdowns()
-  }, [isOpen, apiBase])
-
-  const handleInputChange =
-    (field: keyof typeof form) => (e: ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value
-      setForm((prev) => ({ ...prev, [field]: value }))
-    }
-
-  const handleSelectChange =
-    (field: keyof typeof form) => (e: ChangeEvent<HTMLSelectElement>) => {
-      const value = field === "status" ? e.target.value : Number(e.target.value);
-      setForm((prev) => ({ ...prev, [field]: value }))
-    }
-
-  const handleClear = () => {
-    setForm({
-      startLocationId: 0,
-      destinationLocationId: 0,
-      departureTime: "",
-      arrivalTime: "",
-      autoId: 0,
-      driverId: 0,
-      status: "Planned",
-    })
+  const updateRouteFormValues = (changedValues: Partial<RouteFormValues>) => {
+    setRouteFormValues({ ...routeFormValues, ...changedValues })
   }
 
-  const handleSave = async () => {
-    if (
-      !form.startLocationId ||
-      !form.destinationLocationId ||
-      !form.departureTime ||
-      !form.arrivalTime ||
-      !form.autoId ||
-      !form.driverId
-    ) {
-      toast.error("Будь ласка, заповніть всі поля форми перед збереженням.")
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const routeFormValidationError =
+      getRouteFormValidationError(routeFormValues)
+    if (routeFormValidationError !== null) {
+      toast.error(routeFormValidationError)
       return
     }
 
-    const savePromise = POST(apiBase ? `${apiBase}/api/Route` : `/api/Route`)
-
-    toast.promise(savePromise, {
-      loading: "Збереження маршруту...",
-      success: "Маршрут успішно додано!",
-      error: (err) =>
-        err.message || "Помилка при додаванні маршруту. Спробуйте ще раз.",
-    })
-
-    try {
-      await savePromise
-      handleClear()
-      setIsOpen(false)
-      router.refresh()
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  async function POST(url: string) {
-    const token = getCookie("token")
-    if (!token) {
-      throw new Error("Токен не знайдено. Будь ласка, увійдіть в систему.")
-    }
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({
-        startLocationId: form.startLocationId,
-        destinationLocationId: form.destinationLocationId,
-        departureTime: form.departureTime,
-        arrivalTime: form.arrivalTime,
-        autoId: form.autoId,
-        driverId: form.driverId,
-        status: form.status,
-      }),
-    })
-
-    if (!response.ok) {
-      let errorMessage = `Помилка сервера: ${response.status}`;
-      try {
-        const errorData = await response.json();
-        if (errorData.detail) {
-          errorMessage = errorData.detail;
-        } else if (errorData.title) {
-          errorMessage = errorData.title;
-        }
-      } catch {
-        const text = await response.text();
-        if (text) errorMessage = text;
+    const isRouteCreated = await runApiMutation(
+      () =>
+        sendApiRequest(apiEndpoints.routes, HttpMethod.Post, {
+          startLocationId: Number(routeFormValues.startLocationId),
+          destinationLocationId: Number(routeFormValues.destinationLocationId),
+          departureTime: routeFormValues.departureTime,
+          arrivalTime: routeFormValues.arrivalTime,
+          autoId: Number(routeFormValues.autoId),
+          driverId: Number(routeFormValues.driverId),
+          status: routeFormValues.status,
+        }),
+      {
+        loading: "Збереження маршруту...",
+        success: "Маршрут успішно додано!",
+        error: "Помилка при додаванні маршруту. Спробуйте ще раз.",
       }
-      throw new Error(errorMessage);
+    )
+    if (isRouteCreated) {
+      setRouteFormValues(createEmptyRouteFormValues())
+      setIsModalOpen(false)
     }
   }
+
+  const renderLocationOptions = () =>
+    locations.map((location) => (
+      <option key={location.id} value={location.id}>
+        {formatLocationName(location)}
+      </option>
+    ))
 
   return (
     <>
       <Button
         className="transition-transform duration-300 hover:scale-105 hover:bg-gray-700"
-        onClick={() => setIsOpen(true)}
+        onClick={() => setIsModalOpen(true)}
       >
         Додати маршрут
       </Button>
       <ModalWindow
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         title="Додати маршрут"
       >
-        <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                Початкова локація
-              </label>
-              <select
-                value={form.startLocationId || ""}
-                onChange={handleSelectChange("startLocationId")}
-                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            <FormField label="Початкова локація">
+              <NativeSelect
+                value={routeFormValues.startLocationId}
+                onChange={(event) =>
+                  updateRouteFormValues({ startLocationId: event.target.value })
+                }
               >
                 <option value="">Оберіть початкову локацію</option>
-                {locations.map((location) => (
-                  <option key={location.id} value={location.id}>
-                    {location.city}, {location.country}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                Кінцева локація
-              </label>
-              <select
-                value={form.destinationLocationId || ""}
-                onChange={handleSelectChange("destinationLocationId")}
-                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                {renderLocationOptions()}
+              </NativeSelect>
+            </FormField>
+            <FormField label="Кінцева локація">
+              <NativeSelect
+                value={routeFormValues.destinationLocationId}
+                onChange={(event) =>
+                  updateRouteFormValues({
+                    destinationLocationId: event.target.value,
+                  })
+                }
               >
                 <option value="">Оберіть кінцеву локацію</option>
-                {locations.map((location) => (
-                  <option key={location.id} value={location.id}>
-                    {location.city}, {location.country}
-                  </option>
-                ))}
-              </select>
-            </div>
+                {renderLocationOptions()}
+              </NativeSelect>
+            </FormField>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                Час відправлення
-              </label>
-              <input
+            <FormField label="Час відправлення">
+              <Input
                 type="datetime-local"
-                value={form.departureTime}
-                onChange={handleInputChange("departureTime")}
-                className="w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                value={routeFormValues.departureTime}
+                onChange={(event) =>
+                  updateRouteFormValues({ departureTime: event.target.value })
+                }
               />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                Час прибуття
-              </label>
-              <input
+            </FormField>
+            <FormField label="Час прибуття">
+              <Input
                 type="datetime-local"
-                value={form.arrivalTime}
-                onChange={handleInputChange("arrivalTime")}
-                className="w-full rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                value={routeFormValues.arrivalTime}
+                onChange={(event) =>
+                  updateRouteFormValues({ arrivalTime: event.target.value })
+                }
               />
-            </div>
+            </FormField>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                Водій
-              </label>
-              <select
-                value={form.driverId || ""}
-                onChange={handleSelectChange("driverId")}
-                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            <FormField label="Водій">
+              <NativeSelect
+                value={routeFormValues.driverId}
+                onChange={(event) =>
+                  updateRouteFormValues({ driverId: event.target.value })
+                }
               >
                 <option value="">Оберіть водія</option>
                 {drivers.map((driver) => (
                   <option key={driver.id} value={driver.id}>
-                    {driver.name} {driver.surname}
+                    {formatDriverFullName(driver)}
                   </option>
                 ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                Автомобіль
-              </label>
-              <select
-                value={form.autoId || ""}
-                onChange={handleSelectChange("autoId")}
-                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              </NativeSelect>
+            </FormField>
+            <FormField label="Автомобіль">
+              <NativeSelect
+                value={routeFormValues.autoId}
+                onChange={(event) =>
+                  updateRouteFormValues({ autoId: event.target.value })
+                }
               >
                 <option value="">Оберіть авто</option>
-                {autos.map((auto) => (
+                {assignableAutos.map((auto) => (
                   <option key={auto.id} value={auto.id}>
-                    {auto.mark} {auto.model} ({auto.number})
+                    {formatAutoTitleWithNumber(auto)}
                   </option>
                 ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                Статус маршруту
-              </label>
-              <select
-                value={form.status}
-                onChange={handleSelectChange("status")}
-                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              </NativeSelect>
+            </FormField>
+            <FormField label="Статус маршруту">
+              <NativeSelect
+                value={routeFormValues.status}
+                onChange={(event) =>
+                  updateRouteFormValues({
+                    status: parseEnumValue(RouteStatus, event.target.value),
+                  })
+                }
               >
-                {routeStatuses.map((status) => (
-                  <option key={status.value} value={status.value}>
-                    {status.label}
+                {Object.values(RouteStatus).map((routeStatus) => (
+                  <option key={routeStatus} value={routeStatus}>
+                    {routeStatusLabels[routeStatus]}
                   </option>
                 ))}
-              </select>
-            </div>
+              </NativeSelect>
+            </FormField>
           </div>
 
-          <Button
-            className="mt-4 bg-blue-600 text-white transition-transform duration-300 hover:scale-105 hover:bg-blue-700"
-            onClick={handleSave}
-          >
+          <SubmitButton isSubmitting={isApiMutationRunning}>
             Зберегти
-          </Button>
-        </div>
+          </SubmitButton>
+        </form>
       </ModalWindow>
     </>
   )

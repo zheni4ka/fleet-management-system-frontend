@@ -1,167 +1,185 @@
 "use client"
 
-import { useState, useEffect, ChangeEvent } from "react"
-import { Button } from "@/components/ui/button"
-import ModalWindow from "@/components/ui/modal-window"
-import { useRouter } from "next/navigation"
+import { useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
-import { AutoMaintenance } from "@/lib/types"
+import { History, Wrench } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { FormField } from "@/components/ui/form-field"
+import ModalWindow from "@/components/ui/modal-window"
+import { SubmitButton } from "@/components/ui/submit-button"
+import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
+import { fetchApiData, sendApiRequest } from "@/lib/api-client"
+import { apiEndpoints } from "@/lib/constants"
+import { formatDate } from "@/lib/formatters"
+import {
+  AutoMaintenance,
+  HttpMethod,
+  MaintenanceFormValues,
+} from "@/lib/types"
 
-function getCookie(name: string): string | null {
-  if (typeof document === "undefined") return null
-  const value = `; ${document.cookie}`
-  const parts = value.split(`; ${name}=`)
-  if (parts.length === 2) return parts.pop()?.split(";").shift() ?? null
-  return null
-}
-
-interface Props {
+interface AutoMaintenanceModalProps {
   autoId: number
   autoTitle: string
 }
 
-export default function AutoMaintenanceModal({ autoId, autoTitle }: Props) {
-  const router = useRouter()
-  const base =
-    (process.env as { NEXT_PUBLIC_API_BASE_URL?: string })
-      .NEXT_PUBLIC_API_BASE_URL ?? ""
+function createEmptyMaintenanceFormValues(): MaintenanceFormValues {
+  return { name: "", description: "", serviceDate: "" }
+}
 
-  const [isOpen, setIsOpen] = useState(false)
-  const [history, setHistory] = useState<AutoMaintenance[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+export default function AutoMaintenanceModal({
+  autoId,
+  autoTitle,
+}: AutoMaintenanceModalProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [maintenanceHistory, setMaintenanceHistory] = useState<
+    AutoMaintenance[]
+  >([])
+  const [isMaintenanceHistoryLoading, setIsMaintenanceHistoryLoading] =
+    useState(false)
+  const [maintenanceHistoryErrorMessage, setMaintenanceHistoryErrorMessage] =
+    useState<string | null>(null)
+  const [maintenanceFormValues, setMaintenanceFormValues] = useState(
+    createEmptyMaintenanceFormValues
+  )
+  const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
 
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    serviceDate: "",
-  })
+  const updateMaintenanceFormValues = (
+    changedValues: Partial<MaintenanceFormValues>
+  ) => {
+    setMaintenanceFormValues({ ...maintenanceFormValues, ...changedValues })
+  }
 
-  useEffect(() => {
-    if (!isOpen) return
-
-    const fetchHistory = async () => {
-      setIsLoading(true)
-      try {
-        const token = getCookie("token")
-        const res = await fetch(
-          `${base ? base : ""}/api/AutoMaintenance/auto/${autoId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-        if (!res.ok) throw new Error("Не вдалося завантажити історію ТО")
-        const data = await res.json()
-        setHistory(data)
-      } catch (error) {
-        console.error(error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchHistory()
-  }, [isOpen, autoId, base])
-
-  const handleChange =
-    (field: keyof typeof form) =>
-    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setForm((prev) => ({ ...prev, [field]: e.target.value }))
-    }
-
-  const handleComplete = async (record: AutoMaintenance) => {
-    const token = getCookie("token")
-    const completePromise = fetch(`${base ? base : ""}/api/AutoMaintenance`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        id: record.id,
-        name: record.name,
-        description: record.description,
-        serviceDate: record.serviceDate,
-        autoId: record.autoId,
-        isCompleted: true,
-      }),
-    }).then(async (res) => {
-      if (!res.ok) {
-      let errorMessage = `Помилка сервера: ${res.status}`;
-      try {
-        const errorData = await res.json();
-        if (errorData.detail) {
-          errorMessage = errorData.detail;
-        } else if (errorData.title) {
-          errorMessage = errorData.title;
-        }
-      } catch {
-        throw new Error(errorMessage);
-      }
-    }
-    })
-
-    toast.promise(completePromise, {
-      loading: "Завершення ТО...",
-      success: "ТО успішно завершено! Авто знову доступне.",
-      error: "Помилка при завершенні ТО.",
-    })
-
+  const loadMaintenanceHistory = async () => {
+    setIsMaintenanceHistoryLoading(true)
+    setMaintenanceHistoryErrorMessage(null)
     try {
-      await completePromise
-      setIsOpen(false)
-      router.refresh()
+      setMaintenanceHistory(
+        await fetchApiData<AutoMaintenance[]>(
+          `${apiEndpoints.autoMaintenanceByAuto}/${autoId}`
+        )
+      )
     } catch (error) {
-      console.error(error)
+      console.error("Не вдалося завантажити історію ТО:", error)
+      setMaintenanceHistoryErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Не вдалося завантажити історію ТО"
+      )
+    } finally {
+      setIsMaintenanceHistoryLoading(false)
     }
   }
 
-  const handleSave = async () => {
-    if (!form.name || !form.description || !form.serviceDate) {
+  const handleOpen = () => {
+    setIsModalOpen(true)
+    void loadMaintenanceHistory()
+  }
+
+  const handleComplete = async (maintenanceRecord: AutoMaintenance) => {
+    const isMaintenanceCompleted = await runApiMutation(
+      () =>
+        sendApiRequest(apiEndpoints.autoMaintenance, HttpMethod.Put, {
+          ...maintenanceRecord,
+          isCompleted: true,
+        }),
+      {
+        loading: "Завершення ТО...",
+        success: "ТО успішно завершено! Авто знову доступне.",
+        error: "Помилка при завершенні ТО.",
+      }
+    )
+    if (isMaintenanceCompleted) {
+      setIsModalOpen(false)
+    }
+  }
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const hasEmptyRequiredField = Object.values(maintenanceFormValues).some(
+      (maintenanceFieldValue) => maintenanceFieldValue.trim() === ""
+    )
+    if (hasEmptyRequiredField) {
       toast.error("Заповніть всі поля!")
       return
     }
 
-    const token = getCookie("token")
-    if (!token) {
-      toast.error("Помилка авторизації.")
-      return
-    }
-
-    const savePromise = fetch(`${base ? base : ""}/api/AutoMaintenance`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        name: form.name,
-        description: form.description,
-        serviceDate: new Date(form.serviceDate).toISOString(), // Форматуємо дату для C#
-        autoId: autoId,
-      }),
-    }).then(async (res) => {
-      if (!res.ok) {
-        const text = await res.text()
-        throw new Error(text || "Помилка сервера")
+    const isMaintenanceCreated = await runApiMutation(
+      () =>
+        sendApiRequest(apiEndpoints.autoMaintenance, HttpMethod.Post, {
+          name: maintenanceFormValues.name.trim(),
+          description: maintenanceFormValues.description.trim(),
+          serviceDate: maintenanceFormValues.serviceDate,
+          autoId,
+        }),
+      {
+        loading: "Збереження запису...",
+        success: "Автомобіль відправлено на ТО!",
+        error: "Помилка при створенні запису.",
       }
-    })
-
-    toast.promise(savePromise, {
-      loading: "Збереження запису...",
-      success: "Автомобіль відправлено на ТО!",
-      error: (err) => err.message || "Помилка при створенні запису.",
-    })
-
-    try {
-      await savePromise
-      setForm({ name: "", description: "", serviceDate: "" })
-      setIsOpen(false)
-      router.refresh()
-    } catch (error) {
-      console.error(error)
+    )
+    if (isMaintenanceCreated) {
+      setMaintenanceFormValues(createEmptyMaintenanceFormValues())
+      setIsModalOpen(false)
     }
+  }
+
+  const renderMaintenanceHistory = () => {
+    if (isMaintenanceHistoryLoading) {
+      return (
+        <p className="animate-pulse py-4 text-center text-sm text-slate-500">
+          Завантаження...
+        </p>
+      )
+    }
+    if (maintenanceHistoryErrorMessage !== null) {
+      return (
+        <p className="rounded-md border border-red-200 bg-red-50 py-4 text-center text-sm text-red-600">
+          {maintenanceHistoryErrorMessage}
+        </p>
+      )
+    }
+    if (maintenanceHistory.length === 0) {
+      return (
+        <p className="rounded-md border border-dashed border-slate-300 bg-slate-50 py-4 text-center text-sm text-slate-500">
+          Записів ще немає. Автомобіль справний.
+        </p>
+      )
+    }
+    return (
+      <div className="max-h-36 space-y-2 overflow-y-auto pr-2">
+        {maintenanceHistory.map((maintenanceRecord) => (
+          <div
+            key={maintenanceRecord.id}
+            className={`rounded-md border p-3 ${maintenanceRecord.isCompleted ? "border-slate-200 bg-slate-50" : "border-orange-300 bg-orange-50"}`}
+          >
+            <div className="mb-1 flex items-start justify-between">
+              <span className="text-sm font-medium text-slate-800">
+                {maintenanceRecord.name}{" "}
+                {maintenanceRecord.isCompleted ? "(Завершено)" : "(В процесі)"}
+              </span>
+              <span className="rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-500">
+                {formatDate(maintenanceRecord.serviceDate)}
+              </span>
+            </div>
+            <p className="mb-2 text-xs text-slate-600">
+              {maintenanceRecord.description}
+            </p>
+            {!maintenanceRecord.isCompleted && (
+              <Button
+                type="button"
+                onClick={() => handleComplete(maintenanceRecord)}
+                disabled={isApiMutationRunning}
+                size="sm"
+                className="h-7 w-full bg-green-600 text-xs text-white hover:bg-green-700"
+              >
+                Завершити ремонт
+              </Button>
+            )}
+          </div>
+        ))}
+      </div>
+    )
   }
 
   return (
@@ -170,153 +188,74 @@ export default function AutoMaintenanceModal({ autoId, autoTitle }: Props) {
         variant="outline"
         size="sm"
         className="border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 hover:text-orange-800"
-        onClick={() => setIsOpen(true)}
+        onClick={handleOpen}
       >
         ТО
       </Button>
 
       <ModalWindow
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         title={`Технічне обслуговування: ${autoTitle}`}
       >
         <div className="space-y-5 px-2">
-          <div>
+          <section>
             <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-slate-500"
-              >
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                <path d="M3 3v5h5" />
-                <path d="M12 7v5l4 2" />
-              </svg>
+              <History className="size-4 text-slate-500" />
               <h3 className="text-sm font-semibold text-slate-700">
                 Історія обслуговування
               </h3>
             </div>
+            {renderMaintenanceHistory()}
+          </section>
 
-            {isLoading ? (
-              <div className="flex justify-center py-4">
-                <p className="animate-pulse text-sm text-slate-500">
-                  Завантаження...
-                </p>
-              </div>
-            ) : history.length === 0 ? (
-              <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 py-4 text-center">
-                <p className="text-sm text-slate-500">
-                  Записів ще немає. Автомобіль справний.
-                </p>
-              </div>
-            ) : (
-              <div className="max-h-36 scrollbar-thin scrollbar-thumb-slate-200 space-y-2 overflow-y-auto pr-2">
-                {history.map((record) => (
-                  <div
-                    key={record.id}
-                    className={`rounded-md border p-3 ${record.isCompleted ? "border-slate-200 bg-slate-50" : "border-orange-300 bg-orange-50"}`}
-                  >
-                    <div className="mb-1 flex items-start justify-between">
-                      <span className="text-sm font-medium text-slate-800">
-                        {record.name}{" "}
-                        {record.isCompleted ? "(Завершено)" : "(В процесі)"}
-                      </span>
-                      <span className="rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-500">
-                        {new Date(record.serviceDate).toLocaleDateString(
-                          "uk-UA"
-                        )}
-                      </span>
-                    </div>
-                    <p className="mb-2 text-xs text-slate-600">
-                      {record.description}
-                    </p>
-
-                    {!record.isCompleted && (
-                      <Button
-                        onClick={() => handleComplete(record)}
-                        size="sm"
-                        className="h-7 w-full bg-green-600 text-xs text-white hover:bg-green-700"
-                      >
-                        Завершити ремонт
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div>
+          <section>
             <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-blue-500"
-              >
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-              </svg>
+              <Wrench className="size-4 text-blue-500" />
               <h3 className="text-sm font-semibold text-slate-700">
                 Відправити на ремонт
               </h3>
             </div>
 
-            <div className="space-y-3">
-              <div>
-                <input
-                  type="text"
-                  placeholder="Тип робіт (напр., Заміна мастила)"
-                  value={form.name}
-                  onChange={handleChange("name")}
-                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+              <FormField label="Тип робіт">
+                <Input
+                  placeholder="Напр., Заміна мастила"
+                  value={maintenanceFormValues.name}
+                  onChange={(event) =>
+                    updateMaintenanceFormValues({ name: event.target.value })
+                  }
                 />
-              </div>
-
-              <div>
+              </FormField>
+              <FormField label="Опис проблеми">
                 <textarea
                   placeholder="Детальний опис проблеми..."
-                  value={form.description}
-                  onChange={handleChange("description")}
+                  value={maintenanceFormValues.description}
+                  onChange={(event) =>
+                    updateMaintenanceFormValues({
+                      description: event.target.value,
+                    })
+                  }
                   rows={2}
-                  className="w-full resize-none rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                  className="w-full resize-none rounded-lg border border-input bg-white px-2.5 py-2 text-sm font-normal text-slate-900 outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                 />
-              </div>
-
-              <div className="flex flex-col space-y-1 text-left">
-                <label className="mb-1 block text-xs font-medium text-slate-600">
-                  Дата початку робіт
-                </label>
-                <input
+              </FormField>
+              <FormField label="Дата початку робіт">
+                <Input
                   type="datetime-local"
-                  value={form.serviceDate}
-                  onChange={handleChange("serviceDate")}
-                  className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                  value={maintenanceFormValues.serviceDate}
+                  onChange={(event) =>
+                    updateMaintenanceFormValues({
+                      serviceDate: event.target.value,
+                    })
+                  }
                 />
-              </div>
-
-              <div className="pt-2">
-                <Button
-                  onClick={handleSave}
-                  className="h-9 w-full bg-blue-600 text-white hover:bg-blue-700"
-                >
-                  Зареєструвати ТО
-                </Button>
-              </div>
-            </div>
-          </div>
+              </FormField>
+              <SubmitButton isSubmitting={isApiMutationRunning}>
+                Зареєструвати ТО
+              </SubmitButton>
+            </form>
+          </section>
         </div>
       </ModalWindow>
     </>

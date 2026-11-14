@@ -1,87 +1,60 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, type FormEvent } from "react"
+import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 import ModalWindow from "@/components/ui/modal-window"
-import { Driver } from "@/lib/types"
-import toast from "react-hot-toast"
+import { SubmitButton } from "@/components/ui/submit-button"
+import { DriverFormFields } from "@/components/forms/driver-form-fields"
+import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
+import { sendApiRequest } from "@/lib/api-client"
+import { apiEndpoints } from "@/lib/constants"
+import {
+  createDriverFormValuesFromDriver,
+  createDriverRequestBody,
+  getDriverFormValidationError,
+} from "@/lib/forms/driver-form"
+import { Driver, HttpMethod } from "@/lib/types"
 
-function getCookie(name: string): string | null {
-  if (typeof document === "undefined") return null
-  const value = `; ${document.cookie}`
-  const parts = value.split(`; ${name}=`)
-  if (parts.length === 2) return parts.pop()?.split(";").shift() ?? null
-  return null
+interface EditDriverModalProps {
+  driver: Driver
 }
 
-export default function EditDriverModal({ driver }: { driver: Driver }) {
-  const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
-  const [form, setForm] = useState({
-    name: driver.name,
-    surname: driver.surname,
-    patronymic: driver.patronymic,
-    licenseNumber: driver.licenseNumber,
-  })
+export default function EditDriverModal({ driver }: EditDriverModalProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [driverFormValues, setDriverFormValues] = useState(() =>
+    createDriverFormValuesFromDriver(driver)
+  )
+  const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
 
-  const apiBase =
-    (process.env as { NEXT_PUBLIC_API_BASE_URL?: string })
-      .NEXT_PUBLIC_API_BASE_URL ?? ""
+  const handleOpen = () => {
+    setDriverFormValues(createDriverFormValuesFromDriver(driver))
+    setIsModalOpen(true)
+  }
 
-  const handleChange =
-    (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setForm((prev) => ({ ...prev, [field]: e.target.value }))
-    }
-
-  const handleSave = async () => {
-    const token = getCookie("token")
-    if (!token) {
-      toast.error("Помилка авторизації. Увійдіть в систему.")
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const driverFormValidationError =
+      getDriverFormValidationError(driverFormValues)
+    if (driverFormValidationError !== null) {
+      toast.error(driverFormValidationError)
       return
     }
 
-    const updatePromise = fetch(`${apiBase ? apiBase : ""}/api/Driver`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        id: driver.id,
-        name: form.name,
-        surname: form.surname,
-        patronymic: form.patronymic,
-        licenseNumber: form.licenseNumber,
-      }),
-    }).then(async (res) => {
-      if (!res.ok) {
-        let errorMessage = `Помилка сервера: ${res.status}`
-        try {
-          const errorData = await res.json()
-          if (errorData.detail) errorMessage = errorData.detail
-          else if (errorData.title) errorMessage = errorData.title
-          else if (errorData.message) errorMessage = errorData.message // Для кастомних відповідей
-        } catch {
-          const text = await res.text()
-          if (text) errorMessage = text
-        }
-        throw new Error(errorMessage)
+    const isDriverUpdated = await runApiMutation(
+      () =>
+        sendApiRequest(apiEndpoints.drivers, HttpMethod.Put, {
+          id: driver.id,
+          ...createDriverRequestBody(driverFormValues),
+        }),
+      {
+        loading: "Збереження змін...",
+        success: "Водія успішно оновлено!",
+        error: "Не вдалося оновити водія",
       }
-    })
-
-    toast.promise(updatePromise, {
-      loading: "Збереження змін...",
-      success: "Водія успішно оновлено!",
-      error: (err) => err.message || "Не вдалося оновити водія",
-    })
-
-    try {
-      await updatePromise
-      setIsOpen(false)
-      router.refresh()
-    } catch (error) {
-      console.error("Error occurred while updating driver:", error)
+    )
+    if (isDriverUpdated) {
+      setIsModalOpen(false)
     }
   }
 
@@ -91,60 +64,24 @@ export default function EditDriverModal({ driver }: { driver: Driver }) {
         variant="outline"
         size="sm"
         className="transition-transform duration-300 hover:scale-105"
-        onClick={() => {
-          setForm({
-            name: driver.name,
-            surname: driver.surname,
-            patronymic: driver.patronymic,
-            licenseNumber: driver.licenseNumber,
-          })
-          setIsOpen(true)
-        }}
+        onClick={handleOpen}
       >
         Редагувати
       </Button>
-
       <ModalWindow
         title="Редагувати водія"
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
       >
-        <div className="flex w-full flex-col space-y-3">
-          <input
-            type="text"
-            placeholder="Ім'я"
-            value={form.name}
-            onChange={handleChange("name")}
-            className="rounded-md border border-slate-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <DriverFormFields
+            driverFormValues={driverFormValues}
+            onDriverFormValuesChange={setDriverFormValues}
           />
-          <input
-            type="text"
-            placeholder="Прізвище"
-            value={form.surname}
-            onChange={handleChange("surname")}
-            className="rounded-md border border-slate-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-          <input
-            type="text"
-            placeholder="По-батькові"
-            value={form.patronymic}
-            onChange={handleChange("patronymic")}
-            className="rounded-md border border-slate-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-          <input
-            type="text"
-            placeholder="Номер ліцензії"
-            value={form.licenseNumber}
-            onChange={handleChange("licenseNumber")}
-            className="rounded-md border border-slate-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-          <Button
-            onClick={handleSave}
-            className="mt-2 bg-blue-600 text-white transition-transform duration-300 hover:scale-[1.02] hover:bg-blue-700"
-          >
+          <SubmitButton isSubmitting={isApiMutationRunning}>
             Зберегти
-          </Button>
-        </div>
+          </SubmitButton>
+        </form>
       </ModalWindow>
     </>
   )

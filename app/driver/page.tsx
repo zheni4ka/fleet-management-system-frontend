@@ -1,59 +1,32 @@
-import { DriversTable } from "@/components/tables/drivers-table"
+import DriversTable from "@/components/tables/drivers-table"
 import AddDriverModal from "@/components/add/add-driver-modal"
-import { env } from "process"
-import { cookies } from "next/headers"
-import { redirect } from "next/navigation"
-import { getUserRole } from "@/lib/utils"
-import toast from "react-hot-toast"
+import { LoadErrorMessage } from "@/components/load-error-message"
+import { PageHeader } from "@/components/page-header"
+import { apiEndpoints } from "@/lib/constants"
+import { fetchFromApi, getAdminAuthTokenOrRedirect } from "@/lib/server/api"
+import { Driver } from "@/lib/types"
 
-export default async function DriverPage() {
-  const cookieStore = await cookies()
-  const token = cookieStore.get("token")?.value
-
-  if (!token) {
-    redirect("/login")
-  }
-
-  const role = getUserRole(token);
-  if (role !== "Admin") {
-    redirect("/")
-  }
-
-  const response = await fetch(`${env.API_BASE_URL}/api/Driver/all`, {
-    cache: "no-store",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-
-    if(response.status === 401) { 
-      redirect("/login")
-    }
-
-    return (
-      <div className="p-6 font-medium text-red-500">
-        Помилка завантаження даних (Статус: {response.status})
-      </div>
-    )
-  }
-
-  const drivers = await response.json()
+export default async function DriversPage() {
+  const authToken = await getAdminAuthTokenOrRedirect()
+  const driversResult = await fetchFromApi<Driver[]>(
+    apiEndpoints.allDrivers,
+    authToken
+  )
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Водії</h1>
-          <p className="text-sm text-muted-foreground">
-            Управління водіями вашого автопарку та перегляд їхніх ліцензій.
-          </p>
-        </div>
+      <PageHeader
+        title="Водії"
+        description="Управління водіями вашого автопарку та перегляд їхніх ліцензій."
+      >
         <AddDriverModal />
-      </div>
+      </PageHeader>
 
-      <DriversTable data={drivers} />
+      {driversResult.isSucceeded ? (
+        <DriversTable drivers={driversResult.data} />
+      ) : (
+        <LoadErrorMessage errorMessage={driversResult.errorMessage} />
+      )}
     </div>
   )
 }

@@ -1,155 +1,78 @@
 "use client"
-import { useState } from "react"
+
+import { useState, type FormEvent } from "react"
+import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 import ModalWindow from "@/components/ui/modal-window"
-import { useRouter } from "next/navigation"
-import toast from "react-hot-toast"
-
-function getCookie(name: string): string | null {
-  if (typeof document === "undefined") return null
-  const value = `; ${document.cookie}`
-  const parts = value.split(`; ${name}=`)
-  if (parts.length === 2) return parts.pop()?.split(";").shift() ?? null
-  return null
-}
+import { SubmitButton } from "@/components/ui/submit-button"
+import { DriverFormFields } from "@/components/forms/driver-form-fields"
+import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
+import { sendApiRequest } from "@/lib/api-client"
+import { apiEndpoints } from "@/lib/constants"
+import {
+  createDriverRequestBody,
+  createEmptyDriverFormValues,
+  getDriverFormValidationError,
+} from "@/lib/forms/driver-form"
+import { HttpMethod } from "@/lib/types"
 
 export default function AddDriverModal() {
-  const base = (process.env as { NEXT_PUBLIC_API_BASE_URL?: string }).NEXT_PUBLIC_API_BASE_URL ?? "";
-  const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
-  const [form, setForm] = useState({
-    name: "",
-    surname: "",
-    patronymic: "",
-    licenseNumber: "",
-  })
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [driverFormValues, setDriverFormValues] = useState(
+    createEmptyDriverFormValues
+  )
+  const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
 
-  const handleChange =
-    (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      setForm((prev) => ({ ...prev, [field]: e.target.value }))
-    }
-
-  const handleClear = () => {
-    setForm({ name: "", surname: "", patronymic: "", licenseNumber: "" })
-  }
-
-  const handleSave = async () => {
-    if (!form.name || !form.surname || !form.licenseNumber) {
-      toast.error("Будь ласка, заповніть всі поля форми перед збереженням.")
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const driverFormValidationError =
+      getDriverFormValidationError(driverFormValues)
+    if (driverFormValidationError !== null) {
+      toast.error(driverFormValidationError)
       return
     }
 
-    const savePromise = POST(base ? `${base}/api/Driver` : `/api/Driver`);
-    
-    toast.promise(savePromise, {
-      loading: "Збереження водія...",
-      success: "Водій успішно додано!",
-      error: (err) => err.message || "Помилка при додаванні водія. Спробуйте ще раз.",
-    });
-
-    try {
-      await savePromise; 
-      handleClear();     
-      setIsOpen(false);  
-      router.refresh();
-    } catch (error) {
-      console.error("Не вдалося зберегти дані:", error);
+    const isDriverCreated = await runApiMutation(
+      () =>
+        sendApiRequest(
+          apiEndpoints.drivers,
+          HttpMethod.Post,
+          createDriverRequestBody(driverFormValues)
+        ),
+      {
+        loading: "Збереження водія...",
+        success: "Водія успішно додано!",
+        error: "Помилка при додаванні водія. Спробуйте ще раз.",
+      }
+    )
+    if (isDriverCreated) {
+      setDriverFormValues(createEmptyDriverFormValues())
+      setIsModalOpen(false)
     }
   }
-
-async function POST(url: string) {
-  
-  try {
-    const token = getCookie("token")
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-      "Content-Type": "application/json",
-      ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-    },
-      body: JSON.stringify({
-        name: form.name,
-        surname: form.surname,
-        patronymic: form.patronymic,
-        licenseNumber: form.licenseNumber
-      }),
-    });
-
-    if (!response.ok) {
-    let errorMessage = `Помилка сервера: ${response.status}`;
-    try {
-        const errorData = await response.json();
-        if (errorData.detail) errorMessage = errorData.detail;
-        else if (errorData.title) errorMessage = errorData.title;
-        else if (errorData.message) errorMessage = errorData.message;
-    } catch {
-        const text = await response.text();
-        if (text) errorMessage = text;
-    }
-    throw new Error(errorMessage);
-}
-    const text = await response.text(); 
-    const data = text ? JSON.parse(text) : null; 
-    return data;
-  } catch (error) {
-    console.error("Не вдалося зберегти дані:", error);
-    throw error;
-}
-}
 
   return (
     <>
       <Button
         className="transition-transform duration-300 hover:scale-105 hover:bg-gray-700"
-        onClick={() => setIsOpen(true)}
+        onClick={() => setIsModalOpen(true)}
       >
         Додати водія
       </Button>
-
       <ModalWindow
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         title="Додати водія"
       >
-          
-        <input
-          type="text"
-          value={form.name}
-          onChange={handleChange("name")}
-          placeholder="Ім'я"
-          className="rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        />
-
-        <input
-          type="text"
-          value={form.surname}
-          onChange={handleChange("surname")}
-          placeholder="Прізвище"
-          className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        />
-
-        <input
-          type="text"
-          value={form.patronymic}
-          onChange={handleChange("patronymic")}
-          placeholder="По батькові"
-          className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        />
-
-        <input
-          type="text"
-          value={form.licenseNumber}
-          onChange={handleChange("licenseNumber")}
-          placeholder="Посвідчення водія"
-          className="mt-2 rounded-md border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        />
-
-        <Button
-          className="mt-4 bg-blue-600 align-bottom text-white transition-transform duration-300 hover:scale-105 hover:bg-blue-700"
-          onClick={handleSave}
-        >
-          Зберегти
-        </Button>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <DriverFormFields
+            driverFormValues={driverFormValues}
+            onDriverFormValuesChange={setDriverFormValues}
+          />
+          <SubmitButton isSubmitting={isApiMutationRunning}>
+            Зберегти
+          </SubmitButton>
+        </form>
       </ModalWindow>
     </>
   )

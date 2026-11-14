@@ -1,215 +1,271 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import { useMemo, useState } from "react"
 import RouteCard from "@/components/route-card"
 import GoogleMapRoute from "@/components/google-map-route"
-import { Route, Location, RouteStatus } from "@/lib/types"
-import { useRouter } from "next/navigation"
-import toast from "react-hot-toast"
-import { Input } from "./ui/input"
-
-function getCookie(name: string): string | null {
-  if (typeof document === "undefined") return null
-  const value = `; ${document.cookie}`
-  const parts = value.split(`; ${name}=`)
-  if (parts.length === 2) return parts.pop()?.split(";").shift() ?? null
-  return null
-}
+import EditRouteModal from "@/components/edit/edit-route-modal"
+import { Input } from "@/components/ui/input"
+import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
+import { sendApiRequest } from "@/lib/api-client"
+import { apiEndpoints, unknownLocationLabel } from "@/lib/constants"
+import {
+  formatAutoTitleWithNumber,
+  formatDriverFullName,
+  formatLocationName,
+} from "@/lib/formatters"
+import {
+  Auto,
+  Driver,
+  HttpMethod,
+  Location,
+  Route,
+  RouteStatus,
+} from "@/lib/types"
+import { isMatchingSearchQuery } from "@/lib/utils"
 
 interface RoutesListProps {
-  initialRoutes: Route[]
+  routes: Route[]
   locations: Location[]
-  autoMapData: [number, string][]
-  driverMapData: [number, string][]
+  autos: Auto[]
+  drivers: Driver[]
 }
 
-export const RoutesList: React.FC<RoutesListProps> = ({
-  initialRoutes,
+export function RoutesList({
+  routes,
   locations,
-  autoMapData,
-  driverMapData,
-}) => {
-  const router = useRouter()
-  const autoMap = new Map(autoMapData)
-  const driverMap = new Map(driverMapData)
-  const apiBase = (process.env as { NEXT_PUBLIC_API_BASE_URL?: string }).NEXT_PUBLIC_API_BASE_URL ?? ""
+  autos,
+  drivers,
+}: RoutesListProps) {
+  const [serverRoutesSnapshot, setServerRoutesSnapshot] = useState(routes)
+  const [routeStatusOverrides, setRouteStatusOverrides] = useState<
+    ReadonlyMap<number, RouteStatus>
+  >(() => new Map())
+  const [deletedRouteIds, setDeletedRouteIds] = useState<ReadonlySet<number>>(
+    () => new Set()
+  )
+  const [selectedRouteId, setSelectedRouteId] = useState<number | null>(null)
+  const [updatingRouteId, setUpdatingRouteId] = useState<number | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const { runApiMutation } = useApiMutationWithRefresh()
 
-  const locationMap = new Map<number, string>()
-  locations.forEach((loc) =>
-    locationMap.set(loc.id, `${loc.city}, ${loc.country}`)
+  if (serverRoutesSnapshot !== routes) {
+    setServerRoutesSnapshot(routes)
+    setRouteStatusOverrides(new Map())
+    setDeletedRouteIds(new Set())
+  }
+
+  const locationsById = useMemo(
+    () => new Map(locations.map((location) => [location.id, location])),
+    [locations]
+  )
+  const autosById = useMemo(
+    () => new Map(autos.map((auto) => [auto.id, auto])),
+    [autos]
+  )
+  const driversById = useMemo(
+    () => new Map(drivers.map((driver) => [driver.id, driver])),
+    [drivers]
   )
 
-  const [localRoutes, setLocalRoutes] = useState<Route[]>(initialRoutes)
-  const [selectedRoute, setSelectedRoute] = useState<Route | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
+  const displayedRoutes = useMemo(
+    () =>
+      routes
+        .filter((route) => !deletedRouteIds.has(route.id))
+        .map((route) => {
+          const overriddenRouteStatus = routeStatusOverrides.get(route.id)
+          return overriddenRouteStatus === undefined
+            ? route
+            : { ...route, status: overriddenRouteStatus }
+        }),
+    [routes, deletedRouteIds, routeStatusOverrides]
+  )
 
-  // Фільтрація маршрутів в реальному часі
-  const visibleRoutes = localRoutes.filter((route) => {
-    const startCity = locationMap.get(route.startLocationId)?.toLowerCase() || ""
-    const destCity = locationMap.get(route.destinationLocationId)?.toLowerCase() || ""
-    const search = searchQuery.toLowerCase()
-    
-    // Шукаємо збіги у місті відправлення АБО місті прибуття
-    return startCity.includes(search) || destCity.includes(search)
-  })
+  const getLocationName = (locationId: number): string => {
+    const location = locationsById.get(locationId)
+    return location === undefined
+      ? unknownLocationLabel
+      : formatLocationName(location)
+  }
 
-  // Якщо дані з сервера змінилися - оновлюємо локальний стейт
-  useEffect(() => {
-    setLocalRoutes(initialRoutes)
-  }, [initialRoutes])
+  const getAutoTitle = (autoId: number): string => {
+    const auto = autosById.get(autoId)
+    return auto === undefined
+      ? `Авто ID: ${autoId}`
+      : formatAutoTitleWithNumber(auto)
+  }
 
-  // Функція для зміни статусу
-  const handleStatusChange = async (e: React.MouseEvent, route: Route, newStatus: RouteStatus) => {
-    e.stopPropagation()
+  const getDriverFullName = (driverId: number): string => {
+    const driver = driversById.get(driverId)
+    return driver === undefined
+      ? `Водій ID: ${driverId}`
+      : formatDriverFullName(driver)
+  }
 
-    const token = getCookie("token")
-    if (!token) {
-      toast.error("Помилка авторизації. Увійдіть в систему.")
-      return
-    }
-    setLocalRoutes((prev) => 
-      prev.map((r) => (r.id === route.id ? { ...r, status: newStatus } : r))
-    )
+  const visibleRoutes = displayedRoutes.filter((route) =>
+    isMatchingSearchQuery(searchQuery, [
+      getLocationName(route.startLocationId),
+      getLocationName(route.destinationLocationId),
+    ])
+  )
 
-    const updatePromise = fetch(
-      apiBase ? `${apiBase}/api/Route/${route.id}` : `/api/Route/${route.id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
+  const updateRouteStatusOverride = (
+    routeId: number,
+    routeStatus: RouteStatus | null
+  ) => {
+    setRouteStatusOverrides((previousRouteStatusOverrides) => {
+      const nextRouteStatusOverrides = new Map(previousRouteStatusOverrides)
+      if (routeStatus === null) {
+        nextRouteStatusOverrides.delete(routeId)
+      } else {
+        nextRouteStatusOverrides.set(routeId, routeStatus)
+      }
+      return nextRouteStatusOverrides
+    })
+  }
+
+  const updateDeletedRouteIds = (routeId: number, isRouteDeleted: boolean) => {
+    setDeletedRouteIds((previousDeletedRouteIds) => {
+      const nextDeletedRouteIds = new Set(previousDeletedRouteIds)
+      if (isRouteDeleted) {
+        nextDeletedRouteIds.add(routeId)
+      } else {
+        nextDeletedRouteIds.delete(routeId)
+      }
+      return nextDeletedRouteIds
+    })
+  }
+
+  const handleStatusChange = async (
+    route: Route,
+    targetRouteStatus: RouteStatus
+  ) => {
+    setUpdatingRouteId(route.id)
+    updateRouteStatusOverride(route.id, targetRouteStatus)
+
+    const isRouteStatusUpdated = await runApiMutation(
+      () =>
+        sendApiRequest(`${apiEndpoints.routes}/${route.id}`, HttpMethod.Put, {
           id: route.id,
           startLocationId: route.startLocationId,
           destinationLocationId: route.destinationLocationId,
+          departureTime: route.departureTime,
+          arrivalTime: route.arrivalTime,
           autoId: route.autoId,
           driverId: route.driverId,
-          status: newStatus,
+          status: targetRouteStatus,
         }),
+      {
+        loading: "Оновлення статусу на сервері...",
+        success: "Статус маршруту збережено!",
+        error: "Не вдалося зберегти зміни",
       }
-    ).then(async (res) => {
-      if (!res.ok) {
-        const text = await res.text()
-        throw new Error(text || "Помилка сервера")
-      }
-    })
-
-    toast.promise(updatePromise, {
-      loading: "Оновлення статусу на сервері...",
-      success: "Статус маршруту збережено!",
-      error: "Не вдалося зберегти зміни",
-    })
-
-    try {
-      await updatePromise
-      router.refresh()
-    } catch (error) {
-      setLocalRoutes(initialRoutes)
+    )
+    if (!isRouteStatusUpdated) {
+      updateRouteStatusOverride(route.id, null)
     }
+    setUpdatingRouteId(null)
   }
 
-  const handleDeleteRoute = async (e: React.MouseEvent, routeId: number) => {
-    e.stopPropagation()
-    const confirmed = window.confirm(
-      "Ви впевнені, що хочете безповоротно видалити цей маршрут?"
-    )
-    if (!confirmed) return
-
-    const token = getCookie("token")
-    if (!token) {
-      toast.error("Помилка авторизації. Увійдіть в систему.")
+  const handleDeleteRoute = async (routeId: number) => {
+    if (
+      !window.confirm(
+        "Ви впевнені, що хочете безповоротно видалити цей маршрут?"
+      )
+    ) {
       return
     }
 
-    // МИТТЄВЕ ВИДАЛЕННЯ З ІНТЕРФЕЙСУ (Optimistic Update)
-    setLocalRoutes((prev) => prev.filter((r) => r.id !== routeId))
+    setUpdatingRouteId(routeId)
+    updateDeletedRouteIds(routeId, true)
 
-    const deletePromise = fetch(
-      apiBase ? `${apiBase}/api/Route/${routeId}` : `/api/Route/${routeId}`,
+    const isRouteDeleted = await runApiMutation(
+      () =>
+        sendApiRequest(`${apiEndpoints.routes}/${routeId}`, HttpMethod.Delete),
       {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        loading: "Видалення на сервері...",
+        success: "Маршрут успішно видалено!",
+        error: "Не вдалося видалити маршрут",
       }
-    ).then(async (res) => {
-      if (!res.ok) {
-        const text = await res.text()
-        throw new Error(text || "Помилка сервера при видаленні")
-      }
-    })
-
-    toast.promise(deletePromise, {
-      loading: "Видалення на сервері...",
-      success: "Маршрут успішно видалено!",
-      error: "Не вдалося видалити маршрут",
-    })
-
-    try {
-      await deletePromise
-      if (selectedRoute?.id === routeId) {
-        setSelectedRoute(null)
-      }
-      router.refresh()
-    } catch (error) {
-       setLocalRoutes(initialRoutes)
+    )
+    if (!isRouteDeleted) {
+      updateDeletedRouteIds(routeId, false)
     }
+    setUpdatingRouteId(null)
   }
 
-  const startLoc = selectedRoute
-    ? locations.find((l) => l.id === selectedRoute.startLocationId)
-    : null
-  const destLoc = selectedRoute
-    ? locations.find((l) => l.id === selectedRoute.destinationLocationId)
-    : null
+  const selectedRoute = displayedRoutes.find(
+    (route) => route.id === selectedRouteId
+  )
+  const selectedRouteStartLocation =
+    selectedRoute && locationsById.get(selectedRoute.startLocationId)
+  const selectedRouteDestinationLocation =
+    selectedRoute && locationsById.get(selectedRoute.destinationLocationId)
+
+  const renderEmptyRoutesMessage = () => {
+    if (displayedRoutes.length === 0) {
+      return "Маршрутів поки немає."
+    }
+    return (
+      <>
+        За вашим запитом <span className="font-semibold">«{searchQuery}»</span>{" "}
+        нічого не знайдено.
+      </>
+    )
+  }
 
   return (
     <>
-      {/* 1. ПОШУК ВИРІВНЯНО ТА ВИНЕСЕНО ЗА МЕЖІ СІТКИ (тепер він зверху) */}
       <div className="mb-6">
         <Input
           type="text"
           placeholder="Пошук за містом відправлення або прибуття..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(event) => setSearchQuery(event.target.value)}
           className="max-w-md bg-white shadow-sm"
         />
       </div>
 
-      {/* 2. СІТКА З КАРТКАМИ */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {visibleRoutes.map((route) => (
-          <div key={route.id} onClick={() => setSelectedRoute(route)} className="h-full">
-            <RouteCard
-              startLocationName={locationMap.get(route.startLocationId)}
-              destinationLocationName={locationMap.get(route.destinationLocationId)}
-              departureTime={route.departureTime}
-              arrivalTime={route.arrivalTime}
-              autoId={route.autoId}
-              driverId={route.driverId}
-              autoName={route.autoId ? autoMap.get(route.autoId) : undefined}
-              driverName={route.driverId ? driverMap.get(route.driverId) : undefined}
-              status={route.status}
-              onStatusChange={(e, newStatus) => handleStatusChange(e, route, newStatus)}
-              onDelete={(e) => handleDeleteRoute(e, route.id)}
-            />
-          </div>
+          <RouteCard
+            key={route.id}
+            route={route}
+            startLocationName={getLocationName(route.startLocationId)}
+            destinationLocationName={getLocationName(
+              route.destinationLocationId
+            )}
+            autoTitle={getAutoTitle(route.autoId)}
+            driverFullName={getDriverFullName(route.driverId)}
+            isRouteUpdating={updatingRouteId === route.id}
+            editRouteAction={
+              <EditRouteModal
+                route={route}
+                autos={autos}
+                drivers={drivers}
+                locations={locations}
+                isRouteUpdating={updatingRouteId === route.id}
+              />
+            }
+            onSelect={() => setSelectedRouteId(route.id)}
+            onStatusChange={(targetRouteStatus) =>
+              handleStatusChange(route, targetRouteStatus)
+            }
+            onDelete={() => handleDeleteRoute(route.id)}
+          />
         ))}
 
-        {/* 3. ПОВІДОМЛЕННЯ, ЯКЩО ЗАПИСІВ НЕ ЗНАЙДЕНО */}
-        {visibleRoutes.length === 0 && localRoutes.length > 0 && (
-          <div className="col-span-full py-12 text-center text-slate-500 bg-white border border-dashed rounded-xl">
-            За вашим запитом <span className="font-semibold">"{searchQuery}"</span> нічого не знайдено.
+        {visibleRoutes.length === 0 && (
+          <div className="col-span-full rounded-xl border border-dashed bg-white py-12 text-center text-slate-500">
+            {renderEmptyRoutesMessage()}
           </div>
         )}
       </div>
 
-      {selectedRoute && startLoc && destLoc && (
+      {selectedRouteStartLocation && selectedRouteDestinationLocation && (
         <GoogleMapRoute
-          origin={`${startLoc.city}, ${startLoc.country}`}
-          destination={`${destLoc.city}, ${destLoc.country}`}
-          onClose={() => setSelectedRoute(null)}
+          origin={formatLocationName(selectedRouteStartLocation)}
+          destination={formatLocationName(selectedRouteDestinationLocation)}
+          onClose={() => setSelectedRouteId(null)}
         />
       )}
     </>

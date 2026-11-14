@@ -1,57 +1,32 @@
-import { DispatchersTable } from "@/components/tables/dispatchers-table"
+import DispatchersTable from "@/components/tables/dispatchers-table"
 import AddDispatcherModal from "@/components/add/add-dispatcher-modal"
-import { cookies } from "next/headers"
-import { redirect } from "next/navigation"
-import { getUserRole } from "@/lib/utils"
+import { LoadErrorMessage } from "@/components/load-error-message"
+import { PageHeader } from "@/components/page-header"
+import { apiEndpoints } from "@/lib/constants"
+import { fetchFromApi, getAdminAuthTokenOrRedirect } from "@/lib/server/api"
+import { Dispatcher } from "@/lib/types"
 
 export default async function DispatchersPage() {
-  const cookieStore = await cookies()
-  const token = cookieStore.get("token")?.value
-
-  if (!token) {
-    redirect("/login")
-  }
-
-  const role = getUserRole(token)
-  if (role !== "Admin") {
-    redirect("/") // Доступ тільки для адміна
-  }
-
-  let users = []
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? ""
-
-  try {
-    const res = await fetch(`${base}/api/Account/all`, {
-      cache: "no-store",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-    
-    if (res.ok) {
-      users = await res.json()
-    }
-  } catch (error) {
-    console.error("Помилка завантаження диспетчерів:", error)
-  }
+  const authToken = await getAdminAuthTokenOrRedirect()
+  const dispatchersResult = await fetchFromApi<Dispatcher[]>(
+    apiEndpoints.allAccounts,
+    authToken
+  )
 
   return (
-    <div className="p-6">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Диспетчери
-          </h1>
-          <p className="mt-2 text-sm text-slate-500">
-            Управління обліковими записами персоналу.
-          </p>
-        </div>
-        
-        {/* Кнопка реєстрації, яка підключена до AccountController */}
+    <div className="mx-auto max-w-6xl space-y-6 p-8">
+      <PageHeader
+        title="Диспетчери"
+        description="Управління обліковими записами персоналу."
+      >
         <AddDispatcherModal />
-      </div>
+      </PageHeader>
 
-      <DispatchersTable data={users} />
+      {dispatchersResult.isSucceeded ? (
+        <DispatchersTable dispatchers={dispatchersResult.data} />
+      ) : (
+        <LoadErrorMessage errorMessage={dispatchersResult.errorMessage} />
+      )}
     </div>
   )
 }

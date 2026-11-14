@@ -1,45 +1,45 @@
 import Link from "next/link"
+import { fastAccessNavigationLinks } from "@/lib/constants"
 
-export default function FastAccess() {
+interface FastAccessLinkProps {
+  href: string
+  label: string
+}
+
+function FastAccessLink({ href, label }: FastAccessLinkProps) {
   return (
-    <div className="w-650px rounded-xl border border-white/10 bg-zinc-900/40 p-6 shadow-sm">
-      <div>
-        <h2 className="text-lg font-semibold tracking-tight">
-          Панель швидкого переходу
-        </h2>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Керування автопарком в один клік
-        </p>
-      </div>
-      <div className="mt-4 flex flex-col gap-3">
-        <div className="group flex items-center justify-between rounded-lg border border-white/5 bg-white/5 px-4 py-3.5 transition-all hover:bg-white/10">
-          <span className="text-sm font-medium">База водіїв</span>
-          <Link
-            href="/driver"
-            className="text-xs text-muted-foreground transition-colors group-hover:text-blue-400"
-          >
-            Відкрити +
-          </Link>
-        </div>
-        <Link
-          href="/auto"
-          className="group flex items-center justify-between rounded-lg border border-white/5 bg-white/5 px-4 py-3.5 transition-all hover:bg-white/10"
-        >
-          <span className="text-sm font-medium">Облік автомобілів</span>
-          <span className="text-xs text-muted-foreground transition-colors group-hover:text-blue-400">
-            Відкрити +
-          </span>
-        </Link>
+    <Link
+      href={href}
+      className="group flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition-colors hover:border-indigo-200 hover:bg-indigo-50"
+    >
+      <span className="text-sm font-medium text-slate-800">{label}</span>
+      <span className="shrink-0 text-lg text-slate-400 transition-all group-hover:translate-x-0.5 group-hover:text-indigo-600">
+        →
+      </span>
+    </Link>
+  )
+}
 
-        <Link
-          href="/route"
-          className="group flex items-center justify-between rounded-lg border border-white/5 bg-white/5 px-4 py-3.5 transition-all hover:bg-white/10"
-        >
-          <span className="text-sm font-medium">Логістика маршрутів</span>
-          <span className="text-xs text-muted-foreground transition-colors group-hover:text-blue-400">
-            Відкрити +
-          </span>
-        </Link>
+interface FastAccessProps {
+  isAdmin: boolean
+}
+
+export default function FastAccess({ isAdmin }: FastAccessProps) {
+  const visibleFastAccessNavigationLinks = fastAccessNavigationLinks.filter(
+    (navigationLink) => isAdmin || !navigationLink.isAdminOnly
+  )
+
+  return (
+    <div>
+      <p className="text-sm text-slate-500">Керування автопарком в один клік</p>
+      <div className="mt-4 flex flex-col gap-2">
+        {visibleFastAccessNavigationLinks.map((navigationLink) => (
+          <FastAccessLink
+            key={navigationLink.href}
+            href={navigationLink.href}
+            label={navigationLink.label}
+          />
+        ))}
       </div>
     </div>
   )

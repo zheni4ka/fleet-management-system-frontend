@@ -1,150 +1,102 @@
 "use client"
 
-import React, { useState } from "react"
-import { useRouter } from "next/navigation"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { useState } from "react"
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Inter } from "next/font/google"
-import EditDriverModal from "../edit/edit-driver-modal"
-import toast from "react-hot-toast"
-import { Input } from "../ui/input"
-import { DriversTableProps } from "@/lib/types"
+import { Input } from "@/components/ui/input"
+import EditDriverModal from "@/components/edit/edit-driver-modal"
+import { EmptyTableRow } from "@/components/tables/empty-table-row"
+import { TableColumnsHeader } from "@/components/tables/table-columns-header"
+import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
+import { sendApiRequest } from "@/lib/api-client"
+import { apiEndpoints, driversTableColumns } from "@/lib/constants"
+import { formatDriverFullName } from "@/lib/formatters"
+import { Driver, HttpMethod } from "@/lib/types"
+import { isMatchingSearchQuery } from "@/lib/utils"
 
-const inter = Inter({ subsets: ['latin'] })
-
-function getCookie(name: string): string | null {
-  if (typeof document === "undefined") return null
-  const value = `; ${document.cookie}`
-  const parts = value.split(`; ${name}=`)
-  if (parts.length === 2) return parts.pop()?.split(";").shift() ?? null
-  return null
+interface DriversTableProps {
+  drivers: Driver[]
 }
 
-export function DriversTable({ data = [] }: DriversTableProps) {
-  const router = useRouter();
-  const [deletingId, setDeletingId] = useState<number | null>(null);
+export function DriversTable({ drivers }: DriversTableProps) {
   const [searchQuery, setSearchQuery] = useState("")
+  const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
 
-  const filteredDrivers = (data || []).filter((driver) => {
-    const search = searchQuery.toLowerCase()
-    const fullName = `${driver.name || ""} ${driver.surname || ""}`.toLowerCase()
-    
-    return (
-      fullName.includes(search) ||
-      driver.licenseNumber?.toLowerCase().includes(search)
-    )
-  })
+  const filteredDrivers = drivers.filter((driver) =>
+    isMatchingSearchQuery(searchQuery, [
+      formatDriverFullName(driver),
+      driver.patronymic,
+      driver.licenseNumber,
+    ])
+  )
 
-  const handleDelete = async (id: number) => {
-    const confirmed = window.confirm('Ви впевнені, що хочете видалити водія?');
-    if (!confirmed) return;
-
-    const token = getCookie("token")
-    if (!token) {
-      toast.error("Помилка авторизації. Увійдіть в систему.")
+  const handleDelete = async (driverId: number) => {
+    if (!window.confirm("Ви впевнені, що хочете видалити водія?")) {
       return
     }
-
-    setDeletingId(id);
-    
-    const base = (process.env as { NEXT_PUBLIC_API_BASE_URL?: string }).NEXT_PUBLIC_API_BASE_URL ?? "";
-    const url = base ? `${base}/api/Driver/${id}` : `/api/Driver/${id}`;
-
-    const deletePromise = fetch(url, {
-      method: 'DELETE',
-      headers: {
-        "Authorization": `Bearer ${token}`
+    await runApiMutation(
+      () =>
+        sendApiRequest(
+          `${apiEndpoints.drivers}/${driverId}`,
+          HttpMethod.Delete
+        ),
+      {
+        loading: "Видалення водія...",
+        success: "Водія успішно видалено!",
+        error: "Не вдалося видалити водія",
       }
-    }).then(async (res) => {
-      if (!res.ok) {
-        const text = await res.text()
-        throw new Error(text || `Помилка сервера: ${res.status}`)
-      }
-    })
-
-    toast.promise(deletePromise, {
-      loading: "Видалення водія...",
-      success: "Водій успішно видалений!",
-      error: (err) => err.message || "Не вдалося видалити водія",
-    })
-
-    try {
-      await deletePromise
-      router.refresh();
-    } catch (error) {
-      console.error('Не вдалося видалити водія:', error);
-    } finally {
-      setDeletingId(null);
-    }
-  };
+    )
+  }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center">
-        <Input
-          placeholder="Пошук водія (ім'я, прізвище, ліцензія)..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-sm bg-white shadow-sm"
-        />
-      </div>
+      <Input
+        placeholder="Пошук водія (ім'я, прізвище, ліцензія)..."
+        value={searchQuery}
+        onChange={(event) => setSearchQuery(event.target.value)}
+        className="max-w-sm bg-white shadow-sm"
+      />
 
-      {/* 2. ГОЛОВНИЙ БЛОК ТАБЛИЦІ */}
-      <div className="rounded-md border bg-white overflow-hidden mt-4">
+      <div className="overflow-hidden rounded-md border bg-white">
         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className={`w-1/6 ${inter.className}`}>ID</TableHead>
-              <TableHead className={`w-1/6 ${inter.className}`}>Ім&apos;я</TableHead>
-              <TableHead className={`w-1/6 ${inter.className}`}>Прізвище</TableHead>
-              <TableHead className={`w-1/6 ${inter.className}`}>По батькові</TableHead>
-              <TableHead className={`w-1/6 ${inter.className}`}>Посвідчення водія</TableHead>
-              <TableHead className={`w-1/6 ${inter.className} text-center`}>Операції</TableHead>
-            </TableRow>
-          </TableHeader>
+          <TableColumnsHeader tableColumns={driversTableColumns} />
           <TableBody>
-            {filteredDrivers.length > 0 ? (
-              filteredDrivers.map((driver) => (
-                <TableRow key={driver.id} className="hover:bg-slate-50/50">
-                  <TableCell className={`font-mono text-xs ${inter.className}`}>{driver.id}</TableCell>
-                  <TableCell className={`font-medium ${inter.className}`}>{driver.name}</TableCell>
-                  <TableCell className={`${inter.className}`}>{driver.surname}</TableCell>
-                  <TableCell className={`${inter.className}`}>{driver.patronymic}</TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                      {driver.licenseNumber}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <div className="flex justify-center gap-2">
-                      <EditDriverModal driver={driver}/>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(driver.id)}
-                        disabled={deletingId === driver.id}
-                      >
-                        Видалити
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              /* ЗАГЛУШКА: Якщо взагалі немає даних або нічого не знайдено через пошук */
-              <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                  {data.length === 0 ? "Водіїв поки немає в системі." : "Нічого не знайдено за вашим запитом."}
+            {filteredDrivers.length === 0 && (
+              <EmptyTableRow
+                columnCount={driversTableColumns.length}
+                message={
+                  drivers.length === 0
+                    ? "Водіїв поки немає в системі."
+                    : "Нічого не знайдено за вашим запитом."
+                }
+              />
+            )}
+            {filteredDrivers.map((driver) => (
+              <TableRow key={driver.id} className="hover:bg-slate-50/50">
+                <TableCell className="font-mono text-xs">{driver.id}</TableCell>
+                <TableCell className="font-medium">{driver.name}</TableCell>
+                <TableCell>{driver.surname}</TableCell>
+                <TableCell>{driver.patronymic}</TableCell>
+                <TableCell>
+                  <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-700/10 ring-inset">
+                    {driver.licenseNumber}
+                  </span>
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="flex justify-center gap-2">
+                    <EditDriverModal driver={driver} />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDelete(driver.id)}
+                      disabled={isApiMutationRunning}
+                    >
+                      Видалити
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
-            )}
+            ))}
           </TableBody>
         </Table>
       </div>

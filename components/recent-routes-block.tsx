@@ -1,127 +1,98 @@
-import React from "react"
-import { Inter } from "next/font/google"
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
+import { LoadErrorMessage } from "@/components/load-error-message"
+import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { Route, Location } from "@/lib/types"
-import { cookies } from "next/headers"
+  apiEndpoints,
+  recentRoutesTableColumns,
+  routeStatusLabels,
+  unknownLocationLabel,
+} from "@/lib/constants"
+import { formatDateTime, formatLocationName } from "@/lib/formatters"
+import { isRouteStatusActive } from "@/lib/route-status"
+import { fetchFromApi, getFirstApiFetchErrorMessage } from "@/lib/server/api"
+import { Location, Route } from "@/lib/types"
 
-const inter = Inter({ subsets: ["latin"] })
+const recentRoutesCount = 5
 
-const getRouteStatusLabel = (status: string | number | undefined) => {
-  switch (status) {
-    case 0:
-    case "Planned":
-      return "Заплановано"
-    case 1:
-    case "InProgress":
-      return "В процесі"
-    case 2:
-    case "Completed":
-      return "Виконано"
-    case 3:
-    case "Cancelled":
-      return "Скасовано"
-    default:
-      return "Невідомо"
-  }
+interface RecentRoutesBlockProps {
+  authToken: string
 }
 
-const isRouteActive = (status: string | number | undefined) => {
-  return status === 0 || status === "Planned" || status === 1 || status === "InProgress"
-}
+export async function RecentRoutesBlock({ authToken }: RecentRoutesBlockProps) {
+  const [routesResult, locationsResult] = await Promise.all([
+    fetchFromApi<Route[]>(apiEndpoints.allRoutes, authToken),
+    fetchFromApi<Location[]>(apiEndpoints.allLocations, authToken),
+  ])
 
-async function RecentRoutesBlock() {
-    const cookieStore = await cookies()
-    const token = cookieStore.get("token")?.value
-
-    const headers = {
-      "Authorization": `Bearer ${token}`
-    }
-
-    const [routesRes, locationsRes] = await Promise.all([
-      fetch(`${process.env.API_BASE_URL}/api/Route/all`, { headers, cache: "no-store" }),
-      fetch(`${process.env.API_BASE_URL}/api/Location/all`, { headers, cache: "no-store" }),
-    ])
-
-    if (!routesRes.ok || !locationsRes.ok) {
-      return (
-        <p className="py-2 text-sm text-red-500">
-          Не вдалося завантажити маршрути та локації
-        </p>
-      )
-    }
-
-    const allRoutes: Route[] = await routesRes.json()
-    const locations: Location[] = await locationsRes.json()
-    const recentRoutes = allRoutes.slice(-5).reverse()
-
-    const locationMap = new Map<number, string>()
-    locations.forEach((loc) => locationMap.set(loc.id, `${loc.city}, ${loc.country}`))
-
-    if (recentRoutes.length === 0) {
-      return <p className="text-muted-foreground p-4 text-sm">Маршрутів поки немає.</p>
-    }
-
+  if (!routesResult.isSucceeded || !locationsResult.isSucceeded) {
     return (
-      <div className="rounded-md border bg-white width-full">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className={`w-1/6 ${inter.className}`}>ID</TableHead>
-              <TableHead className={`w-2/6 ${inter.className}`}>Звідки → Куди</TableHead>
-              <TableHead className={`w-1/6 ${inter.className}`}>Відправлення</TableHead>
-              <TableHead className={`w-1/6 ${inter.className}`}>Прибуття</TableHead>
-              <TableHead className={`w-1/6 text-right ${inter.className}`}>Статус</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {recentRoutes.map((route) => {
-              const status = route.status ?? (route.status ? "InProgress" : "Completed")
-              const active = isRouteActive(status)
-              const startLocation = locationMap.get(route.startLocationId) || "Невідома"
-              const endLocation = locationMap.get(route.destinationLocationId) || "Невідома"
-
-              return (
-                <TableRow key={route.id} className="hover:bg-slate-50/50">
-                  <TableCell className={`font-mono text-xs ${inter.className}`}>
-                    {route.id}
-                  </TableCell>
-                  <TableCell className={`font-medium ${inter.className}`}>
-                    {startLocation} → {endLocation}
-                  </TableCell>
-                  <TableCell className={`${inter.className} text-xs`}>
-                    {new Date(route.departureTime).toLocaleString('uk-UA') || "—"}
-                  </TableCell>
-                  <TableCell className={`${inter.className} text-xs`}>
-                    {new Date(route.arrivalTime).toLocaleString('uk-UA') || "—"}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-                        active
-                          ? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                          : "border border-zinc-500/20 bg-zinc-500/10 text-zinc-500"
-                      }`}
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full ${active ? "bg-emerald-400" : "bg-zinc-400"}`}
-                      />
-                      {getRouteStatusLabel(status)}
-                    </span>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-      </div>
+      <LoadErrorMessage
+        errorMessage={`Не вдалося завантажити маршрути та локації. ${getFirstApiFetchErrorMessage([routesResult, locationsResult])}`}
+      />
     )
+  }
+
+  const recentRoutes = [...routesResult.data]
+    .sort((firstRoute, secondRoute) => secondRoute.id - firstRoute.id)
+    .slice(0, recentRoutesCount)
+
+  if (recentRoutes.length === 0) {
+    return (
+      <p className="p-4 text-sm text-muted-foreground">Маршрутів поки немає.</p>
+    )
+  }
+
+  const locationsById = new Map(
+    locationsResult.data.map((location) => [location.id, location])
+  )
+  const getLocationName = (locationId: number): string => {
+    const location = locationsById.get(locationId)
+    return location === undefined
+      ? unknownLocationLabel
+      : formatLocationName(location)
+  }
+
+  return (
+    <div className="w-full rounded-md border bg-white">
+      <Table>
+        <TableColumnsHeader tableColumns={recentRoutesTableColumns} />
+        <TableBody>
+          {recentRoutes.map((route) => {
+            const isRouteActive = isRouteStatusActive(route.status)
+            return (
+              <TableRow key={route.id} className="hover:bg-slate-50/50">
+                <TableCell className="font-mono text-xs">{route.id}</TableCell>
+                <TableCell className="font-medium">
+                  {getLocationName(route.startLocationId)} →{" "}
+                  {getLocationName(route.destinationLocationId)}
+                </TableCell>
+                <TableCell className="text-xs">
+                  {formatDateTime(route.departureTime)}
+                </TableCell>
+                <TableCell className="text-xs">
+                  {formatDateTime(route.arrivalTime)}
+                </TableCell>
+                <TableCell className="text-right">
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${
+                      isRouteActive
+                        ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600"
+                        : "border-zinc-500/20 bg-zinc-500/10 text-zinc-500"
+                    }`}
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${isRouteActive ? "bg-emerald-400" : "bg-zinc-400"}`}
+                    />
+                    {routeStatusLabels[route.status]}
+                  </span>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  )
 }
 
 export default RecentRoutesBlock

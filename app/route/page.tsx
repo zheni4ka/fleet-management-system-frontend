@@ -1,80 +1,98 @@
-import React from "react"
-import { env } from "process"
-import { Inter } from "next/font/google"
-import { Route, Auto, Driver, Location } from "@/lib/types"
-import { cookies } from "next/headers"
-import { redirect } from "next/navigation"
 import AddRouteModal from "@/components/add/add-route-modal"
 import RoutesList from "@/components/routes-list"
+import RoutesSearchForm from "@/components/routes-search-form"
+import { LoadErrorMessage } from "@/components/load-error-message"
+import { PageHeader } from "@/components/page-header"
+import { apiEndpoints } from "@/lib/constants"
+import { createRoutesSearchFormValuesFromPageSearchParams } from "@/lib/forms/routes-search-form"
+import {
+  createPathWithSearchParams,
+  createSearchParamsFromFormValues,
+} from "@/lib/search-params"
+import {
+  fetchFromApi,
+  getAuthTokenOrRedirect,
+  getFirstApiFetchErrorMessage,
+} from "@/lib/server/api"
+import { Auto, Driver, Location, PageSearchParams, Route } from "@/lib/types"
 
-const inter = Inter({ subsets: ["latin"] })
+const routesPageTitle = "Маршрути"
+const routesPageDescription =
+  "Перегляд доступних маршрутів із деталями відправлення, прибуття, автомобіля та водія."
 
-interface PageProps {
-  className?: string
+interface RoutesPageProps {
+  searchParams: Promise<PageSearchParams>
 }
 
-export const RoutesPage: React.FC<PageProps> = async ({ className }) => {
-  const cookieStore = await cookies()
-  const token = cookieStore.get("token")?.value
+export default async function RoutesPage({ searchParams }: RoutesPageProps) {
+  const authToken = await getAuthTokenOrRedirect()
+  const routesSearchFormValues =
+    createRoutesSearchFormValuesFromPageSearchParams(await searchParams)
+  const routesSearchParams = createSearchParamsFromFormValues(
+    routesSearchFormValues
+  )
 
-  if (!token) {
-    redirect("/login")
-  }
+  const [routesResult, autosResult, driversResult, locationsResult] =
+    await Promise.all([
+      fetchFromApi<Route[]>(
+        createPathWithSearchParams(
+          apiEndpoints.routesSearch,
+          routesSearchParams
+        ),
+        authToken
+      ),
+      fetchFromApi<Auto[]>(apiEndpoints.allAutos, authToken),
+      fetchFromApi<Driver[]>(apiEndpoints.allDrivers, authToken),
+      fetchFromApi<Location[]>(apiEndpoints.allLocations, authToken),
+    ])
 
-  const authHeaders = {
-    Authorization: `Bearer ${token}`,
-  }
-
-  const [routesRes, autosRes, driversRes, locationsRes] = await Promise.all([
-    fetch(`${env.API_BASE_URL}/api/Route/all`, { cache: "no-store" }),
-    fetch(`${env.API_BASE_URL}/api/Auto/all`, { cache: "no-store" }),
-    fetch(`${env.API_BASE_URL}/api/Driver/all`, { cache: "no-store" }),
-    fetch(`${env.API_BASE_URL}/api/Location/all`, { cache: "no-store" }),
-  ])
-
-  if (!routesRes.ok || !autosRes.ok || !driversRes.ok || !locationsRes.ok) {
-     if (routesRes.status === 401 || autosRes.status === 401) {
-         redirect('/login');
-     }
+  if (
+    !routesResult.isSucceeded ||
+    !autosResult.isSucceeded ||
+    !driversResult.isSucceeded ||
+    !locationsResult.isSucceeded
+  ) {
     return (
-      <div className="p-6 text-red-500 font-medium">❌ Помилка завантаження даних.</div>
-    );
+      <div className="mx-auto max-w-6xl space-y-6 p-8">
+        <PageHeader
+          title={routesPageTitle}
+          description={routesPageDescription}
+        />
+        <LoadErrorMessage
+          errorMessage={getFirstApiFetchErrorMessage([
+            routesResult,
+            autosResult,
+            driversResult,
+            locationsResult,
+          ])}
+        />
+      </div>
+    )
   }
-
-  const sampleRoutes: Route[] = await routesRes.json()
-  const autos: Auto[] = await autosRes.json()
-  const drivers: Driver[] = await driversRes.json()
-  const locations: Location[] = await locationsRes.json()
-
-  const autoMapData: [number, string][] = autos.map((a) => [
-    a.id,
-    `${a.mark} ${a.model} ${a.number}`,
-  ])
-  const driverMapData: [number, string][] = drivers.map((d) => [
-    d.id,
-    `${d.name} ${d.surname}`,
-  ])
 
   return (
-    <div className={`${className ?? ""} mx-auto max-w-6xl space-y-6 p-8`}>
-      <div className="space-y-2">
-        <h1 className={`text-3xl font-bold ${inter.className}`}>Маршрути</h1>
-        <p className="text-sm text-slate-600">
-          Перегляд доступних маршрутів із деталями відправлення, прибуття,
-          автомобіля та водія.
-        </p>
-        <AddRouteModal />
-      </div>
+    <div className="mx-auto max-w-6xl space-y-6 p-8">
+      <PageHeader title={routesPageTitle} description={routesPageDescription}>
+        <AddRouteModal
+          autos={autosResult.data}
+          drivers={driversResult.data}
+          locations={locationsResult.data}
+        />
+      </PageHeader>
 
-      {/* Передаємо завантажені дані у клієнтський компонент, де працює useState */}
+      <RoutesSearchForm
+        key={routesSearchParams.toString()}
+        initialRoutesSearchFormValues={routesSearchFormValues}
+        autos={autosResult.data}
+        drivers={driversResult.data}
+      />
+
       <RoutesList
-        initialRoutes={sampleRoutes}
-        locations={locations}
-        autoMapData={autoMapData}
-        driverMapData={driverMapData}
+        routes={routesResult.data}
+        locations={locationsResult.data}
+        autos={autosResult.data}
+        drivers={driversResult.data}
       />
     </div>
   )
 }
-
-export default RoutesPage
