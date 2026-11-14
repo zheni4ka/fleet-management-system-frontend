@@ -1,12 +1,15 @@
 import AutosTable from "@/components/tables/autos-table"
 import AddAutoModal from "@/components/add/add-auto-modal"
+import { ListFilterForm } from "@/components/list-filter-form"
 import { ListPagination } from "@/components/list-pagination"
-import { ListSearchForm } from "@/components/list-search-form"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
 import { apiEndpoints, appRoutes } from "@/lib/constants"
+import { autosListFilterFields } from "@/lib/forms/list-filter-fields"
 import {
   createListApiPath,
+  createListPageHref,
+  getListFilterValuesFromPageSearchParams,
   getListQueryFromPageSearchParams,
 } from "@/lib/search-params"
 import { fetchFromApi, getAdminAuthTokenOrRedirect } from "@/lib/server/api"
@@ -24,18 +27,23 @@ interface AutosPageProps {
 
 export default async function AutosPage({ searchParams }: AutosPageProps) {
   const authToken = await getAdminAuthTokenOrRedirect()
+  const pageSearchParams = await searchParams
   const autosListPageState: ListPageState<AutoSortField> = {
     path: appRoutes.autos,
     listQuery: getListQueryFromPageSearchParams(
-      await searchParams,
+      pageSearchParams,
       AutoSortField
     ),
-    filterValues: {},
+    filterValues: getListFilterValuesFromPageSearchParams(
+      pageSearchParams,
+      autosListFilterFields
+    ),
   }
   const autosPageResult = await fetchFromApi<PagedList<Auto>>(
     createListApiPath(
       apiEndpoints.autosPagedList,
-      autosListPageState.listQuery
+      autosListPageState.listQuery,
+      autosListPageState.filterValues
     ),
     authToken
   )
@@ -49,10 +57,11 @@ export default async function AutosPage({ searchParams }: AutosPageProps) {
         <AddAutoModal />
       </PageHeader>
 
-      <ListSearchForm
-        key={autosListPageState.listQuery.search}
+      <ListFilterForm
+        key={createListPageHref(autosListPageState, {})}
+        title="Пошук автомобілів"
         listPageState={autosListPageState}
-        placeholder="Пошук авто (марка, модель, колір, номер)..."
+        listFilterFields={autosListFilterFields}
       />
 
       {autosPageResult.isSucceeded ? (

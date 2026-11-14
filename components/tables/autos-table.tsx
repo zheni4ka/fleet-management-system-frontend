@@ -8,6 +8,7 @@ import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
+import { hasActiveListFilters } from "@/lib/search-params"
 import {
   apiEndpoints,
   autoStatusLabels,
@@ -52,9 +53,9 @@ export function AutosTable({ autos, listPageState }: AutosTableProps) {
             <EmptyTableRow
               columnCount={autosTableColumns.length}
               message={
-                listPageState.listQuery.search === ""
-                  ? "Автомобілів поки немає в системі."
-                  : nothingFoundMessage
+                hasActiveListFilters(listPageState)
+                  ? nothingFoundMessage
+                  : "Автомобілів поки немає в системі."
               }
             />
           )}

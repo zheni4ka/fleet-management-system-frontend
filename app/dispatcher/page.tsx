@@ -1,12 +1,15 @@
 import DispatchersTable from "@/components/tables/dispatchers-table"
 import AddDispatcherModal from "@/components/add/add-dispatcher-modal"
+import { ListFilterForm } from "@/components/list-filter-form"
 import { ListPagination } from "@/components/list-pagination"
-import { ListSearchForm } from "@/components/list-search-form"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
 import { apiEndpoints, appRoutes } from "@/lib/constants"
+import { dispatchersListFilterFields } from "@/lib/forms/list-filter-fields"
 import {
   createListApiPath,
+  createListPageHref,
+  getListFilterValuesFromPageSearchParams,
   getListQueryFromPageSearchParams,
 } from "@/lib/search-params"
 import { fetchFromApi, getAdminAuthTokenOrRedirect } from "@/lib/server/api"
@@ -26,18 +29,23 @@ export default async function DispatchersPage({
   searchParams,
 }: DispatchersPageProps) {
   const authToken = await getAdminAuthTokenOrRedirect()
+  const pageSearchParams = await searchParams
   const dispatchersListPageState: ListPageState<DispatcherSortField> = {
     path: appRoutes.dispatchers,
     listQuery: getListQueryFromPageSearchParams(
-      await searchParams,
+      pageSearchParams,
       DispatcherSortField
     ),
-    filterValues: {},
+    filterValues: getListFilterValuesFromPageSearchParams(
+      pageSearchParams,
+      dispatchersListFilterFields
+    ),
   }
   const dispatchersPageResult = await fetchFromApi<PagedList<Dispatcher>>(
     createListApiPath(
       apiEndpoints.dispatchersPagedList,
-      dispatchersListPageState.listQuery
+      dispatchersListPageState.listQuery,
+      dispatchersListPageState.filterValues
     ),
     authToken
   )
@@ -51,10 +59,11 @@ export default async function DispatchersPage({
         <AddDispatcherModal />
       </PageHeader>
 
-      <ListSearchForm
-        key={dispatchersListPageState.listQuery.search}
+      <ListFilterForm
+        key={createListPageHref(dispatchersListPageState, {})}
+        title="Пошук диспетчерів"
         listPageState={dispatchersListPageState}
-        placeholder="Пошук диспетчера (логін, email)..."
+        listFilterFields={dispatchersListFilterFields}
       />
 
       {dispatchersPageResult.isSucceeded ? (

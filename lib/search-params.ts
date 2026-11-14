@@ -5,6 +5,8 @@ import {
   listSearchParamNames,
 } from "@/lib/constants"
 import {
+  ListFilterField,
+  ListFilterFieldKind,
   ListPageState,
   ListQuery,
   PageSearchParams,
@@ -12,6 +14,60 @@ import {
   SortDirection,
 } from "@/lib/types"
 import { findEnumValue } from "@/lib/utils"
+
+const isoDateOnlyPattern = /^\d{4}-\d{2}-\d{2}$/
+
+function getSanitizedListFilterValue(
+  listFilterField: ListFilterField,
+  rawFilterValue: string
+): string {
+  const trimmedFilterValue = rawFilterValue.trim()
+  switch (listFilterField.kind) {
+    case ListFilterFieldKind.Text:
+      return trimmedFilterValue
+    case ListFilterFieldKind.Date:
+      return isoDateOnlyPattern.test(trimmedFilterValue)
+        ? trimmedFilterValue
+        : ""
+    case ListFilterFieldKind.Select:
+      return listFilterField.options.some(
+        (listFilterOption) => listFilterOption.value === trimmedFilterValue
+      )
+        ? trimmedFilterValue
+        : ""
+  }
+}
+
+export function getListFilterValuesFromPageSearchParams(
+  pageSearchParams: PageSearchParams,
+  listFilterFields: ReadonlyArray<ListFilterField>
+): SearchFormValues {
+  return Object.fromEntries(
+    listFilterFields
+      .filter(
+        (listFilterField) =>
+          listFilterField.name !== listSearchParamNames.search
+      )
+      .map((listFilterField) => [
+        listFilterField.name,
+        getSanitizedListFilterValue(
+          listFilterField,
+          getPageSearchParamValue(pageSearchParams, listFilterField.name)
+        ),
+      ])
+  )
+}
+
+export function hasActiveListFilters<TSortField extends string>(
+  listPageState: ListPageState<TSortField>
+): boolean {
+  return (
+    listPageState.listQuery.search !== "" ||
+    Object.values(listPageState.filterValues).some(
+      (filterValue) => filterValue !== ""
+    )
+  )
+}
 
 export function getPageSearchParamValue(
   pageSearchParams: PageSearchParams,

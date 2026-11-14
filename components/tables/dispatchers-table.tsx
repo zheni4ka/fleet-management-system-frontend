@@ -6,6 +6,7 @@ import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
+import { hasActiveListFilters } from "@/lib/search-params"
 import {
   apiEndpoints,
   dispatchersTableColumns,
@@ -59,9 +60,9 @@ export function DispatchersTable({
             <EmptyTableRow
               columnCount={dispatchersTableColumns.length}
               message={
-                listPageState.listQuery.search === ""
-                  ? "Диспетчерів поки немає."
-                  : nothingFoundMessage
+                hasActiveListFilters(listPageState)
+                  ? nothingFoundMessage
+                  : "Диспетчерів поки немає."
               }
             />
           )}

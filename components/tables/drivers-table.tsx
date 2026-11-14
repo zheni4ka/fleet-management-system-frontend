@@ -7,6 +7,7 @@ import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
+import { hasActiveListFilters } from "@/lib/search-params"
 import {
   apiEndpoints,
   driversTableColumns,
@@ -52,9 +53,9 @@ export function DriversTable({ drivers, listPageState }: DriversTableProps) {
             <EmptyTableRow
               columnCount={driversTableColumns.length}
               message={
-                listPageState.listQuery.search === ""
-                  ? "Водіїв поки немає в системі."
-                  : nothingFoundMessage
+                hasActiveListFilters(listPageState)
+                  ? nothingFoundMessage
+                  : "Водіїв поки немає в системі."
               }
             />
           )}

@@ -1,16 +1,18 @@
 import AddRouteModal from "@/components/add/add-route-modal"
 import RoutesList from "@/components/routes-list"
-import RoutesSearchForm from "@/components/routes-search-form"
+import { ListFilterForm } from "@/components/list-filter-form"
 import { ListPagination } from "@/components/list-pagination"
-import { ListSearchForm } from "@/components/list-search-form"
 import { ListSortSelect } from "@/components/list-sort-select"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
 import { apiEndpoints, appRoutes, routeSortOptions } from "@/lib/constants"
-import { createRoutesSearchFormValuesFromPageSearchParams } from "@/lib/forms/routes-search-form"
+import { createRoutesListFilterFields } from "@/lib/forms/list-filter-fields"
 import {
   createListApiPath,
+  createListPageHref,
+  getListFilterValuesFromPageSearchParams,
   getListQueryFromPageSearchParams,
+  hasActiveListFilters,
 } from "@/lib/search-params"
 import {
   fetchFromApi,
@@ -39,34 +41,14 @@ interface RoutesPageProps {
 export default async function RoutesPage({ searchParams }: RoutesPageProps) {
   const authToken = await getAuthTokenOrRedirect()
   const pageSearchParams = await searchParams
-  const routesSearchFormValues =
-    createRoutesSearchFormValuesFromPageSearchParams(pageSearchParams)
-  const routesListPageState: ListPageState<RouteSortField> = {
-    path: appRoutes.routes,
-    listQuery: getListQueryFromPageSearchParams(
-      pageSearchParams,
-      RouteSortField
-    ),
-    filterValues: routesSearchFormValues,
-  }
 
-  const [routesPageResult, autosResult, driversResult, locationsResult] =
-    await Promise.all([
-      fetchFromApi<PagedList<Route>>(
-        createListApiPath(
-          apiEndpoints.routesPagedList,
-          routesListPageState.listQuery,
-          routesListPageState.filterValues
-        ),
-        authToken
-      ),
-      fetchFromApi<Auto[]>(apiEndpoints.allAutos, authToken),
-      fetchFromApi<Driver[]>(apiEndpoints.allDrivers, authToken),
-      fetchFromApi<Location[]>(apiEndpoints.allLocations, authToken),
-    ])
+  const [autosResult, driversResult, locationsResult] = await Promise.all([
+    fetchFromApi<Auto[]>(apiEndpoints.allAutos, authToken),
+    fetchFromApi<Driver[]>(apiEndpoints.allDrivers, authToken),
+    fetchFromApi<Location[]>(apiEndpoints.allLocations, authToken),
+  ])
 
   if (
-    !routesPageResult.isSucceeded ||
     !autosResult.isSucceeded ||
     !driversResult.isSucceeded ||
     !locationsResult.isSucceeded
@@ -79,7 +61,6 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
         />
         <LoadErrorMessage
           errorMessage={getFirstApiFetchErrorMessage([
-            routesPageResult,
             autosResult,
             driversResult,
             locationsResult,
@@ -88,6 +69,30 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
       </div>
     )
   }
+
+  const routesListFilterFields = createRoutesListFilterFields(
+    autosResult.data,
+    driversResult.data
+  )
+  const routesListPageState: ListPageState<RouteSortField> = {
+    path: appRoutes.routes,
+    listQuery: getListQueryFromPageSearchParams(
+      pageSearchParams,
+      RouteSortField
+    ),
+    filterValues: getListFilterValuesFromPageSearchParams(
+      pageSearchParams,
+      routesListFilterFields
+    ),
+  }
+  const routesPageResult = await fetchFromApi<PagedList<Route>>(
+    createListApiPath(
+      apiEndpoints.routesPagedList,
+      routesListPageState.listQuery,
+      routesListPageState.filterValues
+    ),
+    authToken
+  )
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-8">
@@ -99,20 +104,14 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
         />
       </PageHeader>
 
-      <RoutesSearchForm
-        key={JSON.stringify(routesSearchFormValues)}
-        initialRoutesSearchFormValues={routesSearchFormValues}
-        routesListPageState={routesListPageState}
-        autos={autosResult.data}
-        drivers={driversResult.data}
+      <ListFilterForm
+        key={createListPageHref(routesListPageState, {})}
+        title="Розширений пошук маршрутів"
+        listPageState={routesListPageState}
+        listFilterFields={routesListFilterFields}
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <ListSearchForm
-          key={routesListPageState.listQuery.search}
-          listPageState={routesListPageState}
-          placeholder="Пошук за містом або країною відправлення чи прибуття..."
-        />
+      <div className="flex justify-end">
         <ListSortSelect
           listPageState={routesListPageState}
           sortOptions={routeSortOptions}
@@ -120,23 +119,23 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
         />
       </div>
 
-      <RoutesList
-        routes={routesPageResult.data.items}
-        locations={locationsResult.data}
-        autos={autosResult.data}
-        drivers={driversResult.data}
-        isRoutesListFiltered={
-          routesListPageState.listQuery.search !== "" ||
-          Object.values(routesListPageState.filterValues).some(
-            (filterValue) => filterValue !== ""
-          )
-        }
-      />
-
-      <ListPagination
-        listPageState={routesListPageState}
-        totalCount={routesPageResult.data.totalCount}
-      />
+      {routesPageResult.isSucceeded ? (
+        <>
+          <RoutesList
+            routes={routesPageResult.data.items}
+            locations={locationsResult.data}
+            autos={autosResult.data}
+            drivers={driversResult.data}
+            isRoutesListFiltered={hasActiveListFilters(routesListPageState)}
+          />
+          <ListPagination
+            listPageState={routesListPageState}
+            totalCount={routesPageResult.data.totalCount}
+          />
+        </>
+      ) : (
+        <LoadErrorMessage errorMessage={routesPageResult.errorMessage} />
+      )}
     </div>
   )
 }

@@ -12,11 +12,7 @@ import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh
 import { fetchApiData, sendApiRequest } from "@/lib/api-client"
 import { apiEndpoints } from "@/lib/constants"
 import { formatDate } from "@/lib/formatters"
-import {
-  AutoMaintenance,
-  HttpMethod,
-  MaintenanceFormValues,
-} from "@/lib/types"
+import { AutoMaintenance, HttpMethod, MaintenanceFormValues } from "@/lib/types"
 
 interface AutoMaintenanceModalProps {
   autoId: number

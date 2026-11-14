@@ -8,18 +8,17 @@ import {
   nothingFoundMessage,
 } from "@/lib/constants"
 import { formatDateTime } from "@/lib/formatters"
+import { hasActiveListFilters } from "@/lib/search-params"
 import { AuditLog, AuditLogSortField, ListPageState } from "@/lib/types"
 
 interface AuditLogsTableProps {
   auditLogs: AuditLog[]
   listPageState: ListPageState<AuditLogSortField>
-  isAuditLogsListFiltered: boolean
 }
 
 export function AuditLogsTable({
   auditLogs,
   listPageState,
-  isAuditLogsListFiltered,
 }: AuditLogsTableProps) {
   return (
     <div className="overflow-hidden rounded-md border bg-white">
@@ -33,7 +32,7 @@ export function AuditLogsTable({
             <EmptyTableRow
               columnCount={auditLogsTableColumns.length}
               message={
-                isAuditLogsListFiltered
+                hasActiveListFilters(listPageState)
                   ? nothingFoundMessage
                   : "Журнал дій поки порожній."
               }

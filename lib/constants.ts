@@ -71,10 +71,6 @@ export const listSearchParamNames = Object.freeze({
   search: "search",
 })
 
-export const auditLogFilterSearchParamNames = Object.freeze({
-  action: "action",
-})
-
 export const firstListPage = 1
 
 export const defaultListPageSize = 20
