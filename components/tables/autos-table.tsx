@@ -1,9 +1,11 @@
 "use client"
 
+import { useState } from "react"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import EditAutoModal from "@/components/edit/edit-auto-modal"
 import AutoMaintenanceModal from "@/components/add/add-maintenance-modal"
+import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
@@ -15,7 +17,7 @@ import {
   autosTableColumns,
   nothingFoundMessage,
 } from "@/lib/constants"
-import { formatAutoTitle } from "@/lib/formatters"
+import { formatAutoTitle, formatAutoTitleWithNumber } from "@/lib/formatters"
 import { Auto, AutoSortField, HttpMethod, ListPageState } from "@/lib/types"
 
 interface AutosTableProps {
@@ -25,20 +27,29 @@ interface AutosTableProps {
 
 export function AutosTable({ autos, listPageState }: AutosTableProps) {
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
+  const [autoPendingDeletion, setAutoPendingDeletion] = useState<Auto | null>(
+    null
+  )
 
-  const handleDelete = async (autoId: number) => {
-    if (!window.confirm("Ви впевнені, що хочете видалити автомобіль?")) {
+  const handleDeleteConfirm = async () => {
+    if (autoPendingDeletion === null) {
       return
     }
-    await runApiMutation(
+    const isAutoDeleted = await runApiMutation(
       () =>
-        sendApiRequest(`${apiEndpoints.autos}/${autoId}`, HttpMethod.Delete),
+        sendApiRequest(
+          `${apiEndpoints.autos}/${autoPendingDeletion.id}`,
+          HttpMethod.Delete
+        ),
       {
         loading: "Видалення автомобіля...",
         success: "Автомобіль успішно видалено!",
         error: "Не вдалося видалити автомобіль",
       }
     )
+    if (isAutoDeleted) {
+      setAutoPendingDeletion(null)
+    }
   }
 
   return (
@@ -85,7 +96,7 @@ export function AutosTable({ autos, listPageState }: AutosTableProps) {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => handleDelete(auto.id)}
+                    onClick={() => setAutoPendingDeletion(auto)}
                     disabled={isApiMutationRunning}
                   >
                     Видалити
@@ -96,6 +107,16 @@ export function AutosTable({ autos, listPageState }: AutosTableProps) {
           ))}
         </TableBody>
       </Table>
+      <DeleteConfirmationDialog
+        deletionQuestion={
+          autoPendingDeletion === null
+            ? null
+            : `Видалити авто ${formatAutoTitleWithNumber(autoPendingDeletion)}?`
+        }
+        isDeleting={isApiMutationRunning}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setAutoPendingDeletion(null)}
+      />
     </div>
   )
 }

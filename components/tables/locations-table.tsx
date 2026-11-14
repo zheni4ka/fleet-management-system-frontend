@@ -1,11 +1,14 @@
 "use client"
 
+import { useState } from "react"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
+import { formatLocationName } from "@/lib/formatters"
 import { hasActiveListFilters } from "@/lib/search-params"
 import {
   apiEndpoints,
@@ -29,15 +32,17 @@ export function LocationsTable({
   listPageState,
 }: LocationsTableProps) {
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
+  const [locationPendingDeletion, setLocationPendingDeletion] =
+    useState<Location | null>(null)
 
-  const handleDelete = async (locationId: number) => {
-    if (!window.confirm("Ви впевнені, що хочете видалити локацію?")) {
+  const handleDeleteConfirm = async () => {
+    if (locationPendingDeletion === null) {
       return
     }
-    await runApiMutation(
+    const isLocationDeleted = await runApiMutation(
       () =>
         sendApiRequest(
-          `${apiEndpoints.locations}/${locationId}`,
+          `${apiEndpoints.locations}/${locationPendingDeletion.id}`,
           HttpMethod.Delete
         ),
       {
@@ -46,6 +51,9 @@ export function LocationsTable({
         error: "Не вдалося видалити локацію",
       }
     )
+    if (isLocationDeleted) {
+      setLocationPendingDeletion(null)
+    }
   }
 
   return (
@@ -75,7 +83,7 @@ export function LocationsTable({
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => handleDelete(location.id)}
+                  onClick={() => setLocationPendingDeletion(location)}
                   disabled={isApiMutationRunning}
                 >
                   Видалити
@@ -85,6 +93,16 @@ export function LocationsTable({
           ))}
         </TableBody>
       </Table>
+      <DeleteConfirmationDialog
+        deletionQuestion={
+          locationPendingDeletion === null
+            ? null
+            : `Видалити локацію ${formatLocationName(locationPendingDeletion)}?`
+        }
+        isDeleting={isApiMutationRunning}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setLocationPendingDeletion(null)}
+      />
     </div>
   )
 }

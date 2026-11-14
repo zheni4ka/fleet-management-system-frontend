@@ -1,12 +1,15 @@
 "use client"
 
+import { useState } from "react"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import EditDriverModal from "@/components/edit/edit-driver-modal"
+import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
+import { formatDriverFullName } from "@/lib/formatters"
 import { hasActiveListFilters } from "@/lib/search-params"
 import {
   apiEndpoints,
@@ -22,15 +25,17 @@ interface DriversTableProps {
 
 export function DriversTable({ drivers, listPageState }: DriversTableProps) {
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
+  const [driverPendingDeletion, setDriverPendingDeletion] =
+    useState<Driver | null>(null)
 
-  const handleDelete = async (driverId: number) => {
-    if (!window.confirm("Ви впевнені, що хочете видалити водія?")) {
+  const handleDeleteConfirm = async () => {
+    if (driverPendingDeletion === null) {
       return
     }
-    await runApiMutation(
+    const isDriverDeleted = await runApiMutation(
       () =>
         sendApiRequest(
-          `${apiEndpoints.drivers}/${driverId}`,
+          `${apiEndpoints.drivers}/${driverPendingDeletion.id}`,
           HttpMethod.Delete
         ),
       {
@@ -39,6 +44,9 @@ export function DriversTable({ drivers, listPageState }: DriversTableProps) {
         error: "Не вдалося видалити водія",
       }
     )
+    if (isDriverDeleted) {
+      setDriverPendingDeletion(null)
+    }
   }
 
   return (
@@ -76,7 +84,7 @@ export function DriversTable({ drivers, listPageState }: DriversTableProps) {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => handleDelete(driver.id)}
+                    onClick={() => setDriverPendingDeletion(driver)}
                     disabled={isApiMutationRunning}
                   >
                     Видалити
@@ -87,6 +95,16 @@ export function DriversTable({ drivers, listPageState }: DriversTableProps) {
           ))}
         </TableBody>
       </Table>
+      <DeleteConfirmationDialog
+        deletionQuestion={
+          driverPendingDeletion === null
+            ? null
+            : `Видалити водія ${formatDriverFullName(driverPendingDeletion)} (${driverPendingDeletion.licenseNumber})?`
+        }
+        isDeleting={isApiMutationRunning}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDriverPendingDeletion(null)}
+      />
     </div>
   )
 }

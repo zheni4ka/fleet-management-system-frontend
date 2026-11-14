@@ -39,7 +39,7 @@ export default async function RootLayout({
       <body className="antialiased">
         {unexpiredAuthToken !== null && (
           <Header
-            className="fixed inset-x-0 top-0 z-1000 w-full"
+            className="fixed inset-x-0 top-0 z-45 w-full"
             isAdmin={hasAuthTokenUserRole(unexpiredAuthToken, UserRole.Admin)}
             currentUserName={getUserNameFromAuthToken(unexpiredAuthToken)}
             currentUserRoles={getKnownUserRolesFromAuthToken(

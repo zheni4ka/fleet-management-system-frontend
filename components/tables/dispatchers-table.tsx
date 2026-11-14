@@ -1,7 +1,9 @@
 "use client"
 
+import { useState } from "react"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
@@ -29,15 +31,17 @@ export function DispatchersTable({
   listPageState,
 }: DispatchersTableProps) {
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
+  const [dispatcherPendingDeletion, setDispatcherPendingDeletion] =
+    useState<Dispatcher | null>(null)
 
-  const handleDelete = async (dispatcherId: string) => {
-    if (!window.confirm("Ви впевнені, що хочете видалити цього диспетчера?")) {
+  const handleDeleteConfirm = async () => {
+    if (dispatcherPendingDeletion === null) {
       return
     }
-    await runApiMutation(
+    const isDispatcherDeleted = await runApiMutation(
       () =>
         sendApiRequest(
-          `${apiEndpoints.accounts}/${dispatcherId}`,
+          `${apiEndpoints.accounts}/${dispatcherPendingDeletion.id}`,
           HttpMethod.Delete
         ),
       {
@@ -46,6 +50,9 @@ export function DispatchersTable({
         error: "Не вдалося видалити користувача",
       }
     )
+    if (isDispatcherDeleted) {
+      setDispatcherPendingDeletion(null)
+    }
   }
 
   return (
@@ -79,7 +86,7 @@ export function DispatchersTable({
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => handleDelete(dispatcher.id)}
+                  onClick={() => setDispatcherPendingDeletion(dispatcher)}
                   disabled={isApiMutationRunning}
                 >
                   Видалити
@@ -89,6 +96,16 @@ export function DispatchersTable({
           ))}
         </TableBody>
       </Table>
+      <DeleteConfirmationDialog
+        deletionQuestion={
+          dispatcherPendingDeletion === null
+            ? null
+            : `Видалити диспетчера ${dispatcherPendingDeletion.username}?`
+        }
+        isDeleting={isApiMutationRunning}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDispatcherPendingDeletion(null)}
+      />
     </div>
   )
 }

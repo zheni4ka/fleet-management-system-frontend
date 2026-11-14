@@ -4,6 +4,7 @@ import { useMemo, useState } from "react"
 import RouteCard from "@/components/route-card"
 import GoogleMapRoute from "@/components/google-map-route"
 import EditRouteModal from "@/components/edit/edit-route-modal"
+import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
 import {
@@ -49,6 +50,8 @@ export function RoutesList({
   )
   const [selectedRouteId, setSelectedRouteId] = useState<number | null>(null)
   const [updatingRouteId, setUpdatingRouteId] = useState<number | null>(null)
+  const [routePendingDeletion, setRoutePendingDeletion] =
+    useState<Route | null>(null)
   const { runApiMutation } = useApiMutationWithRefresh()
 
   if (serverRoutesSnapshot !== routes) {
@@ -119,16 +122,11 @@ export function RoutesList({
     })
   }
 
-  const updateDeletedRouteIds = (routeId: number, isRouteDeleted: boolean) => {
-    setDeletedRouteIds((previousDeletedRouteIds) => {
-      const nextDeletedRouteIds = new Set(previousDeletedRouteIds)
-      if (isRouteDeleted) {
-        nextDeletedRouteIds.add(routeId)
-      } else {
-        nextDeletedRouteIds.delete(routeId)
-      }
-      return nextDeletedRouteIds
-    })
+  const addDeletedRouteId = (deletedRouteId: number) => {
+    setDeletedRouteIds(
+      (previousDeletedRouteIds) =>
+        new Set([...previousDeletedRouteIds, deletedRouteId])
+    )
   }
 
   const handleStatusChange = async (
@@ -162,29 +160,28 @@ export function RoutesList({
     setUpdatingRouteId(null)
   }
 
-  const handleDeleteRoute = async (routeId: number) => {
-    if (
-      !window.confirm(
-        "Ви впевнені, що хочете безповоротно видалити цей маршрут?"
-      )
-    ) {
+  const handleDeleteRouteConfirm = async () => {
+    if (routePendingDeletion === null) {
       return
     }
-
-    setUpdatingRouteId(routeId)
-    updateDeletedRouteIds(routeId, true)
+    const deletedRouteId = routePendingDeletion.id
+    setUpdatingRouteId(deletedRouteId)
 
     const isRouteDeleted = await runApiMutation(
       () =>
-        sendApiRequest(`${apiEndpoints.routes}/${routeId}`, HttpMethod.Delete),
+        sendApiRequest(
+          `${apiEndpoints.routes}/${deletedRouteId}`,
+          HttpMethod.Delete
+        ),
       {
         loading: "Видалення на сервері...",
         success: "Маршрут успішно видалено!",
         error: "Не вдалося видалити маршрут",
       }
     )
-    if (!isRouteDeleted) {
-      updateDeletedRouteIds(routeId, false)
+    if (isRouteDeleted) {
+      addDeletedRouteId(deletedRouteId)
+      setRoutePendingDeletion(null)
     }
     setUpdatingRouteId(null)
   }
@@ -224,7 +221,7 @@ export function RoutesList({
             onStatusChange={(targetRouteStatus) =>
               handleStatusChange(route, targetRouteStatus)
             }
-            onDelete={() => handleDeleteRoute(route.id)}
+            onDelete={() => setRoutePendingDeletion(route)}
           />
         ))}
 
@@ -244,6 +241,17 @@ export function RoutesList({
           onClose={() => setSelectedRouteId(null)}
         />
       )}
+
+      <DeleteConfirmationDialog
+        deletionQuestion={
+          routePendingDeletion === null
+            ? null
+            : `Видалити маршрут #${routePendingDeletion.id} ${getLocationName(routePendingDeletion.startLocationId)} → ${getLocationName(routePendingDeletion.destinationLocationId)}?`
+        }
+        isDeleting={updatingRouteId === routePendingDeletion?.id}
+        onConfirm={handleDeleteRouteConfirm}
+        onCancel={() => setRoutePendingDeletion(null)}
+      />
     </>
   )
 }
