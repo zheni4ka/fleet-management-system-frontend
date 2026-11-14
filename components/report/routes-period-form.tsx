@@ -115,9 +115,7 @@ export function RoutesPeriodForm({
             type="date"
             value={routesPeriodFormValues.periodEndDate}
             onChange={(event) =>
-              updateRoutesPeriodFormValues({
-                periodEndDate: event.target.value,
-              })
+              updateRoutesPeriodFormValues({ periodEndDate: event.target.value })
             }
           />
         </FormField>
