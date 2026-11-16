@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
+import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { FormField } from "@/components/ui/form-field"
@@ -8,10 +9,13 @@ import ModalWindow from "@/components/ui/modal-window"
 import { SubmitButton } from "@/components/ui/submit-button"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints } from "@/lib/constants"
+import {
+  accountPasswordConstraints,
+  apiEndpoints,
+  passwordPolicyMessages,
+} from "@/lib/constants"
+import { getPasswordPolicyViolationMessage } from "@/lib/forms/password-policy"
 import { HttpMethod, UserRole } from "@/lib/types"
-
-const minimumPasswordLength = 6
 
 export default function AddDispatcherModal() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -22,6 +26,13 @@ export default function AddDispatcherModal() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+
+    const passwordPolicyViolationMessage =
+      getPasswordPolicyViolationMessage(password)
+    if (passwordPolicyViolationMessage !== null) {
+      toast.error(passwordPolicyViolationMessage)
+      return
+    }
 
     const isDispatcherRegistered = await runApiMutation(
       () =>
@@ -77,10 +88,12 @@ export default function AddDispatcherModal() {
             <Input
               required
               type="password"
-              minLength={minimumPasswordLength}
+              autoComplete="new-password"
+              minLength={accountPasswordConstraints.minLength}
+              maxLength={accountPasswordConstraints.maxLength}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder={`Мінімум ${minimumPasswordLength} символів`}
+              placeholder={passwordPolicyMessages.hint}
             />
           </FormField>
           <SubmitButton isSubmitting={isApiMutationRunning}>

@@ -85,13 +85,21 @@ export function getUserNameFromAuthToken(authToken: string): string | null {
     : null
 }
 
-export function isAuthTokenUnexpired(authToken: string): boolean {
+export function isAuthTokenUnexpiredForAtLeast(
+  authToken: string,
+  minimumRemainingLifetimeMilliseconds: number
+): boolean {
   const expirationTimeClaim =
     decodeAuthTokenPayload(authToken)?.[jwtClaimNames.expirationTime]
   if (typeof expirationTimeClaim !== "number") {
     return false
   }
   return (
-    expirationTimeClaim * timeUnitConversions.millisecondsPerSecond > Date.now()
+    expirationTimeClaim * timeUnitConversions.millisecondsPerSecond >
+    Date.now() + minimumRemainingLifetimeMilliseconds
   )
+}
+
+export function isAuthTokenUnexpired(authToken: string): boolean {
+  return isAuthTokenUnexpiredForAtLeast(authToken, 0)
 }

@@ -19,7 +19,76 @@ import { TableColumn } from "@/lib/types/table-column"
 import { UserRole } from "@/lib/types/user-role"
 
 export const cookieNames = Object.freeze({
-  authToken: "token",
+  accessToken: "accessToken",
+  refreshToken: "refreshToken",
+})
+
+export const bffRoutes = Object.freeze({
+  sessionLogin: "/api/session/login",
+  sessionLogout: "/api/session/logout",
+  sessionChangePassword: "/api/session/change-password",
+  sessionPrefix: "/api/session/",
+  apiProxy: "/api/proxy",
+})
+
+export const sessionRefreshSettings = Object.freeze({
+  accessTokenRefreshLeadMilliseconds: 30 * 1000,
+})
+
+export const accountPasswordConstraints = Object.freeze({
+  minLength: 12,
+  maxLength: 100,
+  digitPattern: /[0-9]/,
+  uppercaseLetterPattern: /[A-Z]/,
+  lowercaseLetterPattern: /[a-z]/,
+})
+
+export const passwordPolicyMessages = Object.freeze({
+  tooShort: `Пароль має містити щонайменше ${accountPasswordConstraints.minLength} символів.`,
+  tooLong: `Пароль не може перевищувати ${accountPasswordConstraints.maxLength} символів.`,
+  digitMissing: "Пароль має містити щонайменше одну цифру.",
+  uppercaseLetterMissing:
+    "Пароль має містити щонайменше одну велику латинську літеру.",
+  lowercaseLetterMissing:
+    "Пароль має містити щонайменше одну малу латинську літеру.",
+  confirmationMismatch: "Паролі не збігаються.",
+  hint: `Мінімум ${accountPasswordConstraints.minLength} символів, велика й мала латинські літери та цифра`,
+})
+
+export const apiProblemTypes = Object.freeze({
+  passwordChangeRequired: "passwordChangeRequired",
+})
+
+export const httpHeaderNames = Object.freeze({
+  authorization: "Authorization",
+  contentType: "Content-Type",
+  origin: "Origin",
+  host: "Host",
+  forwardedFor: "X-Forwarded-For",
+})
+
+export const httpStatusCodes = Object.freeze({
+  noContent: 204,
+  notModified: 304,
+  badRequest: 400,
+  unauthorized: 401,
+  forbidden: 403,
+  notFound: 404,
+  serviceUnavailable: 503,
+})
+
+export const bffErrorMessages = Object.freeze({
+  crossOriginRequestRejected: "Запит з іншого джерела відхилено.",
+  invalidRequestBody: "Некоректні дані запиту.",
+  unsupportedApiPath: "Запитаний шлях API не підтримується.",
+  logoutFailed: "Не вдалося вийти з системи. Спробуйте ще раз.",
+})
+
+export const backendApiPathPrefixSegment = "api"
+
+export const httpContentTypes = Object.freeze({
+  json: "application/json",
+  problemJson: "application/problem+json",
 })
 
 export const browserStorageKeys = Object.freeze({
@@ -32,10 +101,6 @@ export const browserEventNames = Object.freeze({
 
 export const floatingPanelDimensions = Object.freeze({
   visibleEdgePixels: 64,
-})
-
-export const cookieMaxAgeSeconds = Object.freeze({
-  authToken: 24 * 60 * 60,
 })
 
 export const jwtClaimNames = Object.freeze({
@@ -56,6 +121,7 @@ export const loginSearchParamNames = Object.freeze({
 
 export const commonUiTexts = Object.freeze({
   sessionExpiredMessage: "Сесія завершилась. Увійдіть у систему повторно.",
+  serverUnavailableMessage: "Сервер недоступний. Спробуйте пізніше.",
   nothingFoundMessage: "Нічого не знайдено за вашим запитом.",
   errorPageTitle: "Щось пішло не так",
   retryButtonLabel: "Спробувати ще",
@@ -91,6 +157,10 @@ export const appRoutes = Object.freeze({
 
 export const apiEndpoints = Object.freeze({
   login: "/api/Account/login",
+  refreshSession: "/api/Account/refreshSession",
+  logout: "/api/Account/logout",
+  changePassword: "/api/Account/changePassword",
+  resetUserPassword: "/api/Account/resetUserPassword",
   registerAccount: "/api/Account/registerAccount",
   dispatchersPagedList: "/api/Account/getDispatchersPagedList",
   deleteUser: "/api/Account/deleteUser",
@@ -193,6 +263,7 @@ export const iconActionLabels = Object.freeze({
   edit: "Редагувати",
   delete: "Видалити",
   maintenance: "Технічне обслуговування",
+  resetPassword: "Скинути пароль",
   viewOnMap: "Показати маршрут на карті",
 })
 

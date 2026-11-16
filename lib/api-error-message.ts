@@ -1,4 +1,21 @@
+import { apiProblemTypeSchema } from "@/lib/schemas/api-problem-type-schema"
 import { ApiProblemDetails } from "@/lib/types"
+
+export async function getApiProblemType(
+  response: Response
+): Promise<string | null> {
+  try {
+    const problemTypeParseResult = apiProblemTypeSchema.safeParse(
+      JSON.parse(await response.text())
+    )
+    if (!problemTypeParseResult.success) {
+      return null
+    }
+    return problemTypeParseResult.data.type ?? null
+  } catch {
+    return null
+  }
+}
 
 function getProblemDetailsMessage(
   problemDetails: ApiProblemDetails

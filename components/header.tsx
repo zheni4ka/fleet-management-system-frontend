@@ -4,15 +4,16 @@ import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { LogOut, Menu, Truck, X } from "lucide-react"
+import toast from "react-hot-toast"
 import {
   appRoutes,
-  cookieNames,
+  bffErrorMessages,
+  bffRoutes,
   headerNavigationLinks,
   userRoleLabels,
 } from "@/lib/constants"
-import { deleteBrowserCookie } from "@/lib/browser-cookies"
 import { isNavigationLinkActive } from "@/lib/navigation"
-import { UserRole } from "@/lib/types"
+import { HttpMethod, UserRole } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 interface HeaderProps {
@@ -71,8 +72,20 @@ export function Header({
     }
   }, [isMobileNavigationOpen])
 
-  const handleLogout = () => {
-    deleteBrowserCookie(cookieNames.authToken)
+  const handleLogout = async () => {
+    try {
+      const logoutResponse = await fetch(bffRoutes.sessionLogout, {
+        method: HttpMethod.Post,
+      })
+      if (!logoutResponse.ok) {
+        toast.error(bffErrorMessages.logoutFailed)
+        return
+      }
+    } catch (error) {
+      console.error(bffErrorMessages.logoutFailed, error)
+      toast.error(bffErrorMessages.logoutFailed)
+      return
+    }
     router.push(appRoutes.login)
     router.refresh()
   }

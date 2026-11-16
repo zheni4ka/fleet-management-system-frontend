@@ -1,5 +1,6 @@
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { DeleteTableRowAction } from "@/components/tables/delete-table-row-action"
+import { ResetUserPasswordTableRowAction } from "@/components/tables/reset-user-password-table-row-action"
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import { hasActiveListFilters } from "@/lib/search-params"
@@ -47,15 +48,21 @@ export function DispatchersTable({
               </TableCell>
               <TableCell>{dispatcher.email ?? "—"}</TableCell>
               <TableCell className="text-center">
-                <DeleteTableRowAction
-                  deleteApiPath={`${apiEndpoints.deleteUser}/${dispatcher.id}`}
-                  deletionQuestion={`Видалити диспетчера ${dispatcher.username}?`}
-                  deletionToastMessages={{
-                    loading: "Видалення облікового запису...",
-                    success: "Диспетчера успішно видалено!",
-                    error: "Не вдалося видалити користувача",
-                  }}
-                />
+                <div className="flex items-center justify-center gap-1">
+                  <ResetUserPasswordTableRowAction
+                    userId={dispatcher.id}
+                    username={dispatcher.username}
+                  />
+                  <DeleteTableRowAction
+                    deleteApiPath={`${apiEndpoints.deleteUser}/${dispatcher.id}`}
+                    deletionQuestion={`Видалити диспетчера ${dispatcher.username}?`}
+                    deletionToastMessages={{
+                      loading: "Видалення облікового запису...",
+                      success: "Диспетчера успішно видалено!",
+                      error: "Не вдалося видалити користувача",
+                    }}
+                  />
+                </div>
               </TableCell>
             </TableRow>
           ))}

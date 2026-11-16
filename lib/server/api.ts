@@ -1,24 +1,22 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { z } from "zod"
-import { appRoutes, cookieNames } from "@/lib/constants"
+import {
+  appRoutes,
+  commonUiTexts,
+  cookieNames,
+  httpStatusCodes,
+} from "@/lib/constants"
 import { getApiErrorMessage } from "@/lib/api-error-message"
 import { parseApiResponseBody } from "@/lib/api-response-body"
 import { hasAuthTokenUserRole } from "@/lib/auth-token"
 import { createLoginPath } from "@/lib/login-redirect"
+import { getServerApiBaseUrl } from "@/lib/server/backend-api"
 import { ApiFetchResult, LoginRedirectReason, UserRole } from "@/lib/types"
-
-function getServerApiBaseUrl(): string {
-  const serverApiBaseUrl = process.env.API_BASE_URL
-  if (!serverApiBaseUrl) {
-    throw new Error("Змінна середовища API_BASE_URL не налаштована.")
-  }
-  return serverApiBaseUrl
-}
 
 export async function getAuthTokenFromCookies(): Promise<string | null> {
   const cookieStore = await cookies()
-  return cookieStore.get(cookieNames.authToken)?.value ?? null
+  return cookieStore.get(cookieNames.accessToken)?.value ?? null
 }
 
 export async function getAuthTokenOrRedirect(): Promise<string> {
@@ -52,11 +50,11 @@ export async function fetchFromApi<TResponseSchema extends z.ZodType>(
     console.error(`Не вдалося виконати запит до ${apiPath}:`, error)
     return {
       isSucceeded: false,
-      errorMessage: "Сервер недоступний. Спробуйте пізніше.",
+      errorMessage: commonUiTexts.serverUnavailableMessage,
     }
   }
 
-  if (response.status === 401) {
+  if (response.status === httpStatusCodes.unauthorized) {
     redirect(createLoginPath(null, LoginRedirectReason.SessionExpired))
   }
   if (!response.ok) {
