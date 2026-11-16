@@ -31,7 +31,9 @@ npm ci
 npm run dev
 ```
 
-Перевірки: `npm run typecheck`, `npm run lint`, `npm run build`.
+Перевірки: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`.
+
+Тести (Vitest) лежать у `tests/`: форми, параметри пошуку, zod-схеми, перетворення часових поясів і BFF route handlers. У Windows запускайте їх зі шляху з великою літерою диска (`C:\...`): якщо поточна тека має вигляд `c:\...`, Vitest завантажує свої модулі двічі й падає з `Cannot read properties of undefined (reading 'config')`.
 
 ## Docker
 
