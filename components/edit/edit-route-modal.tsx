@@ -7,32 +7,25 @@ import { IconActionButton } from "@/components/icon-action-button"
 import { NativeSelect } from "@/components/ui/native-select"
 import { FormField } from "@/components/ui/form-field"
 import ModalWindow from "@/components/ui/modal-window"
-import { SearchableSelect } from "@/components/ui/searchable-select"
 import { SubmitButton } from "@/components/ui/submit-button"
+import { RouteFormFields } from "@/components/forms/route-form-fields"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
 import {
   allowedRouteStatusTransitions,
   apiEndpoints,
   iconActionLabels,
-  routeFormSelectTexts,
   routeStatusLabels,
 } from "@/lib/constants"
 import {
   createEditRouteFormValuesFromRoute,
-  createEditRouteRequestBody,
-  getEditRouteFormValidationError,
+  createUpdateRouteRequestModel,
 } from "@/lib/forms/edit-route-form"
-import {
-  createAutoSearchableSelectOptions,
-  createDriverSearchableSelectOptions,
-  createLocationSearchableSelectOptions,
-} from "@/lib/forms/searchable-select-options"
+import { getRouteAssignmentFormValidationError } from "@/lib/forms/route-form"
 import { isRouteStatusActive } from "@/lib/route-status"
 import {
   AutoLookupOption,
   DriverLookupOption,
-  EditRouteFormValues,
   HttpMethod,
   LocationLookupOption,
   Route,
@@ -62,19 +55,10 @@ export default function EditRouteModal({
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
 
   const isRouteEditable = isRouteStatusActive(route.status)
-  const locationOptions = createLocationSearchableSelectOptions(
-    locationLookupOptions
-  )
   const selectableRouteStatuses = [
     route.status,
     ...allowedRouteStatusTransitions[route.status],
   ]
-
-  const updateEditRouteFormValues = (
-    changedValues: Partial<EditRouteFormValues>
-  ) => {
-    setEditRouteFormValues({ ...editRouteFormValues, ...changedValues })
-  }
 
   const handleOpen = () => {
     setEditRouteFormValues(createEditRouteFormValuesFromRoute(route))
@@ -83,10 +67,10 @@ export default function EditRouteModal({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const editRouteFormValidationError =
-      getEditRouteFormValidationError(editRouteFormValues)
-    if (editRouteFormValidationError !== null) {
-      toast.error(editRouteFormValidationError)
+    const routeAssignmentFormValidationError =
+      getRouteAssignmentFormValidationError(editRouteFormValues)
+    if (routeAssignmentFormValidationError !== null) {
+      toast.error(routeAssignmentFormValidationError)
       return
     }
 
@@ -95,7 +79,7 @@ export default function EditRouteModal({
         sendApiRequest(
           apiEndpoints.updateRoute,
           HttpMethod.Put,
-          createEditRouteRequestBody(route.id, editRouteFormValues)
+          createUpdateRouteRequestModel(route.id, editRouteFormValues)
         ),
       {
         loading: "Збереження змін маршруту...",
@@ -127,76 +111,21 @@ export default function EditRouteModal({
         title={`Редагувати маршрут #${route.id}`}
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <FormField label="Початкова локація">
-              <SearchableSelect
-                options={locationOptions}
-                selectedValue={editRouteFormValues.startLocationId}
-                onSelectedValueChange={(startLocationId) =>
-                  updateEditRouteFormValues({ startLocationId })
-                }
-                placeholder={routeFormSelectTexts.startLocationPlaceholder}
-                searchPlaceholder={
-                  routeFormSelectTexts.locationSearchPlaceholder
-                }
-                emptyMessage={routeFormSelectTexts.locationEmptyMessage}
-              />
-            </FormField>
-            <FormField label="Кінцева локація">
-              <SearchableSelect
-                options={locationOptions}
-                selectedValue={editRouteFormValues.destinationLocationId}
-                onSelectedValueChange={(destinationLocationId) =>
-                  updateEditRouteFormValues({ destinationLocationId })
-                }
-                placeholder={
-                  routeFormSelectTexts.destinationLocationPlaceholder
-                }
-                searchPlaceholder={
-                  routeFormSelectTexts.locationSearchPlaceholder
-                }
-                emptyMessage={routeFormSelectTexts.locationEmptyMessage}
-              />
-            </FormField>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <FormField label="Водій">
-              <SearchableSelect
-                options={createDriverSearchableSelectOptions(
-                  driverLookupOptions
-                )}
-                selectedValue={editRouteFormValues.driverId}
-                onSelectedValueChange={(driverId) =>
-                  updateEditRouteFormValues({ driverId })
-                }
-                placeholder={routeFormSelectTexts.driverPlaceholder}
-                searchPlaceholder={routeFormSelectTexts.driverSearchPlaceholder}
-                emptyMessage={routeFormSelectTexts.driverEmptyMessage}
-              />
-            </FormField>
-            <FormField label="Автомобіль">
-              <SearchableSelect
-                options={createAutoSearchableSelectOptions(
-                  autoLookupOptions,
-                  route.autoId
-                )}
-                selectedValue={editRouteFormValues.autoId}
-                onSelectedValueChange={(autoId) =>
-                  updateEditRouteFormValues({ autoId })
-                }
-                placeholder={routeFormSelectTexts.autoPlaceholder}
-                searchPlaceholder={routeFormSelectTexts.autoSearchPlaceholder}
-                emptyMessage={routeFormSelectTexts.autoEmptyMessage}
-              />
-            </FormField>
-          </div>
+          <RouteFormFields
+            routeFormValues={editRouteFormValues}
+            onRouteFormValuesChange={setEditRouteFormValues}
+            autoLookupOptions={autoLookupOptions}
+            driverLookupOptions={driverLookupOptions}
+            locationLookupOptions={locationLookupOptions}
+            alwaysSelectableAutoId={route.autoId}
+          />
 
           <FormField label="Статус маршруту">
             <NativeSelect
               value={editRouteFormValues.status}
               onChange={(event) =>
-                updateEditRouteFormValues({
+                setEditRouteFormValues({
+                  ...editRouteFormValues,
                   status: parseEnumValue(RouteStatus, event.target.value),
                 })
               }

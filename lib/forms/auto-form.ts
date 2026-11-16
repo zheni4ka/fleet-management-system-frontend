@@ -1,4 +1,9 @@
-import { Auto, AutoFormValues, AutoStatus } from "@/lib/types"
+import {
+  Auto,
+  AutoFormValues,
+  CreateAutoRequestModel,
+  UpdateAutoRequestModel,
+} from "@/lib/types"
 
 export function createEmptyAutoFormValues(): AutoFormValues {
   return {
@@ -7,7 +12,6 @@ export function createEmptyAutoFormValues(): AutoFormValues {
     color: "",
     number: "",
     capacity: "",
-    status: AutoStatus.Available,
   }
 }
 
@@ -18,13 +22,12 @@ export function createAutoFormValuesFromAuto(auto: Auto): AutoFormValues {
     color: auto.color,
     number: auto.number,
     capacity: String(auto.capacity),
-    status: auto.status,
   }
 }
 
 function parseAutoCapacity(rawCapacity: string): number | null {
   const parsedCapacity = Number(rawCapacity.trim())
-  if (!Number.isInteger(parsedCapacity) || parsedCapacity <= 0) {
+  if (!Number.isFinite(parsedCapacity) || parsedCapacity <= 0) {
     return null
   }
   return parsedCapacity
@@ -43,14 +46,14 @@ export function getAutoFormValidationError(
     return "Будь ласка, заповніть всі поля форми."
   }
   if (parseAutoCapacity(autoFormValues.capacity) === null) {
-    return "Місткість має бути додатним цілим числом."
+    return "Місткість має бути числом, більшим за 0."
   }
   return null
 }
 
-export function createAutoRequestBody(
+export function createCreateAutoRequestModel(
   autoFormValues: AutoFormValues
-): Omit<Auto, "id"> {
+): CreateAutoRequestModel {
   const autoCapacity = parseAutoCapacity(autoFormValues.capacity)
   if (autoCapacity === null) {
     throw new Error(
@@ -63,6 +66,15 @@ export function createAutoRequestBody(
     color: autoFormValues.color,
     number: autoFormValues.number.trim(),
     capacity: autoCapacity,
-    status: autoFormValues.status,
+  }
+}
+
+export function createUpdateAutoRequestModel(
+  autoId: number,
+  autoFormValues: AutoFormValues
+): UpdateAutoRequestModel {
+  return {
+    id: autoId,
+    ...createCreateAutoRequestModel(autoFormValues),
   }
 }

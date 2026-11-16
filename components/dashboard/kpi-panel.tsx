@@ -8,7 +8,7 @@ import {
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { apiEndpoints } from "@/lib/constants"
 import { fetchFromApi } from "@/lib/server/api"
-import { DashboardSummary } from "@/lib/types"
+import { dashboardSummarySchema } from "@/lib/schemas/dashboard-summary-schema"
 
 interface KpiCardProps {
   label: string
@@ -49,9 +49,10 @@ interface KpiPanelProps {
 }
 
 export async function KpiPanel({ authToken }: KpiPanelProps) {
-  const dashboardSummaryResult = await fetchFromApi<DashboardSummary>(
+  const dashboardSummaryResult = await fetchFromApi(
     apiEndpoints.dashboardSummary,
-    authToken
+    authToken,
+    dashboardSummarySchema
   )
 
   if (!dashboardSummaryResult.isSucceeded) {

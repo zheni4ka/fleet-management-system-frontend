@@ -1,9 +1,4 @@
-import {
-  defaultListPageSize,
-  firstListPage,
-  listPageSizeOptions,
-  listSearchParamNames,
-} from "@/lib/constants"
+import { listPaging, listSearchParamNames } from "@/lib/constants"
 import {
   ListFilterField,
   ListFilterFieldKind,
@@ -127,16 +122,16 @@ export function getListQueryFromPageSearchParams<TSortField extends string>(
   )
   const isRequestedPageSizeOffered =
     requestedPageSize !== null &&
-    listPageSizeOptions.includes(requestedPageSize)
+    listPaging.pageSizeOptions.includes(requestedPageSize)
 
   return {
     page:
       parsePositiveIntegerSearchParamValue(
         getPageSearchParamValue(pageSearchParams, listSearchParamNames.page)
-      ) ?? firstListPage,
+      ) ?? listPaging.firstPage,
     pageSize: isRequestedPageSizeOffered
       ? requestedPageSize
-      : defaultListPageSize,
+      : listPaging.defaultPageSize,
     sort: findEnumValue(
       sortFieldEnum,
       getPageSearchParamValue(pageSearchParams, listSearchParamNames.sort)
@@ -160,10 +155,13 @@ function appendListQuerySearchParams<TSortField extends string>(
   listQuery: ListQuery<TSortField>,
   isDefaultValueIncluded: boolean
 ): URLSearchParams {
-  if (isDefaultValueIncluded || listQuery.page !== firstListPage) {
+  if (isDefaultValueIncluded || listQuery.page !== listPaging.firstPage) {
     searchParams.set(listSearchParamNames.page, String(listQuery.page))
   }
-  if (isDefaultValueIncluded || listQuery.pageSize !== defaultListPageSize) {
+  if (
+    isDefaultValueIncluded ||
+    listQuery.pageSize !== listPaging.defaultPageSize
+  ) {
     searchParams.set(listSearchParamNames.pageSize, String(listQuery.pageSize))
   }
   if (listQuery.sort !== null) {
@@ -223,7 +221,7 @@ export function getSortedListQueryChanges<TSortField extends string>(
     sortDirection: isSortedAscendingBySameField
       ? SortDirection.Descending
       : SortDirection.Ascending,
-    page: firstListPage,
+    page: listPaging.firstPage,
   }
 }
 
@@ -231,5 +229,5 @@ export function getListPagesCount(
   totalCount: number,
   pageSize: number
 ): number {
-  return Math.max(firstListPage, Math.ceil(totalCount / pageSize))
+  return Math.max(listPaging.firstPage, Math.ceil(totalCount / pageSize))
 }

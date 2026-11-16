@@ -1,4 +1,4 @@
-import { floatingPanelVisibleEdgePixels } from "@/lib/constants"
+import { floatingPanelDimensions } from "@/lib/constants"
 import { FloatingPanelPosition, FloatingPanelState } from "@/lib/types"
 
 export function clampFloatingPanelPositionToViewport(
@@ -7,11 +7,11 @@ export function clampFloatingPanelPositionToViewport(
   return {
     left: Math.min(
       Math.max(0, floatingPanelPosition.left),
-      window.innerWidth - floatingPanelVisibleEdgePixels
+      window.innerWidth - floatingPanelDimensions.visibleEdgePixels
     ),
     top: Math.min(
       Math.max(0, floatingPanelPosition.top),
-      window.innerHeight - floatingPanelVisibleEdgePixels
+      window.innerHeight - floatingPanelDimensions.visibleEdgePixels
     ),
   }
 }

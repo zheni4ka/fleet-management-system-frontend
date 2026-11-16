@@ -12,11 +12,9 @@ import {
   createSearchParamsFromFormValues,
 } from "@/lib/search-params"
 import { fetchFromApi, getAuthTokenOrRedirect } from "@/lib/server/api"
-import {
-  PageSearchParams,
-  RoutesPeriodFormValues,
-  RoutesPeriodReport,
-} from "@/lib/types"
+import { PageSearchParams, RoutesPeriodFormValues } from "@/lib/types"
+import { routesPeriodReportSchema } from "@/lib/schemas/routes-period-report-schema"
+import { PageContainer } from "@/components/page-container"
 
 interface ReportsPageProps {
   searchParams: Promise<PageSearchParams>
@@ -31,12 +29,13 @@ async function RoutesPeriodReportSection({
   routesPeriodFormValues,
   authToken,
 }: RoutesPeriodReportSectionProps) {
-  const routesPeriodReportResult = await fetchFromApi<RoutesPeriodReport>(
+  const routesPeriodReportResult = await fetchFromApi(
     createPathWithSearchParams(
       apiEndpoints.routesPeriodReport,
       createSearchParamsFromFormValues(routesPeriodFormValues)
     ),
-    authToken
+    authToken,
+    routesPeriodReportSchema
   )
 
   if (!routesPeriodReportResult.isSucceeded) {
@@ -58,7 +57,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
     createRoutesPeriodFormValuesFromPageSearchParams(await searchParams)
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-1 py-6 sm:p-8">
+    <PageContainer>
       <PageHeader
         title="Звіти"
         description="Статистика рейсів за обраний період: день, тиждень або місяць."
@@ -79,6 +78,6 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
           Оберіть період, щоб сформувати звіт.
         </p>
       )}
-    </div>
+    </PageContainer>
   )
 }

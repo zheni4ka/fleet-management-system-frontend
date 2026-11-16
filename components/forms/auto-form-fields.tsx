@@ -1,9 +1,8 @@
 import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
 import { FormField } from "@/components/ui/form-field"
-import { autoColorOptions, autoStatusLabels } from "@/lib/constants"
-import { AutoFormValues, AutoStatus } from "@/lib/types"
-import { parseEnumValue } from "@/lib/utils"
+import { autoColorOptions } from "@/lib/constants"
+import { AutoFormValues } from "@/lib/types"
 
 interface AutoFormFieldsProps {
   autoFormValues: AutoFormValues
@@ -71,29 +70,13 @@ export function AutoFormFields({
       <FormField label="Місткість (кг)">
         <Input
           type="number"
-          min={1}
-          step={1}
+          min={0}
+          step="any"
           value={autoFormValues.capacity}
           onChange={(event) =>
             updateAutoFormValues({ capacity: event.target.value })
           }
         />
-      </FormField>
-      <FormField label="Статус">
-        <NativeSelect
-          value={autoFormValues.status}
-          onChange={(event) =>
-            updateAutoFormValues({
-              status: parseEnumValue(AutoStatus, event.target.value),
-            })
-          }
-        >
-          {Object.values(AutoStatus).map((autoStatus) => (
-            <option key={autoStatus} value={autoStatus}>
-              {autoStatusLabels[autoStatus]}
-            </option>
-          ))}
-        </NativeSelect>
       </FormField>
     </>
   )

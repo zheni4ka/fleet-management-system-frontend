@@ -10,7 +10,7 @@ import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh
 import { sendApiRequest } from "@/lib/api-client"
 import { apiEndpoints } from "@/lib/constants"
 import {
-  createAutoRequestBody,
+  createCreateAutoRequestModel,
   createEmptyAutoFormValues,
   getAutoFormValidationError,
 } from "@/lib/forms/auto-form"
@@ -36,7 +36,7 @@ export default function AddAutoModal() {
         sendApiRequest(
           apiEndpoints.createAuto,
           HttpMethod.Post,
-          createAutoRequestBody(autoFormValues)
+          createCreateAutoRequestModel(autoFormValues)
         ),
       {
         loading: "Збереження автомобіля...",

@@ -1,17 +1,4 @@
-import { Route } from "./route"
-import { RoutesPeriodReportDriverSummary } from "./routes-period-report-driver-summary"
+import { z } from "zod"
+import { routesPeriodReportSchema } from "@/lib/schemas/routes-period-report-schema"
 
-export interface RoutesPeriodReport {
-  periodStartDate: string
-  periodEndDate: string
-  totalRoutesCount: number
-  plannedRoutesCount: number
-  inProgressRoutesCount: number
-  completedRoutesCount: number
-  cancelledRoutesCount: number
-  completedRoutesDrivingHours: number
-  involvedAutosCount: number
-  involvedDriversCount: number
-  driverSummaries: RoutesPeriodReportDriverSummary[]
-  routes: Route[]
-}
+export type RoutesPeriodReport = z.infer<typeof routesPeriodReportSchema>

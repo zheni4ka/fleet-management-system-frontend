@@ -12,13 +12,10 @@ import {
   getListQueryFromPageSearchParams,
 } from "@/lib/search-params"
 import { fetchFromApi, getAdminAuthTokenOrRedirect } from "@/lib/server/api"
-import {
-  Driver,
-  DriverSortField,
-  ListPageState,
-  PageSearchParams,
-  PagedList,
-} from "@/lib/types"
+import { DriverSortField, ListPageState, PageSearchParams } from "@/lib/types"
+import { createPagedListSchema } from "@/lib/schemas/paged-list-schema"
+import { driverSchema } from "@/lib/schemas/driver-schema"
+import { PageContainer } from "@/components/page-container"
 
 interface DriversPageProps {
   searchParams: Promise<PageSearchParams>
@@ -38,17 +35,18 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
       driversListFilterFields
     ),
   }
-  const driversPageResult = await fetchFromApi<PagedList<Driver>>(
+  const driversPageResult = await fetchFromApi(
     createListApiPath(
       apiEndpoints.driversPagedList,
       driversListPageState.listQuery,
       driversListPageState.filterValues
     ),
-    authToken
+    authToken,
+    createPagedListSchema(driverSchema)
   )
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-1 py-6 sm:p-8">
+    <PageContainer>
       <PageHeader
         title="Водії"
         description="Управління водіями вашого автопарку та перегляд їхніх ліцензій."
@@ -76,6 +74,6 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
       ) : (
         <LoadErrorMessage errorMessage={driversPageResult.errorMessage} />
       )}
-    </div>
+    </PageContainer>
   )
 }

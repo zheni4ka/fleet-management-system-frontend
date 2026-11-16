@@ -5,12 +5,7 @@ import Link from "next/link"
 import { TriangleAlert } from "lucide-react"
 import { StatusMessagePage } from "@/components/status-message-page"
 import { Button } from "@/components/ui/button"
-import {
-  appRoutes,
-  errorPageTitle,
-  homeLinkLabel,
-  retryButtonLabel,
-} from "@/lib/constants"
+import { appRoutes, commonUiTexts } from "@/lib/constants"
 
 interface ErrorPageProps {
   error: Error & { digest?: string }
@@ -25,14 +20,14 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   return (
     <StatusMessagePage
       icon={TriangleAlert}
-      title={errorPageTitle}
+      title={commonUiTexts.errorPageTitle}
       description="Не вдалося відобразити сторінку. Спробуйте ще раз або поверніться на головну."
     >
       <Button type="button" onClick={reset}>
-        {retryButtonLabel}
+        {commonUiTexts.retryButtonLabel}
       </Button>
       <Button asChild variant="outline">
-        <Link href={appRoutes.home}>{homeLinkLabel}</Link>
+        <Link href={appRoutes.home}>{commonUiTexts.homeLinkLabel}</Link>
       </Button>
     </StatusMessagePage>
   )

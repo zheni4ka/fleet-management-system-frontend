@@ -1,8 +1,10 @@
+import {
+  routesPeriodPresetSettings,
+  routesPeriodSearchParamNames,
+} from "@/lib/constants"
 import { formatLocalIsoDate } from "@/lib/formatters"
 import { getPageSearchParamValue } from "@/lib/search-params"
 import { PageSearchParams, RoutesPeriodFormValues } from "@/lib/types"
-
-const lastWeekDaysCount = 7
 
 export function createRoutesPeriodFormValuesFromPageSearchParams(
   pageSearchParams: PageSearchParams
@@ -10,9 +12,12 @@ export function createRoutesPeriodFormValuesFromPageSearchParams(
   return {
     periodStartDate: getPageSearchParamValue(
       pageSearchParams,
-      "periodStartDate"
+      routesPeriodSearchParamNames.periodStartDate
     ),
-    periodEndDate: getPageSearchParamValue(pageSearchParams, "periodEndDate"),
+    periodEndDate: getPageSearchParamValue(
+      pageSearchParams,
+      routesPeriodSearchParamNames.periodEndDate
+    ),
   }
 }
 
@@ -50,7 +55,7 @@ export function createLastWeekRoutesPeriodFormValues(): RoutesPeriodFormValues {
   const lastWeekStartDate = new Date(
     todayDate.getFullYear(),
     todayDate.getMonth(),
-    todayDate.getDate() - (lastWeekDaysCount - 1)
+    todayDate.getDate() - (routesPeriodPresetSettings.lastWeekDaysCount - 1)
   )
   return {
     periodStartDate: formatLocalIsoDate(lastWeekStartDate),

@@ -1,8 +1,4 @@
-export interface AutoMaintenance {
-  id: number
-  name: string
-  description: string
-  serviceDate: string
-  autoId: number
-  isCompleted: boolean
-}
+import { z } from "zod"
+import { autoMaintenanceSchema } from "@/lib/schemas/auto-maintenance-schema"
+
+export type AutoMaintenance = z.infer<typeof autoMaintenanceSchema>

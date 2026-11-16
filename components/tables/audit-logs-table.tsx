@@ -4,8 +4,7 @@ import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import {
   auditActionLabels,
   auditLogsTableColumns,
-  deletedUserLabel,
-  nothingFoundMessage,
+  commonUiTexts,
 } from "@/lib/constants"
 import { formatDateTime } from "@/lib/formatters"
 import { hasActiveListFilters } from "@/lib/search-params"
@@ -33,7 +32,7 @@ export function AuditLogsTable({
               columnCount={auditLogsTableColumns.length}
               message={
                 hasActiveListFilters(listPageState)
-                  ? nothingFoundMessage
+                  ? commonUiTexts.nothingFoundMessage
                   : "Журнал дій поки порожній."
               }
             />
@@ -49,7 +48,7 @@ export function AuditLogsTable({
               <TableCell>
                 {auditLog.dispatcherUsername ?? (
                   <span className="text-slate-500 italic">
-                    {deletedUserLabel}
+                    {commonUiTexts.deletedUserLabel}
                   </span>
                 )}
               </TableCell>

@@ -1,9 +1,4 @@
-import { AutoStatus } from "./auto-status"
+import { z } from "zod"
+import { autoLookupOptionSchema } from "@/lib/schemas/auto-lookup-option-schema"
 
-export interface AutoLookupOption {
-  id: number
-  mark: string
-  model: string
-  number: string
-  status: AutoStatus
-}
+export type AutoLookupOption = z.infer<typeof autoLookupOptionSchema>

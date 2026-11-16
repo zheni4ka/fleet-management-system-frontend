@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { NativeSelect } from "@/components/ui/native-select"
-import { firstListPage, listPageSizeOptions } from "@/lib/constants"
+import { listPaging } from "@/lib/constants"
 import { createListPageHref } from "@/lib/search-params"
 import { ListPageState } from "@/lib/types"
 
@@ -24,13 +24,13 @@ export function ListPageSizeSelect<TSortField extends string>({
           router.push(
             createListPageHref(listPageState, {
               pageSize: Number(event.target.value),
-              page: firstListPage,
+              page: listPaging.firstPage,
             })
           )
         }
         className="w-20"
       >
-        {listPageSizeOptions.map((listPageSizeOption) => (
+        {listPaging.pageSizeOptions.map((listPageSizeOption) => (
           <option key={listPageSizeOption} value={listPageSizeOption}>
             {listPageSizeOption}
           </option>

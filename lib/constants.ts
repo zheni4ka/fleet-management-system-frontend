@@ -3,6 +3,7 @@ import { AuditAction } from "@/lib/types/audit-action"
 import { AuditLogSortField } from "@/lib/types/audit-log-sort-field"
 import { AutoSortField } from "@/lib/types/auto-sort-field"
 import { AutoStatus } from "@/lib/types/auto-status"
+import { BadgeTone } from "@/lib/types/badge-tone"
 import { DispatcherSortField } from "@/lib/types/dispatcher-sort-field"
 import { DriverFormField } from "@/lib/types/driver-form-field"
 import { DriverSortField } from "@/lib/types/driver-sort-field"
@@ -11,6 +12,7 @@ import { NavigationLink } from "@/lib/types/navigation-link"
 import { RouteSortField } from "@/lib/types/route-sort-field"
 import { RouteStatus } from "@/lib/types/route-status"
 import { RouteStatusAction } from "@/lib/types/route-status-action"
+import { RoutesPeriodFormValues } from "@/lib/types/routes-period-form-values"
 import { SortDirection } from "@/lib/types/sort-direction"
 import { SortOption } from "@/lib/types/sort-option"
 import { TableColumn } from "@/lib/types/table-column"
@@ -24,11 +26,17 @@ export const browserStorageKeys = Object.freeze({
   listFilterPanelState: "listFilterPanelState",
 })
 
-export const browserStorageChangeEventName = "browserStorageChange"
+export const browserEventNames = Object.freeze({
+  browserStorageChange: "browserStorageChange",
+})
 
-export const floatingPanelVisibleEdgePixels = 64
+export const floatingPanelDimensions = Object.freeze({
+  visibleEdgePixels: 64,
+})
 
-export const authCookieMaxAgeSeconds = 24 * 60 * 60
+export const cookieMaxAgeSeconds = Object.freeze({
+  authToken: 24 * 60 * 60,
+})
 
 export const jwtClaimNames = Object.freeze({
   role: "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
@@ -37,15 +45,26 @@ export const jwtClaimNames = Object.freeze({
   expirationTime: "exp",
 })
 
-export const millisecondsPerSecond = 1000
+export const timeUnitConversions = Object.freeze({
+  millisecondsPerSecond: 1000,
+})
 
 export const loginSearchParamNames = Object.freeze({
   returnUrl: "returnUrl",
   reason: "reason",
 })
 
-export const sessionExpiredMessage =
-  "Сесія завершилась. Увійдіть у систему повторно."
+export const commonUiTexts = Object.freeze({
+  sessionExpiredMessage: "Сесія завершилась. Увійдіть у систему повторно.",
+  nothingFoundMessage: "Нічого не знайдено за вашим запитом.",
+  errorPageTitle: "Щось пішло не так",
+  retryButtonLabel: "Спробувати ще",
+  homeLinkLabel: "На головну",
+  closeButtonLabel: "Закрити",
+  deletedUserLabel: "Видалений користувач",
+  unexpectedApiResponseFormatMessage:
+    "Сервер повернув дані в неочікуваному форматі.",
+})
 
 export const userRoleLabels: Readonly<Record<UserRole, string>> = Object.freeze(
   {
@@ -54,7 +73,9 @@ export const userRoleLabels: Readonly<Record<UserRole, string>> = Object.freeze(
   }
 )
 
-export const displayLocale = "uk-UA"
+export const localeCodes = Object.freeze({
+  display: "uk-UA",
+})
 
 export const appRoutes = Object.freeze({
   home: "/",
@@ -107,13 +128,52 @@ export const listSearchParamNames = Object.freeze({
   search: "search",
 })
 
-export const firstListPage = 1
+export const listFilterSearchParamNames = Object.freeze({
+  status: "status",
+  color: "color",
+  country: "country",
+  action: "action",
+  timeFromDate: "timeFromDate",
+  timeToDate: "timeToDate",
+  startCity: "startCity",
+  destinationCity: "destinationCity",
+  departureFromDate: "departureFromDate",
+  departureToDate: "departureToDate",
+  driverId: "driverId",
+  autoId: "autoId",
+})
 
-export const defaultListPageSize = 20
+export const routesPeriodSearchParamNames: Readonly<{
+  [TRoutesPeriodFormField in keyof RoutesPeriodFormValues]: TRoutesPeriodFormField
+}> = Object.freeze({
+  periodStartDate: "periodStartDate",
+  periodEndDate: "periodEndDate",
+})
 
-export const listPageSizeOptions: ReadonlyArray<number> = Object.freeze([
-  10, 20, 50, 100,
-])
+export const listPaging = Object.freeze({
+  firstPage: 1,
+  defaultPageSize: 20,
+  pageSizeOptions: Object.freeze([10, 20, 50, 100]),
+})
+
+export const listFilterTexts = Object.freeze({
+  statusLabel: "Статус",
+  allStatusesOptionLabel: "Усі статуси",
+})
+
+export const routesPageTexts = Object.freeze({
+  title: "Маршрути",
+  description:
+    "Перегляд доступних маршрутів із деталями відправлення, прибуття, автомобіля та водія.",
+})
+
+export const recentRoutesBlockSettings = Object.freeze({
+  routesCount: 5,
+})
+
+export const routesPeriodPresetSettings = Object.freeze({
+  lastWeekDaysCount: 7,
+})
 
 export const sortDirectionLabels: Readonly<Record<SortDirection, string>> =
   Object.freeze({
@@ -128,16 +188,6 @@ export const routeSortOptions: ReadonlyArray<SortOption<RouteSortField>> =
     { sortField: RouteSortField.Status, label: "Статус" },
     { sortField: RouteSortField.Id, label: "ID" },
   ])
-
-export const nothingFoundMessage = "Нічого не знайдено за вашим запитом."
-
-export const errorPageTitle = "Щось пішло не так"
-
-export const retryButtonLabel = "Спробувати ще"
-
-export const homeLinkLabel = "На головну"
-
-export const closeButtonLabel = "Закрити"
 
 export const iconActionLabels = Object.freeze({
   edit: "Редагувати",
@@ -157,6 +207,15 @@ export const routeFormSelectTexts = Object.freeze({
   autoPlaceholder: "Оберіть авто",
   autoSearchPlaceholder: "Пошук за маркою або номером...",
   autoEmptyMessage: "Автомобіль не знайдено",
+})
+
+export const routeFormValidationMessages = Object.freeze({
+  requiredFieldsMissing:
+    "Будь ласка, заповніть всі поля форми перед збереженням.",
+  sameStartAndDestinationLocation:
+    "Початкова та кінцева локації мають відрізнятися.",
+  arrivalNotAfterDeparture:
+    "Час прибуття має бути пізніше за час відправлення.",
 })
 
 export const autoStatusLabels: Readonly<Record<AutoStatus, string>> =
@@ -180,6 +239,12 @@ export const routeStatusBadgeClassNames: Readonly<Record<RouteStatus, string>> =
     [RouteStatus.InProgress]: "bg-blue-50 text-blue-700 ring-blue-700/15",
     [RouteStatus.Completed]: "bg-green-50 text-green-700 ring-green-700/15",
     [RouteStatus.Cancelled]: "bg-slate-100 text-slate-600 ring-slate-600/15",
+  })
+
+export const badgeToneClassNames: Readonly<Record<BadgeTone, string>> =
+  Object.freeze({
+    [BadgeTone.Neutral]: "bg-slate-100 text-slate-700 ring-slate-700/10",
+    [BadgeTone.Info]: "bg-blue-50 text-blue-700 ring-blue-700/10",
   })
 
 export const activeRouteStatuses: ReadonlyArray<RouteStatus> = Object.freeze([
@@ -360,8 +425,6 @@ export const reportRoutesTableColumns: ReadonlyArray<TableColumn> =
     { label: "Водій", className: "w-2/12" },
     { label: "Статус", className: "w-2/12 text-right" },
   ])
-
-export const deletedUserLabel = "Видалений користувач"
 
 export const auditActionLabels: Readonly<Record<AuditAction, string>> =
   Object.freeze({

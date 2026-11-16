@@ -7,7 +7,11 @@ import EditRouteModal from "@/components/edit/edit-route-modal"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints, nothingFoundMessage } from "@/lib/constants"
+import { apiEndpoints, commonUiTexts } from "@/lib/constants"
+import {
+  createEditRouteFormValuesFromRoute,
+  createUpdateRouteRequestModel,
+} from "@/lib/forms/edit-route-form"
 import {
   formatRouteAutoTitleWithNumber,
   formatRouteDestinationLocationName,
@@ -38,7 +42,6 @@ export function RoutesList({
   locationLookupOptions,
   isRoutesListFiltered,
 }: RoutesListProps) {
-  const [serverRoutesSnapshot, setServerRoutesSnapshot] = useState(routes)
   const [routeStatusOverrides, setRouteStatusOverrides] = useState<
     ReadonlyMap<number, RouteStatus>
   >(() => new Map())
@@ -50,12 +53,6 @@ export function RoutesList({
   const [routePendingDeletion, setRoutePendingDeletion] =
     useState<Route | null>(null)
   const { runApiMutation } = useApiMutationWithRefresh()
-
-  if (serverRoutesSnapshot !== routes) {
-    setServerRoutesSnapshot(routes)
-    setRouteStatusOverrides(new Map())
-    setDeletedRouteIds(new Set())
-  }
 
   const displayedRoutes = useMemo(
     () =>
@@ -101,16 +98,14 @@ export function RoutesList({
 
     const isRouteStatusUpdated = await runApiMutation(
       () =>
-        sendApiRequest(apiEndpoints.updateRoute, HttpMethod.Put, {
-          id: route.id,
-          startLocationId: route.startLocationId,
-          destinationLocationId: route.destinationLocationId,
-          departureTime: route.departureTime,
-          arrivalTime: route.arrivalTime,
-          autoId: route.autoId,
-          driverId: route.driverId,
-          status: targetRouteStatus,
-        }),
+        sendApiRequest(
+          apiEndpoints.updateRoute,
+          HttpMethod.Put,
+          createUpdateRouteRequestModel(route.id, {
+            ...createEditRouteFormValuesFromRoute(route),
+            status: targetRouteStatus,
+          })
+        ),
       {
         loading: "Оновлення статусу на сервері...",
         success: "Статус маршруту збережено!",
@@ -185,7 +180,7 @@ export function RoutesList({
         {displayedRoutes.length === 0 && (
           <div className="col-span-full rounded-xl border border-dashed bg-white py-12 text-center text-slate-500">
             {isRoutesListFiltered
-              ? nothingFoundMessage
+              ? commonUiTexts.nothingFoundMessage
               : "Маршрутів поки немає."}
           </div>
         )}

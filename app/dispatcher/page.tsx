@@ -13,12 +13,13 @@ import {
 } from "@/lib/search-params"
 import { fetchFromApi, getAdminAuthTokenOrRedirect } from "@/lib/server/api"
 import {
-  Dispatcher,
   DispatcherSortField,
   ListPageState,
   PageSearchParams,
-  PagedList,
 } from "@/lib/types"
+import { createPagedListSchema } from "@/lib/schemas/paged-list-schema"
+import { dispatcherSchema } from "@/lib/schemas/dispatcher-schema"
+import { PageContainer } from "@/components/page-container"
 
 interface DispatchersPageProps {
   searchParams: Promise<PageSearchParams>
@@ -40,17 +41,18 @@ export default async function DispatchersPage({
       dispatchersListFilterFields
     ),
   }
-  const dispatchersPageResult = await fetchFromApi<PagedList<Dispatcher>>(
+  const dispatchersPageResult = await fetchFromApi(
     createListApiPath(
       apiEndpoints.dispatchersPagedList,
       dispatchersListPageState.listQuery,
       dispatchersListPageState.filterValues
     ),
-    authToken
+    authToken,
+    createPagedListSchema(dispatcherSchema)
   )
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-1 py-6 sm:p-8">
+    <PageContainer>
       <PageHeader
         title="Диспетчери"
         description="Управління обліковими записами персоналу."
@@ -78,6 +80,6 @@ export default async function DispatchersPage({
       ) : (
         <LoadErrorMessage errorMessage={dispatchersPageResult.errorMessage} />
       )}
-    </div>
+    </PageContainer>
   )
 }

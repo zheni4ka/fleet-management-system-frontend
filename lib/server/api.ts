@@ -1,7 +1,9 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import { z } from "zod"
 import { appRoutes, cookieNames } from "@/lib/constants"
 import { getApiErrorMessage } from "@/lib/api-error-message"
+import { parseApiResponseBody } from "@/lib/api-response-body"
 import { hasAuthTokenUserRole } from "@/lib/auth-token"
 import { createLoginPath } from "@/lib/login-redirect"
 import { ApiFetchResult, LoginRedirectReason, UserRole } from "@/lib/types"
@@ -35,10 +37,11 @@ export async function getAdminAuthTokenOrRedirect(): Promise<string> {
   return authToken
 }
 
-export async function fetchFromApi<TData>(
+export async function fetchFromApi<TResponseSchema extends z.ZodType>(
   apiPath: string,
-  authToken: string
-): Promise<ApiFetchResult<TData>> {
+  authToken: string,
+  responseSchema: TResponseSchema
+): Promise<ApiFetchResult<z.infer<TResponseSchema>>> {
   let response: Response
   try {
     response = await fetch(`${getServerApiBaseUrl()}${apiPath}`, {
@@ -65,7 +68,10 @@ export async function fetchFromApi<TData>(
       ),
     }
   }
-  return { isSucceeded: true, data: (await response.json()) as TData }
+  return {
+    isSucceeded: true,
+    data: parseApiResponseBody(apiPath, await response.json(), responseSchema),
+  }
 }
 
 export function getFirstApiFetchErrorMessage(

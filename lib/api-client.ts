@@ -1,5 +1,7 @@
+import { z } from "zod"
 import { cookieNames } from "@/lib/constants"
 import { getApiErrorMessage } from "@/lib/api-error-message"
+import { parseApiResponseBody } from "@/lib/api-response-body"
 import {
   deleteBrowserCookie,
   getBrowserCookieValue,
@@ -66,7 +68,10 @@ export async function sendApiRequest(
   await sendAuthorizedRequest(apiPath, httpMethod, requestBody)
 }
 
-export async function fetchApiData<TData>(apiPath: string): Promise<TData> {
+export async function fetchApiData<TResponseSchema extends z.ZodType>(
+  apiPath: string,
+  responseSchema: TResponseSchema
+): Promise<z.infer<TResponseSchema>> {
   const response = await sendAuthorizedRequest(apiPath, HttpMethod.Get)
-  return (await response.json()) as TData
+  return parseApiResponseBody(apiPath, await response.json(), responseSchema)
 }

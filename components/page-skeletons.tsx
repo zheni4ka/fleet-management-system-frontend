@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { PageContainer } from "@/components/page-container"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
@@ -20,11 +21,7 @@ interface PageSkeletonLayoutProps {
 
 function PageSkeletonLayout({ children }: PageSkeletonLayoutProps) {
   return (
-    <div
-      role="status"
-      aria-busy="true"
-      className="mx-auto max-w-6xl space-y-6 px-1 py-6 sm:p-8"
-    >
+    <PageContainer role="status" aria-busy="true">
       <span className="sr-only">Завантаження...</span>
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-2">
@@ -34,7 +31,7 @@ function PageSkeletonLayout({ children }: PageSkeletonLayoutProps) {
         <Skeleton className="h-8 w-36" />
       </div>
       {children}
-    </div>
+    </PageContainer>
   )
 }
 

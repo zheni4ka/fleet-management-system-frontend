@@ -1,21 +1,4 @@
-import { RouteStatus } from "./route-status"
+import { z } from "zod"
+import { routeSchema } from "@/lib/schemas/route-schema"
 
-export interface Route {
-  id: number
-  startLocationId: number
-  startLocationCity: string
-  startLocationCountry: string
-  destinationLocationId: number
-  destinationLocationCity: string
-  destinationLocationCountry: string
-  departureTime: string
-  arrivalTime: string
-  autoId: number
-  autoMark: string
-  autoModel: string
-  autoNumber: string
-  driverId: number
-  driverName: string
-  driverSurname: string
-  status: RouteStatus
-}
+export type Route = z.infer<typeof routeSchema>

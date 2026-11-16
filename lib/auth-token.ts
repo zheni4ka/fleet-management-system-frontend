@@ -1,4 +1,4 @@
-import { jwtClaimNames, millisecondsPerSecond } from "@/lib/constants"
+import { jwtClaimNames, timeUnitConversions } from "@/lib/constants"
 import { UserRole } from "@/lib/types"
 import { findEnumValue } from "@/lib/utils"
 
@@ -91,5 +91,7 @@ export function isAuthTokenUnexpired(authToken: string): boolean {
   if (typeof expirationTimeClaim !== "number") {
     return false
   }
-  return expirationTimeClaim * millisecondsPerSecond > Date.now()
+  return (
+    expirationTimeClaim * timeUnitConversions.millisecondsPerSecond > Date.now()
+  )
 }

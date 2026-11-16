@@ -12,7 +12,7 @@ import { sendApiRequest } from "@/lib/api-client"
 import { apiEndpoints, iconActionLabels } from "@/lib/constants"
 import {
   createAutoFormValuesFromAuto,
-  createAutoRequestBody,
+  createUpdateAutoRequestModel,
   getAutoFormValidationError,
 } from "@/lib/forms/auto-form"
 import { Auto, HttpMethod } from "@/lib/types"
@@ -43,10 +43,11 @@ export default function EditAutoModal({ auto }: EditAutoModalProps) {
 
     const isAutoUpdated = await runApiMutation(
       () =>
-        sendApiRequest(apiEndpoints.updateAuto, HttpMethod.Put, {
-          id: auto.id,
-          ...createAutoRequestBody(autoFormValues),
-        }),
+        sendApiRequest(
+          apiEndpoints.updateAuto,
+          HttpMethod.Put,
+          createUpdateAutoRequestModel(auto.id, autoFormValues)
+        ),
       {
         loading: "Збереження змін...",
         success: "Автомобіль успішно оновлено!",

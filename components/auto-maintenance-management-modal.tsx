@@ -3,8 +3,10 @@
 import { useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
 import { History, Wrench } from "lucide-react"
+import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { FormField } from "@/components/ui/form-field"
 import ModalWindow from "@/components/ui/modal-window"
 import { SubmitButton } from "@/components/ui/submit-button"
@@ -13,21 +15,24 @@ import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh
 import { fetchApiData, sendApiRequest } from "@/lib/api-client"
 import { apiEndpoints, iconActionLabels } from "@/lib/constants"
 import { formatDate } from "@/lib/formatters"
+import {
+  createCompleteAutoMaintenanceRequestModel,
+  createCreateAutoMaintenanceRequestModel,
+  createEmptyMaintenanceFormValues,
+  getMaintenanceFormValidationError,
+} from "@/lib/forms/maintenance-form"
+import { autoMaintenanceSchema } from "@/lib/schemas/auto-maintenance-schema"
 import { AutoMaintenance, HttpMethod, MaintenanceFormValues } from "@/lib/types"
 
-interface AutoMaintenanceModalProps {
+interface AutoMaintenanceManagementModalProps {
   autoId: number
   autoTitle: string
 }
 
-function createEmptyMaintenanceFormValues(): MaintenanceFormValues {
-  return { name: "", description: "", serviceDate: "" }
-}
-
-export default function AutoMaintenanceModal({
+export default function AutoMaintenanceManagementModal({
   autoId,
   autoTitle,
-}: AutoMaintenanceModalProps) {
+}: AutoMaintenanceManagementModalProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [maintenanceHistory, setMaintenanceHistory] = useState<
     AutoMaintenance[]
@@ -52,8 +57,9 @@ export default function AutoMaintenanceModal({
     setMaintenanceHistoryErrorMessage(null)
     try {
       setMaintenanceHistory(
-        await fetchApiData<AutoMaintenance[]>(
-          `${apiEndpoints.autoMaintenancesByAutoId}/${autoId}`
+        await fetchApiData(
+          `${apiEndpoints.autoMaintenancesByAutoId}/${autoId}`,
+          z.array(autoMaintenanceSchema)
         )
       )
     } catch (error) {
@@ -76,10 +82,11 @@ export default function AutoMaintenanceModal({
   const handleComplete = async (maintenanceRecord: AutoMaintenance) => {
     const isMaintenanceCompleted = await runApiMutation(
       () =>
-        sendApiRequest(apiEndpoints.updateAutoMaintenance, HttpMethod.Put, {
-          ...maintenanceRecord,
-          isCompleted: true,
-        }),
+        sendApiRequest(
+          apiEndpoints.updateAutoMaintenance,
+          HttpMethod.Put,
+          createCompleteAutoMaintenanceRequestModel(maintenanceRecord)
+        ),
       {
         loading: "Завершення ТО...",
         success: "ТО успішно завершено! Авто знову доступне.",
@@ -93,22 +100,21 @@ export default function AutoMaintenanceModal({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const hasEmptyRequiredField = Object.values(maintenanceFormValues).some(
-      (maintenanceFieldValue) => maintenanceFieldValue.trim() === ""
+    const maintenanceFormValidationError = getMaintenanceFormValidationError(
+      maintenanceFormValues
     )
-    if (hasEmptyRequiredField) {
-      toast.error("Заповніть всі поля!")
+    if (maintenanceFormValidationError !== null) {
+      toast.error(maintenanceFormValidationError)
       return
     }
 
     const isMaintenanceCreated = await runApiMutation(
       () =>
-        sendApiRequest(apiEndpoints.createAutoMaintenance, HttpMethod.Post, {
-          name: maintenanceFormValues.name.trim(),
-          description: maintenanceFormValues.description.trim(),
-          serviceDate: maintenanceFormValues.serviceDate,
-          autoId,
-        }),
+        sendApiRequest(
+          apiEndpoints.createAutoMaintenance,
+          HttpMethod.Post,
+          createCreateAutoMaintenanceRequestModel(autoId, maintenanceFormValues)
+        ),
       {
         loading: "Збереження запису...",
         success: "Автомобіль відправлено на ТО!",
@@ -224,7 +230,7 @@ export default function AutoMaintenanceModal({
                 />
               </FormField>
               <FormField label="Опис проблеми">
-                <textarea
+                <Textarea
                   placeholder="Детальний опис проблеми..."
                   value={maintenanceFormValues.description}
                   onChange={(event) =>
@@ -233,7 +239,6 @@ export default function AutoMaintenanceModal({
                     })
                   }
                   rows={2}
-                  className="w-full resize-none rounded-lg border border-input bg-white px-2.5 py-2 text-sm font-normal text-slate-900 outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                 />
               </FormField>
               <FormField label="Дата початку робіт">

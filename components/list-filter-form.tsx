@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
 import { FormField } from "@/components/ui/form-field"
-import { firstListPage, listSearchParamNames } from "@/lib/constants"
+import { listPaging, listSearchParamNames } from "@/lib/constants"
 import { createListPageHref } from "@/lib/search-params"
 import {
   ListFilterField,
@@ -90,7 +90,7 @@ export function ListFilterForm<TSortField extends string>({
     router.push(
       createListPageHref(
         listPageState,
-        { search: listSearchValue.trim(), page: firstListPage },
+        { search: listSearchValue.trim(), page: listPaging.firstPage },
         listFilterValues
       )
     )
@@ -98,7 +98,11 @@ export function ListFilterForm<TSortField extends string>({
 
   const handleReset = () => {
     router.push(
-      createListPageHref(listPageState, { search: "", page: firstListPage }, {})
+      createListPageHref(
+        listPageState,
+        { search: "", page: listPaging.firstPage },
+        {}
+      )
     )
   }
 

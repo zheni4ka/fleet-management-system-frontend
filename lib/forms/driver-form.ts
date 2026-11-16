@@ -21,10 +21,11 @@ export function getDriverFormValidationError(
   const hasEmptyRequiredField = [
     driverFormValues.name,
     driverFormValues.surname,
+    driverFormValues.patronymic,
     driverFormValues.licenseNumber,
   ].some((requiredFieldValue) => requiredFieldValue.trim() === "")
   if (hasEmptyRequiredField) {
-    return "Будь ласка, заповніть ім'я, прізвище та номер посвідчення."
+    return "Будь ласка, заповніть ім'я, прізвище, по батькові та номер посвідчення."
   }
   return null
 }

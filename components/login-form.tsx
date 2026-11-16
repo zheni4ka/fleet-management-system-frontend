@@ -9,15 +9,17 @@ import { Input } from "@/components/ui/input"
 import { FormField } from "@/components/ui/form-field"
 import { getClientApiBaseUrl } from "@/lib/api-client"
 import { getApiErrorMessage } from "@/lib/api-error-message"
+import { parseApiResponseBody } from "@/lib/api-response-body"
 import { deleteBrowserCookie, setBrowserCookie } from "@/lib/browser-cookies"
 import {
   apiEndpoints,
-  authCookieMaxAgeSeconds,
+  cookieMaxAgeSeconds,
   cookieNames,
-  sessionExpiredMessage,
+  commonUiTexts,
 } from "@/lib/constants"
 import { createLoginPath } from "@/lib/login-redirect"
-import { HttpMethod, LoginRedirectReason, LoginResponse } from "@/lib/types"
+import { loginResponseSchema } from "@/lib/schemas/login-response-schema"
+import { HttpMethod, LoginRedirectReason } from "@/lib/types"
 
 const invalidCredentialsErrorMessage =
   "Неправильне ім'я користувача або пароль."
@@ -43,7 +45,7 @@ export function LoginForm({ returnPath, isSessionExpired }: LoginFormProps) {
       return
     }
     deleteBrowserCookie(cookieNames.authToken)
-    toast.error(sessionExpiredMessage, {
+    toast.error(commonUiTexts.sessionExpiredMessage, {
       id: LoginRedirectReason.SessionExpired,
     })
     router.replace(createLoginPath(returnPath, null))
@@ -76,11 +78,15 @@ export function LoginForm({ returnPath, isSessionExpired }: LoginFormProps) {
         return
       }
 
-      const loginResponse: LoginResponse = await response.json()
+      const loginResponse = parseApiResponseBody(
+        apiEndpoints.login,
+        await response.json(),
+        loginResponseSchema
+      )
       setBrowserCookie(
         cookieNames.authToken,
         loginResponse.token,
-        authCookieMaxAgeSeconds
+        cookieMaxAgeSeconds.authToken
       )
       router.push(returnPath)
       router.refresh()

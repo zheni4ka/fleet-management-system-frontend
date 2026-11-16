@@ -5,7 +5,7 @@ import { useEffect } from "react"
 import { TriangleAlert } from "lucide-react"
 import { StatusMessagePage } from "@/components/status-message-page"
 import { Button } from "@/components/ui/button"
-import { errorPageTitle, retryButtonLabel } from "@/lib/constants"
+import { commonUiTexts } from "@/lib/constants"
 
 interface GlobalErrorPageProps {
   error: Error & { digest?: string }
@@ -25,11 +25,11 @@ export default function GlobalErrorPage({
       <body className="antialiased">
         <StatusMessagePage
           icon={TriangleAlert}
-          title={errorPageTitle}
+          title={commonUiTexts.errorPageTitle}
           description="Застосунок зіткнувся з помилкою. Спробуйте оновити сторінку."
         >
           <Button type="button" onClick={reset}>
-            {retryButtonLabel}
+            {commonUiTexts.retryButtonLabel}
           </Button>
         </StatusMessagePage>
       </body>

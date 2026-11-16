@@ -1,6 +1,4 @@
-export interface DriverLookupOption {
-  id: number
-  name: string
-  surname: string
-  licenseNumber: string
-}
+import { z } from "zod"
+import { driverLookupOptionSchema } from "@/lib/schemas/driver-lookup-option-schema"
+
+export type DriverLookupOption = z.infer<typeof driverLookupOptionSchema>

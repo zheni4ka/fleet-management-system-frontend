@@ -2,7 +2,7 @@ import type { ReactNode } from "react"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { ListPageSizeSelect } from "@/components/list-page-size-select"
-import { displayLocale, firstListPage } from "@/lib/constants"
+import { localeCodes, listPaging } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 import { createListPageHref, getListPagesCount } from "@/lib/search-params"
 import { ListPageState } from "@/lib/types"
@@ -37,7 +37,7 @@ export function ListPagination<TSortField extends string>({
   const previousPage = page > pagesCount ? pagesCount : page - 1
 
   const firstVisiblePage = Math.max(
-    firstListPage,
+    listPaging.firstPage,
     nearestExistingPage - visibleNeighbourPagesCount
   )
   const lastVisiblePage = Math.min(
@@ -76,9 +76,9 @@ export function ListPagination<TSortField extends string>({
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <p className="text-sm text-slate-500">
-        Показано {firstShownItemNumber.toLocaleString(displayLocale)}–
-        {lastShownItemNumber.toLocaleString(displayLocale)} з{" "}
-        {totalCount.toLocaleString(displayLocale)}
+        Показано {firstShownItemNumber.toLocaleString(localeCodes.display)}–
+        {lastShownItemNumber.toLocaleString(localeCodes.display)} з{" "}
+        {totalCount.toLocaleString(localeCodes.display)}
       </p>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -86,7 +86,7 @@ export function ListPagination<TSortField extends string>({
         <nav aria-label="Сторінки" className="flex items-center gap-1">
           {renderPageStepControl(
             previousPage,
-            page > firstListPage,
+            page > listPaging.firstPage,
             "Попередня сторінка",
             <ChevronLeft className="h-4 w-4" />
           )}

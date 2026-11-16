@@ -2,6 +2,8 @@ import {
   auditActionLabels,
   autoColorOptions,
   autoStatusLabels,
+  listFilterSearchParamNames,
+  listFilterTexts,
   listSearchParamNames,
   routeStatusLabels,
 } from "@/lib/constants"
@@ -20,9 +22,6 @@ import {
   RouteStatus,
   TextListFilterField,
 } from "@/lib/types"
-
-const statusFilterLabel = "Статус"
-const allStatusesOptionLabel = "Усі статуси"
 
 function createListSearchFilterField(placeholder: string): TextListFilterField {
   return {
@@ -48,14 +47,14 @@ export const autosListFilterFields: ReadonlyArray<ListFilterField> =
     createListSearchFilterField("ID, марка, модель, номер"),
     {
       kind: ListFilterFieldKind.Select,
-      name: "status",
-      label: statusFilterLabel,
-      allOptionsLabel: allStatusesOptionLabel,
+      name: listFilterSearchParamNames.status,
+      label: listFilterTexts.statusLabel,
+      allOptionsLabel: listFilterTexts.allStatusesOptionLabel,
       options: createListFilterOptionsFromLabels(autoStatusLabels, AutoStatus),
     },
     {
       kind: ListFilterFieldKind.Select,
-      name: "color",
+      name: listFilterSearchParamNames.color,
       label: "Колір",
       allOptionsLabel: "Усі кольори",
       options: autoColorOptions.map((autoColor) => ({
@@ -76,7 +75,7 @@ export const locationsListFilterFields: ReadonlyArray<ListFilterField> =
     createListSearchFilterField("ID, місто або країна"),
     {
       kind: ListFilterFieldKind.Text,
-      name: "country",
+      name: listFilterSearchParamNames.country,
       label: "Країна",
       placeholder: "Наприклад, Ukraine",
     },
@@ -87,7 +86,7 @@ export const auditLogsListFilterFields: ReadonlyArray<ListFilterField> =
     createListSearchFilterField("Користувач або ID об'єкта"),
     {
       kind: ListFilterFieldKind.Select,
-      name: "action",
+      name: listFilterSearchParamNames.action,
       label: "Дія",
       allOptionsLabel: "Усі дії",
       options: createListFilterOptionsFromLabels(
@@ -97,14 +96,14 @@ export const auditLogsListFilterFields: ReadonlyArray<ListFilterField> =
     },
     {
       kind: ListFilterFieldKind.Date,
-      name: "timeFromDate",
+      name: listFilterSearchParamNames.timeFromDate,
       label: "Дата з",
     },
     {
       kind: ListFilterFieldKind.Date,
-      name: "timeToDate",
+      name: listFilterSearchParamNames.timeToDate,
       label: "Дата по",
-      rangeStartFieldName: "timeFromDate",
+      rangeStartFieldName: listFilterSearchParamNames.timeFromDate,
     },
   ])
 
@@ -115,32 +114,32 @@ export function createRoutesListFilterFields(
   return [
     {
       kind: ListFilterFieldKind.Text,
-      name: "startCity",
+      name: listFilterSearchParamNames.startCity,
       label: "Місто відправлення",
       placeholder: "",
     },
     {
       kind: ListFilterFieldKind.Text,
-      name: "destinationCity",
+      name: listFilterSearchParamNames.destinationCity,
       label: "Місто прибуття",
       placeholder: "",
     },
     {
       kind: ListFilterFieldKind.Date,
-      name: "departureFromDate",
+      name: listFilterSearchParamNames.departureFromDate,
       label: "Відправлення з",
     },
     {
       kind: ListFilterFieldKind.Date,
-      name: "departureToDate",
+      name: listFilterSearchParamNames.departureToDate,
       label: "Відправлення по",
-      rangeStartFieldName: "departureFromDate",
+      rangeStartFieldName: listFilterSearchParamNames.departureFromDate,
     },
     {
       kind: ListFilterFieldKind.Select,
-      name: "status",
-      label: statusFilterLabel,
-      allOptionsLabel: allStatusesOptionLabel,
+      name: listFilterSearchParamNames.status,
+      label: listFilterTexts.statusLabel,
+      allOptionsLabel: listFilterTexts.allStatusesOptionLabel,
       options: createListFilterOptionsFromLabels(
         routeStatusLabels,
         RouteStatus
@@ -148,7 +147,7 @@ export function createRoutesListFilterFields(
     },
     {
       kind: ListFilterFieldKind.Select,
-      name: "driverId",
+      name: listFilterSearchParamNames.driverId,
       label: "Водій",
       allOptionsLabel: "Усі водії",
       options: driverLookupOptions.map((driverLookupOption) => ({
@@ -158,7 +157,7 @@ export function createRoutesListFilterFields(
     },
     {
       kind: ListFilterFieldKind.Select,
-      name: "autoId",
+      name: listFilterSearchParamNames.autoId,
       label: "Автомобіль",
       allOptionsLabel: "Усі автомобілі",
       options: autoLookupOptions.map((autoLookupOption) => ({

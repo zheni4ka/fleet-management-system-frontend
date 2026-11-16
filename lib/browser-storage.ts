@@ -1,4 +1,4 @@
-import { browserStorageChangeEventName } from "@/lib/constants"
+import { browserEventNames } from "@/lib/constants"
 
 const browserStorageValuesInMemory = new Map<string, string>()
 
@@ -27,16 +27,19 @@ export function writeBrowserStorageValue(
       error
     )
   }
-  window.dispatchEvent(new Event(browserStorageChangeEventName))
+  window.dispatchEvent(new Event(browserEventNames.browserStorageChange))
 }
 
 export function subscribeToBrowserStorageChanges(
   onBrowserStorageChange: () => void
 ): () => void {
-  window.addEventListener(browserStorageChangeEventName, onBrowserStorageChange)
+  window.addEventListener(
+    browserEventNames.browserStorageChange,
+    onBrowserStorageChange
+  )
   return () => {
     window.removeEventListener(
-      browserStorageChangeEventName,
+      browserEventNames.browserStorageChange,
       onBrowserStorageChange
     )
   }

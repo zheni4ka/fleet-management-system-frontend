@@ -1,11 +1,4 @@
-import { AutoStatus } from "./auto-status"
+import { z } from "zod"
+import { autoSchema } from "@/lib/schemas/auto-schema"
 
-export interface Auto {
-  id: number
-  mark: string
-  model: string
-  color: string
-  number: string
-  capacity: number
-  status: AutoStatus
-}
+export type Auto = z.infer<typeof autoSchema>

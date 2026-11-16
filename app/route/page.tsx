@@ -5,7 +5,12 @@ import { ListPagination } from "@/components/list-pagination"
 import { ListSortSelect } from "@/components/list-sort-select"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
-import { apiEndpoints, appRoutes, routeSortOptions } from "@/lib/constants"
+import {
+  apiEndpoints,
+  appRoutes,
+  routeSortOptions,
+  routesPageTexts,
+} from "@/lib/constants"
 import { createRoutesListFilterFields } from "@/lib/forms/list-filter-fields"
 import {
   createListApiPath,
@@ -18,20 +23,14 @@ import {
   getAuthTokenOrRedirect,
   getFirstApiFetchErrorMessage,
 } from "@/lib/server/api"
-import {
-  AutoLookupOption,
-  DriverLookupOption,
-  ListPageState,
-  LocationLookupOption,
-  PageSearchParams,
-  PagedList,
-  Route,
-  RouteSortField,
-} from "@/lib/types"
-
-const routesPageTitle = "Маршрути"
-const routesPageDescription =
-  "Перегляд доступних маршрутів із деталями відправлення, прибуття, автомобіля та водія."
+import { ListPageState, PageSearchParams, RouteSortField } from "@/lib/types"
+import { createPagedListSchema } from "@/lib/schemas/paged-list-schema"
+import { routeSchema } from "@/lib/schemas/route-schema"
+import { z } from "zod"
+import { autoLookupOptionSchema } from "@/lib/schemas/auto-lookup-option-schema"
+import { driverLookupOptionSchema } from "@/lib/schemas/driver-lookup-option-schema"
+import { locationLookupOptionSchema } from "@/lib/schemas/location-lookup-option-schema"
+import { PageContainer } from "@/components/page-container"
 
 interface RoutesPageProps {
   searchParams: Promise<PageSearchParams>
@@ -46,14 +45,20 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
     driverLookupOptionsResult,
     locationLookupOptionsResult,
   ] = await Promise.all([
-    fetchFromApi<AutoLookupOption[]>(apiEndpoints.autoLookupOptions, authToken),
-    fetchFromApi<DriverLookupOption[]>(
-      apiEndpoints.driverLookupOptions,
-      authToken
+    fetchFromApi(
+      apiEndpoints.autoLookupOptions,
+      authToken,
+      z.array(autoLookupOptionSchema)
     ),
-    fetchFromApi<LocationLookupOption[]>(
+    fetchFromApi(
+      apiEndpoints.driverLookupOptions,
+      authToken,
+      z.array(driverLookupOptionSchema)
+    ),
+    fetchFromApi(
       apiEndpoints.locationLookupOptions,
-      authToken
+      authToken,
+      z.array(locationLookupOptionSchema)
     ),
   ])
 
@@ -63,10 +68,10 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
     !locationLookupOptionsResult.isSucceeded
   ) {
     return (
-      <div className="mx-auto max-w-6xl space-y-6 px-1 py-6 sm:p-8">
+      <PageContainer>
         <PageHeader
-          title={routesPageTitle}
-          description={routesPageDescription}
+          title={routesPageTexts.title}
+          description={routesPageTexts.description}
         />
         <LoadErrorMessage
           errorMessage={getFirstApiFetchErrorMessage([
@@ -75,7 +80,7 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
             locationLookupOptionsResult,
           ])}
         />
-      </div>
+      </PageContainer>
     )
   }
 
@@ -94,18 +99,22 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
       routesListFilterFields
     ),
   }
-  const routesPageResult = await fetchFromApi<PagedList<Route>>(
+  const routesPageResult = await fetchFromApi(
     createListApiPath(
       apiEndpoints.routesPagedList,
       routesListPageState.listQuery,
       routesListPageState.filterValues
     ),
-    authToken
+    authToken,
+    createPagedListSchema(routeSchema)
   )
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-1 py-6 sm:p-8">
-      <PageHeader title={routesPageTitle} description={routesPageDescription}>
+    <PageContainer>
+      <PageHeader
+        title={routesPageTexts.title}
+        description={routesPageTexts.description}
+      >
         <AddRouteModal
           autoLookupOptions={autoLookupOptionsResult.data}
           driverLookupOptions={driverLookupOptionsResult.data}
@@ -130,6 +139,9 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
       {routesPageResult.isSucceeded ? (
         <>
           <RoutesList
+            key={routesPageResult.data.items
+              .map((route) => `${route.id}:${route.status}`)
+              .join("|")}
             routes={routesPageResult.data.items}
             autoLookupOptions={autoLookupOptionsResult.data}
             driverLookupOptions={driverLookupOptionsResult.data}
@@ -144,6 +156,6 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
       ) : (
         <LoadErrorMessage errorMessage={routesPageResult.errorMessage} />
       )}
-    </div>
+    </PageContainer>
   )
 }

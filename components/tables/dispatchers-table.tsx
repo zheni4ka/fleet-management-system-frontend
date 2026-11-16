@@ -1,27 +1,14 @@
-"use client"
-
-import { useState } from "react"
-import { Trash2 } from "lucide-react"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
-import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
+import { DeleteTableRowAction } from "@/components/tables/delete-table-row-action"
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
-import { IconActionButton } from "@/components/icon-action-button"
-import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
-import { sendApiRequest } from "@/lib/api-client"
 import { hasActiveListFilters } from "@/lib/search-params"
 import {
   apiEndpoints,
+  commonUiTexts,
   dispatchersTableColumns,
-  nothingFoundMessage,
-  iconActionLabels,
 } from "@/lib/constants"
-import {
-  Dispatcher,
-  DispatcherSortField,
-  HttpMethod,
-  ListPageState,
-} from "@/lib/types"
+import { Dispatcher, DispatcherSortField, ListPageState } from "@/lib/types"
 
 interface DispatchersTableProps {
   dispatchers: Dispatcher[]
@@ -32,31 +19,6 @@ export function DispatchersTable({
   dispatchers,
   listPageState,
 }: DispatchersTableProps) {
-  const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
-  const [dispatcherPendingDeletion, setDispatcherPendingDeletion] =
-    useState<Dispatcher | null>(null)
-
-  const handleDeleteConfirm = async () => {
-    if (dispatcherPendingDeletion === null) {
-      return
-    }
-    const isDispatcherDeleted = await runApiMutation(
-      () =>
-        sendApiRequest(
-          `${apiEndpoints.deleteUser}/${dispatcherPendingDeletion.id}`,
-          HttpMethod.Delete
-        ),
-      {
-        loading: "Видалення облікового запису...",
-        success: "Диспетчера успішно видалено!",
-        error: "Не вдалося видалити користувача",
-      }
-    )
-    if (isDispatcherDeleted) {
-      setDispatcherPendingDeletion(null)
-    }
-  }
-
   return (
     <div className="overflow-hidden rounded-md border bg-white">
       <Table>
@@ -70,7 +32,7 @@ export function DispatchersTable({
               columnCount={dispatchersTableColumns.length}
               message={
                 hasActiveListFilters(listPageState)
-                  ? nothingFoundMessage
+                  ? commonUiTexts.nothingFoundMessage
                   : "Диспетчерів поки немає."
               }
             />
@@ -85,28 +47,20 @@ export function DispatchersTable({
               </TableCell>
               <TableCell>{dispatcher.email ?? "—"}</TableCell>
               <TableCell className="text-center">
-                <IconActionButton
-                  icon={Trash2}
-                  label={iconActionLabels.delete}
-                  variant="destructive"
-                  onClick={() => setDispatcherPendingDeletion(dispatcher)}
-                  disabled={isApiMutationRunning}
+                <DeleteTableRowAction
+                  deleteApiPath={`${apiEndpoints.deleteUser}/${dispatcher.id}`}
+                  deletionQuestion={`Видалити диспетчера ${dispatcher.username}?`}
+                  deletionToastMessages={{
+                    loading: "Видалення облікового запису...",
+                    success: "Диспетчера успішно видалено!",
+                    error: "Не вдалося видалити користувача",
+                  }}
                 />
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      <DeleteConfirmationDialog
-        deletionQuestion={
-          dispatcherPendingDeletion === null
-            ? null
-            : `Видалити диспетчера ${dispatcherPendingDeletion.username}?`
-        }
-        isDeleting={isApiMutationRunning}
-        onConfirm={handleDeleteConfirm}
-        onCancel={() => setDispatcherPendingDeletion(null)}
-      />
     </div>
   )
 }

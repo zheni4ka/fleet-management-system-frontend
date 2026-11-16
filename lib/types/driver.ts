@@ -1,7 +1,4 @@
-export interface Driver {
-  id: number
-  name: string
-  surname: string
-  patronymic: string
-  licenseNumber: string
-}
+import { z } from "zod"
+import { driverSchema } from "@/lib/schemas/driver-schema"
+
+export type Driver = z.infer<typeof driverSchema>

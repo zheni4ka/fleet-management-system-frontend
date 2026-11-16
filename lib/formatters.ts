@@ -1,4 +1,4 @@
-import { displayLocale } from "@/lib/constants"
+import { localeCodes } from "@/lib/constants"
 import { Auto, Driver, Location, Route } from "@/lib/types"
 
 export function formatLocationName(
@@ -53,11 +53,11 @@ export function formatRouteDriverFullName(route: Route): string {
 }
 
 export function formatDateTime(isoDateTime: string): string {
-  return new Date(isoDateTime).toLocaleString(displayLocale)
+  return new Date(isoDateTime).toLocaleString(localeCodes.display)
 }
 
 export function formatDate(isoDate: string): string {
-  return new Date(isoDate).toLocaleDateString(displayLocale)
+  return new Date(isoDate).toLocaleDateString(localeCodes.display)
 }
 
 export function formatLocalIsoDate(date: Date): string {
@@ -68,7 +68,7 @@ export function formatLocalIsoDate(date: Date): string {
 }
 
 export function formatHours(hoursCount: number): string {
-  return `${hoursCount.toLocaleString(displayLocale)} год`
+  return `${hoursCount.toLocaleString(localeCodes.display)} год`
 }
 
 export function formatIsoDateOnly(isoDateOnly: string): string {
@@ -84,5 +84,5 @@ export function formatIsoDateOnly(isoDateOnly: string): string {
     Number(yearText),
     Number(monthText) - 1,
     Number(dayText)
-  ).toLocaleDateString(displayLocale)
+  ).toLocaleDateString(localeCodes.display)
 }

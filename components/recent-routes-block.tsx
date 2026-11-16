@@ -3,7 +3,8 @@ import { LoadErrorMessage } from "@/components/load-error-message"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import {
   apiEndpoints,
-  firstListPage,
+  listPaging,
+  recentRoutesBlockSettings,
   recentRoutesTableColumns,
   routeStatusLabels,
 } from "@/lib/constants"
@@ -15,24 +16,25 @@ import {
 import { isRouteStatusActive } from "@/lib/route-status"
 import { createListApiPath } from "@/lib/search-params"
 import { fetchFromApi } from "@/lib/server/api"
-import { PagedList, Route, RouteSortField, SortDirection } from "@/lib/types"
-
-const recentRoutesCount = 5
+import { RouteSortField, SortDirection } from "@/lib/types"
+import { createPagedListSchema } from "@/lib/schemas/paged-list-schema"
+import { routeSchema } from "@/lib/schemas/route-schema"
 
 interface RecentRoutesBlockProps {
   authToken: string
 }
 
 export async function RecentRoutesBlock({ authToken }: RecentRoutesBlockProps) {
-  const recentRoutesResult = await fetchFromApi<PagedList<Route>>(
+  const recentRoutesResult = await fetchFromApi(
     createListApiPath(apiEndpoints.routesPagedList, {
-      page: firstListPage,
-      pageSize: recentRoutesCount,
+      page: listPaging.firstPage,
+      pageSize: recentRoutesBlockSettings.routesCount,
       sort: RouteSortField.Id,
       sortDirection: SortDirection.Descending,
       search: "",
     }),
-    authToken
+    authToken,
+    createPagedListSchema(routeSchema)
   )
 
   if (!recentRoutesResult.isSucceeded) {

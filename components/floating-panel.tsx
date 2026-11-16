@@ -4,7 +4,7 @@ import { useRef, useState, type PointerEvent, type ReactNode } from "react"
 import { ChevronDown, ChevronUp, GripVertical, Pin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useBrowserStorageValue } from "@/hooks/use-browser-storage-value"
-import { floatingPanelVisibleEdgePixels } from "@/lib/constants"
+import { floatingPanelDimensions } from "@/lib/constants"
 import {
   clampFloatingPanelPositionToViewport,
   parseFloatingPanelState,
@@ -101,8 +101,8 @@ export function FloatingPanel({
         panelPosition === null
           ? undefined
           : {
-              left: `min(${panelPosition.left}px, calc(100vw - ${floatingPanelVisibleEdgePixels}px))`,
-              top: `min(${panelPosition.top}px, calc(100vh - ${floatingPanelVisibleEdgePixels}px))`,
+              left: `min(${panelPosition.left}px, calc(100vw - ${floatingPanelDimensions.visibleEdgePixels}px))`,
+              top: `min(${panelPosition.top}px, calc(100vh - ${floatingPanelDimensions.visibleEdgePixels}px))`,
             }
       }
     >

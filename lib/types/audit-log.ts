@@ -1,10 +1,4 @@
-import { AuditAction } from "./audit-action"
+import { z } from "zod"
+import { auditLogSchema } from "@/lib/schemas/audit-log-schema"
 
-export interface AuditLog {
-  id: number
-  dispatcherId: string | null
-  dispatcherUsername: string | null
-  time: string
-  action: AuditAction
-  entityId: string | null
-}
+export type AuditLog = z.infer<typeof auditLogSchema>

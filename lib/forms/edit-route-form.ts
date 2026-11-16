@@ -1,4 +1,8 @@
-import { EditRouteFormValues, Route } from "@/lib/types"
+import {
+  EditRouteFormValues,
+  Route,
+  UpdateRouteRequestModel,
+} from "@/lib/types"
 
 export function createEditRouteFormValuesFromRoute(
   route: Route
@@ -12,31 +16,10 @@ export function createEditRouteFormValuesFromRoute(
   }
 }
 
-export function getEditRouteFormValidationError(
-  editRouteFormValues: EditRouteFormValues
-): string | null {
-  const hasEmptyRequiredField = [
-    editRouteFormValues.startLocationId,
-    editRouteFormValues.destinationLocationId,
-    editRouteFormValues.autoId,
-    editRouteFormValues.driverId,
-  ].some((requiredFieldValue) => requiredFieldValue === "")
-  if (hasEmptyRequiredField) {
-    return "Будь ласка, заповніть всі поля форми перед збереженням."
-  }
-  if (
-    editRouteFormValues.startLocationId ===
-    editRouteFormValues.destinationLocationId
-  ) {
-    return "Початкова та кінцева локації мають відрізнятися."
-  }
-  return null
-}
-
-export function createEditRouteRequestBody(
+export function createUpdateRouteRequestModel(
   routeId: number,
   editRouteFormValues: EditRouteFormValues
-) {
+): UpdateRouteRequestModel {
   return {
     id: routeId,
     startLocationId: Number(editRouteFormValues.startLocationId),

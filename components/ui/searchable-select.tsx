@@ -3,7 +3,7 @@
 import { useId, useState, type KeyboardEvent } from "react"
 import { Popover as PopoverPrimitive } from "radix-ui"
 import { Check, ChevronsUpDown, Search } from "lucide-react"
-import { displayLocale } from "@/lib/constants"
+import { localeCodes } from "@/lib/constants"
 import { SearchableSelectOption } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -21,7 +21,7 @@ function getIsOptionMatchingSearchQuery(
   normalizedSearchQuery: string
 ): boolean {
   return option.label
-    .toLocaleLowerCase(displayLocale)
+    .toLocaleLowerCase(localeCodes.display)
     .includes(normalizedSearchQuery)
 }
 
@@ -46,7 +46,7 @@ export function SearchableSelect({
   )
   const normalizedSearchQuery = searchQuery
     .trim()
-    .toLocaleLowerCase(displayLocale)
+    .toLocaleLowerCase(localeCodes.display)
   const visibleOptions = options.filter((option) =>
     getIsOptionMatchingSearchQuery(option, normalizedSearchQuery)
   )
@@ -84,7 +84,7 @@ export function SearchableSelect({
     setSearchQuery(changedSearchQuery)
     const changedNormalizedSearchQuery = changedSearchQuery
       .trim()
-      .toLocaleLowerCase(displayLocale)
+      .toLocaleLowerCase(localeCodes.display)
     setHighlightedOptionValue(
       options.find(
         (option) =>

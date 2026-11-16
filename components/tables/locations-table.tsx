@@ -1,28 +1,15 @@
-"use client"
-
-import { useState } from "react"
-import { Trash2 } from "lucide-react"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
-import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
+import { DeleteTableRowAction } from "@/components/tables/delete-table-row-action"
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
-import { IconActionButton } from "@/components/icon-action-button"
-import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
-import { sendApiRequest } from "@/lib/api-client"
 import { formatLocationName } from "@/lib/formatters"
 import { hasActiveListFilters } from "@/lib/search-params"
 import {
   apiEndpoints,
+  commonUiTexts,
   locationsTableColumns,
-  nothingFoundMessage,
-  iconActionLabels,
 } from "@/lib/constants"
-import {
-  HttpMethod,
-  ListPageState,
-  Location,
-  LocationSortField,
-} from "@/lib/types"
+import { ListPageState, Location, LocationSortField } from "@/lib/types"
 
 interface LocationsTableProps {
   locations: Location[]
@@ -33,31 +20,6 @@ export function LocationsTable({
   locations,
   listPageState,
 }: LocationsTableProps) {
-  const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
-  const [locationPendingDeletion, setLocationPendingDeletion] =
-    useState<Location | null>(null)
-
-  const handleDeleteConfirm = async () => {
-    if (locationPendingDeletion === null) {
-      return
-    }
-    const isLocationDeleted = await runApiMutation(
-      () =>
-        sendApiRequest(
-          `${apiEndpoints.deleteLocation}/${locationPendingDeletion.id}`,
-          HttpMethod.Delete
-        ),
-      {
-        loading: "Видалення локації...",
-        success: "Локацію успішно видалено!",
-        error: "Не вдалося видалити локацію",
-      }
-    )
-    if (isLocationDeleted) {
-      setLocationPendingDeletion(null)
-    }
-  }
-
   return (
     <div className="overflow-hidden rounded-md border bg-white">
       <Table>
@@ -71,7 +33,7 @@ export function LocationsTable({
               columnCount={locationsTableColumns.length}
               message={
                 hasActiveListFilters(listPageState)
-                  ? nothingFoundMessage
+                  ? commonUiTexts.nothingFoundMessage
                   : "Локацій поки немає в системі."
               }
             />
@@ -82,28 +44,20 @@ export function LocationsTable({
               <TableCell className="font-medium">{location.city}</TableCell>
               <TableCell>{location.country}</TableCell>
               <TableCell className="text-center">
-                <IconActionButton
-                  icon={Trash2}
-                  label={iconActionLabels.delete}
-                  variant="destructive"
-                  onClick={() => setLocationPendingDeletion(location)}
-                  disabled={isApiMutationRunning}
+                <DeleteTableRowAction
+                  deleteApiPath={`${apiEndpoints.deleteLocation}/${location.id}`}
+                  deletionQuestion={`Видалити локацію ${formatLocationName(location)}?`}
+                  deletionToastMessages={{
+                    loading: "Видалення локації...",
+                    success: "Локацію успішно видалено!",
+                    error: "Не вдалося видалити локацію",
+                  }}
                 />
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      <DeleteConfirmationDialog
-        deletionQuestion={
-          locationPendingDeletion === null
-            ? null
-            : `Видалити локацію ${formatLocationName(locationPendingDeletion)}?`
-        }
-        isDeleting={isApiMutationRunning}
-        onConfirm={handleDeleteConfirm}
-        onCancel={() => setLocationPendingDeletion(null)}
-      />
     </div>
   )
 }

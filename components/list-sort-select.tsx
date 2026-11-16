@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { NativeSelect } from "@/components/ui/native-select"
-import { firstListPage, sortDirectionLabels } from "@/lib/constants"
+import { listPaging, sortDirectionLabels } from "@/lib/constants"
 import { createListPageHref } from "@/lib/search-params"
 import { ListPageState, SortDirection, SortOption } from "@/lib/types"
 import { findEnumValue, parseEnumValue } from "@/lib/utils"
@@ -30,7 +30,7 @@ export function ListSortSelect<TSortField extends string>({
       createListPageHref(listPageState, {
         sort: sortField,
         sortDirection: sortField === null ? null : sortDirection,
-        page: firstListPage,
+        page: listPaging.firstPage,
       })
     )
   }

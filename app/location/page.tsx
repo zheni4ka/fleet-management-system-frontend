@@ -12,13 +12,10 @@ import {
   getListQueryFromPageSearchParams,
 } from "@/lib/search-params"
 import { fetchFromApi, getAdminAuthTokenOrRedirect } from "@/lib/server/api"
-import {
-  ListPageState,
-  Location,
-  LocationSortField,
-  PageSearchParams,
-  PagedList,
-} from "@/lib/types"
+import { ListPageState, LocationSortField, PageSearchParams } from "@/lib/types"
+import { createPagedListSchema } from "@/lib/schemas/paged-list-schema"
+import { locationSchema } from "@/lib/schemas/location-schema"
+import { PageContainer } from "@/components/page-container"
 
 interface LocationsPageProps {
   searchParams: Promise<PageSearchParams>
@@ -40,17 +37,18 @@ export default async function LocationsPage({
       locationsListFilterFields
     ),
   }
-  const locationsPageResult = await fetchFromApi<PagedList<Location>>(
+  const locationsPageResult = await fetchFromApi(
     createListApiPath(
       apiEndpoints.locationsPagedList,
       locationsListPageState.listQuery,
       locationsListPageState.filterValues
     ),
-    authToken
+    authToken,
+    createPagedListSchema(locationSchema)
   )
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-1 py-6 sm:p-8">
+    <PageContainer>
       <PageHeader
         title="Локації"
         description="Довідник міст і країн, між якими прокладаються маршрути."
@@ -78,6 +76,6 @@ export default async function LocationsPage({
       ) : (
         <LoadErrorMessage errorMessage={locationsPageResult.errorMessage} />
       )}
-    </div>
+    </PageContainer>
   )
 }

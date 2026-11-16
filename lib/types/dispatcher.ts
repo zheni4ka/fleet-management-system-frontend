@@ -1,5 +1,4 @@
-export interface Dispatcher {
-  id: string
-  username: string
-  email: string | null
-}
+import { z } from "zod"
+import { dispatcherSchema } from "@/lib/schemas/dispatcher-schema"
+
+export type Dispatcher = z.infer<typeof dispatcherSchema>

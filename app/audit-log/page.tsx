@@ -11,13 +11,10 @@ import {
   getListQueryFromPageSearchParams,
 } from "@/lib/search-params"
 import { fetchFromApi, getAdminAuthTokenOrRedirect } from "@/lib/server/api"
-import {
-  AuditLog,
-  AuditLogSortField,
-  ListPageState,
-  PageSearchParams,
-  PagedList,
-} from "@/lib/types"
+import { AuditLogSortField, ListPageState, PageSearchParams } from "@/lib/types"
+import { createPagedListSchema } from "@/lib/schemas/paged-list-schema"
+import { auditLogSchema } from "@/lib/schemas/audit-log-schema"
+import { PageContainer } from "@/components/page-container"
 
 interface AuditLogsPageProps {
   searchParams: Promise<PageSearchParams>
@@ -39,17 +36,18 @@ export default async function AuditLogsPage({
       auditLogsListFilterFields
     ),
   }
-  const auditLogsPageResult = await fetchFromApi<PagedList<AuditLog>>(
+  const auditLogsPageResult = await fetchFromApi(
     createListApiPath(
       apiEndpoints.auditLogsPagedList,
       auditLogsListPageState.listQuery,
       auditLogsListPageState.filterValues
     ),
-    authToken
+    authToken,
+    createPagedListSchema(auditLogSchema)
   )
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-1 py-6 sm:p-8">
+    <PageContainer>
       <PageHeader
         title="Журнал дій"
         description="Історія змін у системі: хто, коли і що створив, змінив або видалив."
@@ -75,6 +73,6 @@ export default async function AuditLogsPage({
       ) : (
         <LoadErrorMessage errorMessage={auditLogsPageResult.errorMessage} />
       )}
-    </div>
+    </PageContainer>
   )
 }
