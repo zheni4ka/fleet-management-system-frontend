@@ -4,6 +4,7 @@ import {
   bffErrorMessages,
   commonUiTexts,
   cookieNames,
+  httpHeaderNames,
   httpStatusCodes,
 } from "@/lib/constants"
 import {
@@ -15,6 +16,7 @@ import {
   createProblemResponse,
 } from "@/lib/server/bff-response"
 import { isSameOriginRequest } from "@/lib/server/bff-request"
+import { logBffError, logBffInformation } from "@/lib/server/bff-logger"
 import { HttpMethod } from "@/lib/types"
 
 interface ApiProxyRouteContext {
@@ -70,12 +72,28 @@ async function forwardRequestToBackend(
       }
     )
   } catch (error) {
-    console.error(`Не вдалося виконати запит до /${encodedApiPath}:`, error)
+    logBffError(
+      {
+        message: "Proxied API request failed: backend unreachable",
+        traceparent: request.headers.get(httpHeaderNames.traceparent),
+        method: request.method,
+        path: `/${encodedApiPath}`,
+        status: null,
+      },
+      error
+    )
     return createProblemResponse(
       httpStatusCodes.serviceUnavailable,
       commonUiTexts.serverUnavailableMessage
     )
   }
+  logBffInformation({
+    message: "Proxied API request",
+    traceparent: request.headers.get(httpHeaderNames.traceparent),
+    method: request.method,
+    path: `/${encodedApiPath}`,
+    status: backendResponse.status,
+  })
   return createPassThroughResponse(backendResponse)
 }
 

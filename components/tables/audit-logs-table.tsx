@@ -55,6 +55,23 @@ export function AuditLogsTable({
               <TableCell className="font-mono text-xs">
                 {auditLog.entityId ?? "—"}
               </TableCell>
+              <TableCell className="text-xs">
+                {auditLog.changes.length === 0 ? (
+                  "—"
+                ) : (
+                  <ul className="flex flex-col gap-0.5">
+                    {auditLog.changes.map((auditLogPropertyChange) => (
+                      <li key={auditLogPropertyChange.propertyName}>
+                        <span className="font-medium">
+                          {auditLogPropertyChange.propertyName}
+                        </span>
+                        : {auditLogPropertyChange.previousValue ?? "—"} →{" "}
+                        {auditLogPropertyChange.currentValue ?? "—"}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

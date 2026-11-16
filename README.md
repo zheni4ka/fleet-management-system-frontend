@@ -1,21 +1,42 @@
-# Next.js template
+# Fleet Management System — frontend
 
-This is a Next.js template with shadcn/ui.
+Next.js 16 (App Router), React 19, TypeScript, Tailwind 4, shadcn/ui, zod.
 
-## Adding components
+## Архітектура сесії (BFF)
 
-To add components to your app, run the following command:
+Браузер ніколи не бачить токен доступу. Next.js працює як backend-for-frontend:
+
+- `POST /api/session/login`, `POST /api/session/change-password` — викликають API й встановлюють cookie `accessToken` і `refreshToken` з атрибутами `HttpOnly; Secure; SameSite=Lax`.
+- `POST /api/session/logout` — відкликає refresh-токен в API й очищає cookie.
+- `GET /api/session/sso/start`, `GET /api/session/sso/callback` — вхід через Microsoft Entra ID (authorization code + PKCE).
+- `/api/proxy/api/...` — клієнтські запити до API; route handler додає `Authorization: Bearer` на сервері. Запити, що змінюють дані, приймаються лише з того самого джерела.
+- `proxy.ts` (middleware) непомітно оновлює сесію, коли access-токен спливає, і передає нові cookie поточному рендеру.
+
+## Змінні середовища
+
+Скопіюйте `.env.example` у `.env`.
+
+| Змінна | Обов'язково | Опис |
+| --- | --- | --- |
+| `API_BASE_URL` | так | адреса API, доступна серверу Next.js |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | ні | ключ Google Maps Embed API (вбудовується під час збірки) |
+| `OIDC_AUTHORITY`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `APP_BASE_URL` | лише для SSO | усі чотири або жодної; часткове налаштування — помилка |
+
+Next.js має працювати за зворотним проксі, який встановлює `X-Forwarded-For`: BFF передає цей заголовок в API для обмеження частоти запитів за IP.
+
+## Запуск
 
 ```bash
-npx shadcn@latest add button
+npm ci
+npm run dev
 ```
 
-This will place the ui components in the `components` directory.
+Перевірки: `npm run typecheck`, `npm run lint`, `npm run build`.
 
-## Using components
+## Docker
 
-To use the components in your app, import them as follows:
+`Dockerfile` збирає standalone-образ (`node server.js`, порт 3000). Повний локальний стек (SQL Server, міграції, API, фронтенд) описано в `docker-compose.yml` у репозиторії бекенду.
 
-```tsx
-import { Button } from "@/components/ui/button";
-```
+## Журнали й трасування
+
+`proxy.ts` додає до кожного запиту W3C-заголовок `traceparent` (або зберігає вхідний), BFF передає його в API, а журнали BFF (JSON у stdout) містять той самий `traceId`, що й журнали API.

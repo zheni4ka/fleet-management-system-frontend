@@ -5,11 +5,16 @@ import {
   bffRoutes,
   commonUiTexts,
   cookieNames,
+  httpHeaderNames,
   httpStatusCodes,
   sessionRefreshSettings,
 } from "@/lib/constants"
 import { createLoginPath } from "@/lib/login-redirect"
 import { refreshBackendSession } from "@/lib/server/backend-session"
+import {
+  createTraceparent,
+  getTraceIdFromTraceparent,
+} from "@/lib/trace-context"
 import { createProblemResponse } from "@/lib/server/bff-response"
 import {
   deleteSessionResponseCookies,
@@ -41,13 +46,28 @@ function endExpiredSession(request: NextRequest): NextResponse {
   return expiredSessionResponse
 }
 
+function continueWithTracedRequest(request: NextRequest): NextResponse {
+  return NextResponse.next({ request: { headers: request.headers } })
+}
+
+function ensureRequestTraceparent(request: NextRequest): void {
+  const incomingTraceparent = request.headers.get(httpHeaderNames.traceparent)
+  const isIncomingTraceparentValid =
+    incomingTraceparent !== null &&
+    getTraceIdFromTraceparent(incomingTraceparent) !== null
+  if (!isIncomingTraceparentValid) {
+    request.headers.set(httpHeaderNames.traceparent, createTraceparent())
+  }
+}
+
 export async function proxy(request: NextRequest) {
+  ensureRequestTraceparent(request)
   const isLoginPageRequested = request.nextUrl.pathname === appRoutes.login
   const isSessionRouteRequested = request.nextUrl.pathname.startsWith(
     bffRoutes.sessionPrefix
   )
   if (isLoginPageRequested || isSessionRouteRequested) {
-    return NextResponse.next()
+    return continueWithTracedRequest(request)
   }
 
   const accessToken = request.cookies.get(cookieNames.accessToken)?.value
@@ -59,12 +79,12 @@ export async function proxy(request: NextRequest) {
       sessionRefreshSettings.accessTokenRefreshLeadMilliseconds
     )
   if (isAccessTokenUsable) {
-    return NextResponse.next()
+    return continueWithTracedRequest(request)
   }
 
   if (refreshToken === undefined) {
     return accessToken === undefined
-      ? NextResponse.next()
+      ? continueWithTracedRequest(request)
       : endExpiredSession(request)
   }
 
@@ -75,9 +95,7 @@ export async function proxy(request: NextRequest) {
   switch (sessionRefreshResult.status) {
     case SessionRefreshStatus.Refreshed: {
       setSessionRequestCookies(request.cookies, sessionRefreshResult.session)
-      const refreshedSessionResponse = NextResponse.next({
-        request: { headers: request.headers },
-      })
+      const refreshedSessionResponse = continueWithTracedRequest(request)
       setSessionResponseCookies(
         refreshedSessionResponse.cookies,
         sessionRefreshResult.session
@@ -87,7 +105,7 @@ export async function proxy(request: NextRequest) {
     case SessionRefreshStatus.Rejected:
       return endExpiredSession(request)
     case SessionRefreshStatus.BackendUnavailable:
-      return NextResponse.next()
+      return continueWithTracedRequest(request)
   }
 }
 

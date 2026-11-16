@@ -1,18 +1,28 @@
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { z } from "zod"
 import {
   appRoutes,
   commonUiTexts,
   cookieNames,
+  httpHeaderNames,
   httpStatusCodes,
 } from "@/lib/constants"
 import { getApiErrorMessage } from "@/lib/api-error-message"
 import { parseApiResponseBody } from "@/lib/api-response-body"
 import { hasAuthTokenUserRole } from "@/lib/auth-token"
 import { createLoginPath } from "@/lib/login-redirect"
-import { getServerApiBaseUrl } from "@/lib/server/backend-api"
-import { ApiFetchResult, LoginRedirectReason, UserRole } from "@/lib/types"
+import {
+  createBackendRequestHeaders,
+  getServerApiBaseUrl,
+} from "@/lib/server/backend-api"
+import { logBffError } from "@/lib/server/bff-logger"
+import {
+  ApiFetchResult,
+  HttpMethod,
+  LoginRedirectReason,
+  UserRole,
+} from "@/lib/types"
 
 export async function getAuthTokenFromCookies(): Promise<string | null> {
   const cookieStore = await cookies()
@@ -40,14 +50,24 @@ export async function fetchFromApi<TResponseSchema extends z.ZodType>(
   authToken: string,
   responseSchema: TResponseSchema
 ): Promise<ApiFetchResult<z.infer<TResponseSchema>>> {
+  const incomingRequestHeaders = await headers()
   let response: Response
   try {
     response = await fetch(`${getServerApiBaseUrl()}${apiPath}`, {
-      headers: { Authorization: `Bearer ${authToken}` },
+      headers: createBackendRequestHeaders(incomingRequestHeaders, authToken),
       cache: "no-store",
     })
   } catch (error) {
-    console.error(`Не вдалося виконати запит до ${apiPath}:`, error)
+    logBffError(
+      {
+        message: "Server-rendered API request failed: backend unreachable",
+        traceparent: incomingRequestHeaders.get(httpHeaderNames.traceparent),
+        method: HttpMethod.Get,
+        path: apiPath,
+        status: null,
+      },
+      error
+    )
     return {
       isSucceeded: false,
       errorMessage: commonUiTexts.serverUnavailableMessage,

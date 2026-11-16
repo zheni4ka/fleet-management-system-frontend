@@ -16,14 +16,14 @@ export function createBackendRequestHeaders(
   const backendRequestHeaders = new Headers({
     [httpHeaderNames.contentType]: httpContentTypes.json,
   })
-  const forwardedForHeaderValue = incomingRequestHeaders.get(
-    httpHeaderNames.forwardedFor
-  )
-  if (forwardedForHeaderValue !== null) {
-    backendRequestHeaders.set(
-      httpHeaderNames.forwardedFor,
-      forwardedForHeaderValue
-    )
+  for (const forwardedHeaderName of [
+    httpHeaderNames.forwardedFor,
+    httpHeaderNames.traceparent,
+  ]) {
+    const forwardedHeaderValue = incomingRequestHeaders.get(forwardedHeaderName)
+    if (forwardedHeaderValue !== null) {
+      backendRequestHeaders.set(forwardedHeaderName, forwardedHeaderValue)
+    }
   }
   if (accessToken !== null) {
     backendRequestHeaders.set(

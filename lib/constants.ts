@@ -90,6 +90,7 @@ export const httpHeaderNames = Object.freeze({
   origin: "Origin",
   host: "Host",
   forwardedFor: "X-Forwarded-For",
+  traceparent: "traceparent",
 })
 
 export const httpStatusCodes = Object.freeze({
@@ -548,18 +549,19 @@ export const locationsTableColumns: ReadonlyArray<
 export const auditLogsTableColumns: ReadonlyArray<
   TableColumn<AuditLogSortField>
 > = Object.freeze([
-  { label: "Час", className: "w-1/5", sortField: AuditLogSortField.Time },
-  { label: "Дія", className: "w-2/5", sortField: AuditLogSortField.Action },
+  { label: "Час", className: "w-1/6", sortField: AuditLogSortField.Time },
+  { label: "Дія", className: "w-1/5", sortField: AuditLogSortField.Action },
   {
     label: "Користувач",
-    className: "w-1/5",
+    className: "w-1/6",
     sortField: AuditLogSortField.DispatcherUsername,
   },
   {
     label: "ID об'єкта",
-    className: "w-1/5",
+    className: "w-1/12",
     sortField: AuditLogSortField.EntityId,
   },
+  { label: "Зміни", className: "w-1/3" },
 ])
 
 export const reportDriverSummariesTableColumns: ReadonlyArray<TableColumn> =
@@ -614,4 +616,12 @@ export const userDepotsFormMessages = Object.freeze({
 export const depotNameConstraints = Object.freeze({
   maxLength: 100,
   nameRequiredMessage: "Вкажіть назву депо.",
+})
+
+export const traceContextFormat = Object.freeze({
+  version: "00",
+  sampledTraceFlags: "01",
+  traceIdByteLength: 16,
+  parentIdByteLength: 8,
+  traceparentPattern: /^00-([0-9a-f]{32})-([0-9a-f]{16})-[0-9a-f]{2}$/,
 })
