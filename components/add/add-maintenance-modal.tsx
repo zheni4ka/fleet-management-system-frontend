@@ -53,7 +53,7 @@ export default function AutoMaintenanceModal({
     try {
       setMaintenanceHistory(
         await fetchApiData<AutoMaintenance[]>(
-          `${apiEndpoints.autoMaintenanceByAuto}/${autoId}`
+          `${apiEndpoints.autoMaintenancesByAutoId}/${autoId}`
         )
       )
     } catch (error) {
@@ -76,7 +76,7 @@ export default function AutoMaintenanceModal({
   const handleComplete = async (maintenanceRecord: AutoMaintenance) => {
     const isMaintenanceCompleted = await runApiMutation(
       () =>
-        sendApiRequest(apiEndpoints.autoMaintenance, HttpMethod.Put, {
+        sendApiRequest(apiEndpoints.updateAutoMaintenance, HttpMethod.Put, {
           ...maintenanceRecord,
           isCompleted: true,
         }),
@@ -103,7 +103,7 @@ export default function AutoMaintenanceModal({
 
     const isMaintenanceCreated = await runApiMutation(
       () =>
-        sendApiRequest(apiEndpoints.autoMaintenance, HttpMethod.Post, {
+        sendApiRequest(apiEndpoints.createAutoMaintenance, HttpMethod.Post, {
           name: maintenanceFormValues.name.trim(),
           description: maintenanceFormValues.description.trim(),
           serviceDate: maintenanceFormValues.serviceDate,

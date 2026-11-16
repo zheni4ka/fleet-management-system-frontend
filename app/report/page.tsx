@@ -11,14 +11,8 @@ import {
   createPathWithSearchParams,
   createSearchParamsFromFormValues,
 } from "@/lib/search-params"
+import { fetchFromApi, getAuthTokenOrRedirect } from "@/lib/server/api"
 import {
-  fetchFromApi,
-  getAuthTokenOrRedirect,
-  getFirstApiFetchErrorMessage,
-} from "@/lib/server/api"
-import {
-  Driver,
-  Location,
   PageSearchParams,
   RoutesPeriodFormValues,
   RoutesPeriodReport,
@@ -37,40 +31,23 @@ async function RoutesPeriodReportSection({
   routesPeriodFormValues,
   authToken,
 }: RoutesPeriodReportSectionProps) {
-  const [routesPeriodReportResult, driversResult, locationsResult] =
-    await Promise.all([
-      fetchFromApi<RoutesPeriodReport>(
-        createPathWithSearchParams(
-          apiEndpoints.routesPeriodReport,
-          createSearchParamsFromFormValues(routesPeriodFormValues)
-        ),
-        authToken
-      ),
-      fetchFromApi<Driver[]>(apiEndpoints.allDrivers, authToken),
-      fetchFromApi<Location[]>(apiEndpoints.allLocations, authToken),
-    ])
+  const routesPeriodReportResult = await fetchFromApi<RoutesPeriodReport>(
+    createPathWithSearchParams(
+      apiEndpoints.routesPeriodReport,
+      createSearchParamsFromFormValues(routesPeriodFormValues)
+    ),
+    authToken
+  )
 
-  if (
-    !routesPeriodReportResult.isSucceeded ||
-    !driversResult.isSucceeded ||
-    !locationsResult.isSucceeded
-  ) {
+  if (!routesPeriodReportResult.isSucceeded) {
     return (
-      <LoadErrorMessage
-        errorMessage={getFirstApiFetchErrorMessage([
-          routesPeriodReportResult,
-          driversResult,
-          locationsResult,
-        ])}
-      />
+      <LoadErrorMessage errorMessage={routesPeriodReportResult.errorMessage} />
     )
   }
 
   return (
     <RoutesPeriodReportView
       routesPeriodReport={routesPeriodReportResult.data}
-      drivers={driversResult.data}
-      locations={locationsResult.data}
     />
   )
 }

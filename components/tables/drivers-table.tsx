@@ -37,7 +37,7 @@ export function DriversTable({ drivers, listPageState }: DriversTableProps) {
     const isDriverDeleted = await runApiMutation(
       () =>
         sendApiRequest(
-          `${apiEndpoints.drivers}/${driverPendingDeletion.id}`,
+          `${apiEndpoints.deleteDriver}/${driverPendingDeletion.id}`,
           HttpMethod.Delete
         ),
       {

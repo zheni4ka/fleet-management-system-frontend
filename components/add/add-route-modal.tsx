@@ -21,13 +21,19 @@ import {
   createDriverSearchableSelectOptions,
   createLocationSearchableSelectOptions,
 } from "@/lib/forms/searchable-select-options"
-import { Auto, Driver, HttpMethod, Location, RouteStatus } from "@/lib/types"
+import {
+  AutoLookupOption,
+  DriverLookupOption,
+  HttpMethod,
+  LocationLookupOption,
+  RouteStatus,
+} from "@/lib/types"
 import { parseEnumValue } from "@/lib/utils"
 
 interface AddRouteModalProps {
-  autos: Auto[]
-  drivers: Driver[]
-  locations: Location[]
+  autoLookupOptions: AutoLookupOption[]
+  driverLookupOptions: DriverLookupOption[]
+  locationLookupOptions: LocationLookupOption[]
 }
 
 function createEmptyRouteFormValues() {
@@ -73,9 +79,9 @@ function getRouteFormValidationError(
 }
 
 export default function AddRouteModal({
-  autos,
-  drivers,
-  locations,
+  autoLookupOptions,
+  driverLookupOptions,
+  locationLookupOptions,
 }: AddRouteModalProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [routeFormValues, setRouteFormValues] = useState(
@@ -83,7 +89,9 @@ export default function AddRouteModal({
   )
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
 
-  const locationOptions = createLocationSearchableSelectOptions(locations)
+  const locationOptions = createLocationSearchableSelectOptions(
+    locationLookupOptions
+  )
 
   const updateRouteFormValues = (changedValues: Partial<RouteFormValues>) => {
     setRouteFormValues({ ...routeFormValues, ...changedValues })
@@ -100,7 +108,7 @@ export default function AddRouteModal({
 
     const isRouteCreated = await runApiMutation(
       () =>
-        sendApiRequest(apiEndpoints.routes, HttpMethod.Post, {
+        sendApiRequest(apiEndpoints.createRoute, HttpMethod.Post, {
           startLocationId: Number(routeFormValues.startLocationId),
           destinationLocationId: Number(routeFormValues.destinationLocationId),
           departureTime: routeFormValues.departureTime,
@@ -189,7 +197,9 @@ export default function AddRouteModal({
           <div className="grid gap-3 sm:grid-cols-3">
             <FormField label="Водій">
               <SearchableSelect
-                options={createDriverSearchableSelectOptions(drivers)}
+                options={createDriverSearchableSelectOptions(
+                  driverLookupOptions
+                )}
                 selectedValue={routeFormValues.driverId}
                 onSelectedValueChange={(driverId) =>
                   updateRouteFormValues({ driverId })
@@ -201,7 +211,10 @@ export default function AddRouteModal({
             </FormField>
             <FormField label="Автомобіль">
               <SearchableSelect
-                options={createAutoSearchableSelectOptions(autos, null)}
+                options={createAutoSearchableSelectOptions(
+                  autoLookupOptions,
+                  null
+                )}
                 selectedValue={routeFormValues.autoId}
                 onSelectedValueChange={(autoId) =>
                   updateRouteFormValues({ autoId })

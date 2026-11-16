@@ -40,7 +40,7 @@ export function AutosTable({ autos, listPageState }: AutosTableProps) {
     const isAutoDeleted = await runApiMutation(
       () =>
         sendApiRequest(
-          `${apiEndpoints.autos}/${autoPendingDeletion.id}`,
+          `${apiEndpoints.deleteAuto}/${autoPendingDeletion.id}`,
           HttpMethod.Delete
         ),
       {

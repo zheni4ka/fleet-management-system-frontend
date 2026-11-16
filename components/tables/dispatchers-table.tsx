@@ -43,7 +43,7 @@ export function DispatchersTable({
     const isDispatcherDeleted = await runApiMutation(
       () =>
         sendApiRequest(
-          `${apiEndpoints.accounts}/${dispatcherPendingDeletion.id}`,
+          `${apiEndpoints.deleteUser}/${dispatcherPendingDeletion.id}`,
           HttpMethod.Delete
         ),
       {

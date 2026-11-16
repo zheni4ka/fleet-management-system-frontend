@@ -11,9 +11,9 @@ import {
 } from "@/lib/formatters"
 import {
   AuditAction,
-  Auto,
+  AutoLookupOption,
   AutoStatus,
-  Driver,
+  DriverLookupOption,
   ListFilterField,
   ListFilterFieldKind,
   ListFilterOption,
@@ -109,8 +109,8 @@ export const auditLogsListFilterFields: ReadonlyArray<ListFilterField> =
   ])
 
 export function createRoutesListFilterFields(
-  autos: ReadonlyArray<Auto>,
-  drivers: ReadonlyArray<Driver>
+  autoLookupOptions: ReadonlyArray<AutoLookupOption>,
+  driverLookupOptions: ReadonlyArray<DriverLookupOption>
 ): ReadonlyArray<ListFilterField> {
   return [
     {
@@ -151,9 +151,9 @@ export function createRoutesListFilterFields(
       name: "driverId",
       label: "Водій",
       allOptionsLabel: "Усі водії",
-      options: drivers.map((driver) => ({
-        value: String(driver.id),
-        label: formatDriverFullName(driver),
+      options: driverLookupOptions.map((driverLookupOption) => ({
+        value: String(driverLookupOption.id),
+        label: formatDriverFullName(driverLookupOption),
       })),
     },
     {
@@ -161,9 +161,9 @@ export function createRoutesListFilterFields(
       name: "autoId",
       label: "Автомобіль",
       allOptionsLabel: "Усі автомобілі",
-      options: autos.map((auto) => ({
-        value: String(auto.id),
-        label: formatAutoTitleWithNumber(auto),
+      options: autoLookupOptions.map((autoLookupOption) => ({
+        value: String(autoLookupOption.id),
+        label: formatAutoTitleWithNumber(autoLookupOption),
       })),
     },
     createListSearchFilterField("ID маршруту, місто або країна"),

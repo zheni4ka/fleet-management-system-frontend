@@ -7,38 +7,35 @@ import EditRouteModal from "@/components/edit/edit-route-modal"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
+import { apiEndpoints, nothingFoundMessage } from "@/lib/constants"
 import {
-  apiEndpoints,
-  nothingFoundMessage,
-  unknownLocationLabel,
-} from "@/lib/constants"
-import {
-  formatAutoTitleWithNumber,
-  formatDriverFullName,
-  formatLocationName,
+  formatRouteAutoTitleWithNumber,
+  formatRouteDestinationLocationName,
+  formatRouteDriverFullName,
+  formatRouteStartLocationName,
 } from "@/lib/formatters"
 import {
-  Auto,
-  Driver,
+  AutoLookupOption,
+  DriverLookupOption,
   HttpMethod,
-  Location,
+  LocationLookupOption,
   Route,
   RouteStatus,
 } from "@/lib/types"
 
 interface RoutesListProps {
   routes: Route[]
-  locations: Location[]
-  autos: Auto[]
-  drivers: Driver[]
+  autoLookupOptions: AutoLookupOption[]
+  driverLookupOptions: DriverLookupOption[]
+  locationLookupOptions: LocationLookupOption[]
   isRoutesListFiltered: boolean
 }
 
 export function RoutesList({
   routes,
-  locations,
-  autos,
-  drivers,
+  autoLookupOptions,
+  driverLookupOptions,
+  locationLookupOptions,
   isRoutesListFiltered,
 }: RoutesListProps) {
   const [serverRoutesSnapshot, setServerRoutesSnapshot] = useState(routes)
@@ -60,19 +57,6 @@ export function RoutesList({
     setDeletedRouteIds(new Set())
   }
 
-  const locationsById = useMemo(
-    () => new Map(locations.map((location) => [location.id, location])),
-    [locations]
-  )
-  const autosById = useMemo(
-    () => new Map(autos.map((auto) => [auto.id, auto])),
-    [autos]
-  )
-  const driversById = useMemo(
-    () => new Map(drivers.map((driver) => [driver.id, driver])),
-    [drivers]
-  )
-
   const displayedRoutes = useMemo(
     () =>
       routes
@@ -85,27 +69,6 @@ export function RoutesList({
         }),
     [routes, deletedRouteIds, routeStatusOverrides]
   )
-
-  const getLocationName = (locationId: number): string => {
-    const location = locationsById.get(locationId)
-    return location === undefined
-      ? unknownLocationLabel
-      : formatLocationName(location)
-  }
-
-  const getAutoTitle = (autoId: number): string => {
-    const auto = autosById.get(autoId)
-    return auto === undefined
-      ? `Авто ID: ${autoId}`
-      : formatAutoTitleWithNumber(auto)
-  }
-
-  const getDriverFullName = (driverId: number): string => {
-    const driver = driversById.get(driverId)
-    return driver === undefined
-      ? `Водій ID: ${driverId}`
-      : formatDriverFullName(driver)
-  }
 
   const updateRouteStatusOverride = (
     routeId: number,
@@ -138,7 +101,7 @@ export function RoutesList({
 
     const isRouteStatusUpdated = await runApiMutation(
       () =>
-        sendApiRequest(`${apiEndpoints.routes}/${route.id}`, HttpMethod.Put, {
+        sendApiRequest(apiEndpoints.updateRoute, HttpMethod.Put, {
           id: route.id,
           startLocationId: route.startLocationId,
           destinationLocationId: route.destinationLocationId,
@@ -170,7 +133,7 @@ export function RoutesList({
     const isRouteDeleted = await runApiMutation(
       () =>
         sendApiRequest(
-          `${apiEndpoints.routes}/${deletedRouteId}`,
+          `${apiEndpoints.deleteRoute}/${deletedRouteId}`,
           HttpMethod.Delete
         ),
       {
@@ -189,10 +152,6 @@ export function RoutesList({
   const selectedRoute = displayedRoutes.find(
     (route) => route.id === selectedRouteId
   )
-  const selectedRouteStartLocation =
-    selectedRoute && locationsById.get(selectedRoute.startLocationId)
-  const selectedRouteDestinationLocation =
-    selectedRoute && locationsById.get(selectedRoute.destinationLocationId)
 
   return (
     <>
@@ -201,19 +160,17 @@ export function RoutesList({
           <RouteCard
             key={route.id}
             route={route}
-            startLocationName={getLocationName(route.startLocationId)}
-            destinationLocationName={getLocationName(
-              route.destinationLocationId
-            )}
-            autoTitle={getAutoTitle(route.autoId)}
-            driverFullName={getDriverFullName(route.driverId)}
+            startLocationName={formatRouteStartLocationName(route)}
+            destinationLocationName={formatRouteDestinationLocationName(route)}
+            autoTitle={formatRouteAutoTitleWithNumber(route)}
+            driverFullName={formatRouteDriverFullName(route)}
             isRouteUpdating={updatingRouteId === route.id}
             editRouteAction={
               <EditRouteModal
                 route={route}
-                autos={autos}
-                drivers={drivers}
-                locations={locations}
+                autoLookupOptions={autoLookupOptions}
+                driverLookupOptions={driverLookupOptions}
+                locationLookupOptions={locationLookupOptions}
                 isRouteUpdating={updatingRouteId === route.id}
               />
             }
@@ -234,10 +191,10 @@ export function RoutesList({
         )}
       </div>
 
-      {selectedRouteStartLocation && selectedRouteDestinationLocation && (
+      {selectedRoute !== undefined && (
         <GoogleMapRoute
-          origin={formatLocationName(selectedRouteStartLocation)}
-          destination={formatLocationName(selectedRouteDestinationLocation)}
+          origin={formatRouteStartLocationName(selectedRoute)}
+          destination={formatRouteDestinationLocationName(selectedRoute)}
           onClose={() => setSelectedRouteId(null)}
         />
       )}
@@ -246,7 +203,7 @@ export function RoutesList({
         deletionQuestion={
           routePendingDeletion === null
             ? null
-            : `Видалити маршрут #${routePendingDeletion.id} ${getLocationName(routePendingDeletion.startLocationId)} → ${getLocationName(routePendingDeletion.destinationLocationId)}?`
+            : `Видалити маршрут #${routePendingDeletion.id} ${formatRouteStartLocationName(routePendingDeletion)} → ${formatRouteDestinationLocationName(routePendingDeletion)}?`
         }
         isDeleting={updatingRouteId === routePendingDeletion?.id}
         onConfirm={handleDeleteRouteConfirm}

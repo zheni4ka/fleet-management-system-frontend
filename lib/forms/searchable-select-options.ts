@@ -5,48 +5,50 @@ import {
   formatLocationName,
 } from "@/lib/formatters"
 import {
-  Auto,
+  AutoLookupOption,
   AutoStatus,
-  Driver,
-  Location,
+  DriverLookupOption,
+  LocationLookupOption,
   SearchableSelectOption,
 } from "@/lib/types"
 
 export function createLocationSearchableSelectOptions(
-  locations: ReadonlyArray<Location>
+  locationLookupOptions: ReadonlyArray<LocationLookupOption>
 ): ReadonlyArray<SearchableSelectOption> {
-  return locations.map((location) => ({
-    value: String(location.id),
-    label: formatLocationName(location),
+  return locationLookupOptions.map((locationLookupOption) => ({
+    value: String(locationLookupOption.id),
+    label: formatLocationName(locationLookupOption),
     isDisabled: false,
     disabledReason: null,
   }))
 }
 
 export function createDriverSearchableSelectOptions(
-  drivers: ReadonlyArray<Driver>
+  driverLookupOptions: ReadonlyArray<DriverLookupOption>
 ): ReadonlyArray<SearchableSelectOption> {
-  return drivers.map((driver) => ({
-    value: String(driver.id),
-    label: `${formatDriverFullName(driver)} (${driver.licenseNumber})`,
+  return driverLookupOptions.map((driverLookupOption) => ({
+    value: String(driverLookupOption.id),
+    label: `${formatDriverFullName(driverLookupOption)} (${driverLookupOption.licenseNumber})`,
     isDisabled: false,
     disabledReason: null,
   }))
 }
 
 export function createAutoSearchableSelectOptions(
-  autos: ReadonlyArray<Auto>,
+  autoLookupOptions: ReadonlyArray<AutoLookupOption>,
   alwaysSelectableAutoId: number | null
 ): ReadonlyArray<SearchableSelectOption> {
-  return autos.map((auto) => {
+  return autoLookupOptions.map((autoLookupOption) => {
     const isAutoUnavailable =
-      auto.status === AutoStatus.UnderMaintenance &&
-      auto.id !== alwaysSelectableAutoId
+      autoLookupOption.status === AutoStatus.UnderMaintenance &&
+      autoLookupOption.id !== alwaysSelectableAutoId
     return {
-      value: String(auto.id),
-      label: formatAutoTitleWithNumber(auto),
+      value: String(autoLookupOption.id),
+      label: formatAutoTitleWithNumber(autoLookupOption),
       isDisabled: isAutoUnavailable,
-      disabledReason: isAutoUnavailable ? autoStatusLabels[auto.status] : null,
+      disabledReason: isAutoUnavailable
+        ? autoStatusLabels[autoLookupOption.status]
+        : null,
     }
   })
 }

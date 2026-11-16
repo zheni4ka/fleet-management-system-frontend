@@ -3,14 +3,19 @@ import { LoadErrorMessage } from "@/components/load-error-message"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import {
   apiEndpoints,
+  firstListPage,
   recentRoutesTableColumns,
   routeStatusLabels,
-  unknownLocationLabel,
 } from "@/lib/constants"
-import { formatDateTime, formatLocationName } from "@/lib/formatters"
+import {
+  formatDateTime,
+  formatRouteDestinationLocationName,
+  formatRouteStartLocationName,
+} from "@/lib/formatters"
 import { isRouteStatusActive } from "@/lib/route-status"
-import { fetchFromApi, getFirstApiFetchErrorMessage } from "@/lib/server/api"
-import { Location, Route } from "@/lib/types"
+import { createListApiPath } from "@/lib/search-params"
+import { fetchFromApi } from "@/lib/server/api"
+import { PagedList, Route, RouteSortField, SortDirection } from "@/lib/types"
 
 const recentRoutesCount = 5
 
@@ -19,37 +24,31 @@ interface RecentRoutesBlockProps {
 }
 
 export async function RecentRoutesBlock({ authToken }: RecentRoutesBlockProps) {
-  const [routesResult, locationsResult] = await Promise.all([
-    fetchFromApi<Route[]>(apiEndpoints.allRoutes, authToken),
-    fetchFromApi<Location[]>(apiEndpoints.allLocations, authToken),
-  ])
+  const recentRoutesResult = await fetchFromApi<PagedList<Route>>(
+    createListApiPath(apiEndpoints.routesPagedList, {
+      page: firstListPage,
+      pageSize: recentRoutesCount,
+      sort: RouteSortField.Id,
+      sortDirection: SortDirection.Descending,
+      search: "",
+    }),
+    authToken
+  )
 
-  if (!routesResult.isSucceeded || !locationsResult.isSucceeded) {
+  if (!recentRoutesResult.isSucceeded) {
     return (
       <LoadErrorMessage
-        errorMessage={`Не вдалося завантажити маршрути та локації. ${getFirstApiFetchErrorMessage([routesResult, locationsResult])}`}
+        errorMessage={`Не вдалося завантажити маршрути. ${recentRoutesResult.errorMessage}`}
       />
     )
   }
 
-  const recentRoutes = [...routesResult.data]
-    .sort((firstRoute, secondRoute) => secondRoute.id - firstRoute.id)
-    .slice(0, recentRoutesCount)
+  const recentRoutes = recentRoutesResult.data.items
 
   if (recentRoutes.length === 0) {
     return (
       <p className="p-4 text-sm text-muted-foreground">Маршрутів поки немає.</p>
     )
-  }
-
-  const locationsById = new Map(
-    locationsResult.data.map((location) => [location.id, location])
-  )
-  const getLocationName = (locationId: number): string => {
-    const location = locationsById.get(locationId)
-    return location === undefined
-      ? unknownLocationLabel
-      : formatLocationName(location)
   }
 
   return (
@@ -63,8 +62,8 @@ export async function RecentRoutesBlock({ authToken }: RecentRoutesBlockProps) {
               <TableRow key={route.id} className="hover:bg-slate-50/50">
                 <TableCell className="font-mono text-xs">{route.id}</TableCell>
                 <TableCell className="font-medium">
-                  {getLocationName(route.startLocationId)} →{" "}
-                  {getLocationName(route.destinationLocationId)}
+                  {formatRouteStartLocationName(route)} →{" "}
+                  {formatRouteDestinationLocationName(route)}
                 </TableCell>
                 <TableCell className="text-xs">
                   {formatDateTime(route.departureTime)}

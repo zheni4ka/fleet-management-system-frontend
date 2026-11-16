@@ -43,7 +43,7 @@ export default function EditAutoModal({ auto }: EditAutoModalProps) {
 
     const isAutoUpdated = await runApiMutation(
       () =>
-        sendApiRequest(apiEndpoints.autos, HttpMethod.Put, {
+        sendApiRequest(apiEndpoints.updateAuto, HttpMethod.Put, {
           id: auto.id,
           ...createAutoRequestBody(autoFormValues),
         }),

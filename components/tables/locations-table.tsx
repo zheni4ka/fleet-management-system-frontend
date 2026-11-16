@@ -44,7 +44,7 @@ export function LocationsTable({
     const isLocationDeleted = await runApiMutation(
       () =>
         sendApiRequest(
-          `${apiEndpoints.locations}/${locationPendingDeletion.id}`,
+          `${apiEndpoints.deleteLocation}/${locationPendingDeletion.id}`,
           HttpMethod.Delete
         ),
       {

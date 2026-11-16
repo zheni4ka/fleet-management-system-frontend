@@ -35,7 +35,7 @@ export default function AddDriverModal() {
     const isDriverCreated = await runApiMutation(
       () =>
         sendApiRequest(
-          apiEndpoints.drivers,
+          apiEndpoints.createDriver,
           HttpMethod.Post,
           createDriverRequestBody(driverFormValues)
         ),

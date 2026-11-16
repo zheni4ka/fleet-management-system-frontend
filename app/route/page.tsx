@@ -19,10 +19,10 @@ import {
   getFirstApiFetchErrorMessage,
 } from "@/lib/server/api"
 import {
-  Auto,
-  Driver,
+  AutoLookupOption,
+  DriverLookupOption,
   ListPageState,
-  Location,
+  LocationLookupOption,
   PageSearchParams,
   PagedList,
   Route,
@@ -41,16 +41,26 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
   const authToken = await getAuthTokenOrRedirect()
   const pageSearchParams = await searchParams
 
-  const [autosResult, driversResult, locationsResult] = await Promise.all([
-    fetchFromApi<Auto[]>(apiEndpoints.allAutos, authToken),
-    fetchFromApi<Driver[]>(apiEndpoints.allDrivers, authToken),
-    fetchFromApi<Location[]>(apiEndpoints.allLocations, authToken),
+  const [
+    autoLookupOptionsResult,
+    driverLookupOptionsResult,
+    locationLookupOptionsResult,
+  ] = await Promise.all([
+    fetchFromApi<AutoLookupOption[]>(apiEndpoints.autoLookupOptions, authToken),
+    fetchFromApi<DriverLookupOption[]>(
+      apiEndpoints.driverLookupOptions,
+      authToken
+    ),
+    fetchFromApi<LocationLookupOption[]>(
+      apiEndpoints.locationLookupOptions,
+      authToken
+    ),
   ])
 
   if (
-    !autosResult.isSucceeded ||
-    !driversResult.isSucceeded ||
-    !locationsResult.isSucceeded
+    !autoLookupOptionsResult.isSucceeded ||
+    !driverLookupOptionsResult.isSucceeded ||
+    !locationLookupOptionsResult.isSucceeded
   ) {
     return (
       <div className="mx-auto max-w-6xl space-y-6 px-1 py-6 sm:p-8">
@@ -60,9 +70,9 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
         />
         <LoadErrorMessage
           errorMessage={getFirstApiFetchErrorMessage([
-            autosResult,
-            driversResult,
-            locationsResult,
+            autoLookupOptionsResult,
+            driverLookupOptionsResult,
+            locationLookupOptionsResult,
           ])}
         />
       </div>
@@ -70,8 +80,8 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
   }
 
   const routesListFilterFields = createRoutesListFilterFields(
-    autosResult.data,
-    driversResult.data
+    autoLookupOptionsResult.data,
+    driverLookupOptionsResult.data
   )
   const routesListPageState: ListPageState<RouteSortField> = {
     path: appRoutes.routes,
@@ -97,9 +107,9 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
     <div className="mx-auto max-w-6xl space-y-6 px-1 py-6 sm:p-8">
       <PageHeader title={routesPageTitle} description={routesPageDescription}>
         <AddRouteModal
-          autos={autosResult.data}
-          drivers={driversResult.data}
-          locations={locationsResult.data}
+          autoLookupOptions={autoLookupOptionsResult.data}
+          driverLookupOptions={driverLookupOptionsResult.data}
+          locationLookupOptions={locationLookupOptionsResult.data}
         />
       </PageHeader>
 
@@ -121,9 +131,9 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
         <>
           <RoutesList
             routes={routesPageResult.data.items}
-            locations={locationsResult.data}
-            autos={autosResult.data}
-            drivers={driversResult.data}
+            autoLookupOptions={autoLookupOptionsResult.data}
+            driverLookupOptions={driverLookupOptionsResult.data}
+            locationLookupOptions={locationLookupOptionsResult.data}
             isRoutesListFiltered={hasActiveListFilters(routesListPageState)}
           />
           <ListPagination

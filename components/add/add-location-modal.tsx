@@ -42,7 +42,7 @@ export default function AddLocationModal() {
     const isLocationCreated = await runApiMutation(
       () =>
         sendApiRequest(
-          apiEndpoints.locations,
+          apiEndpoints.createLocation,
           HttpMethod.Post,
           createLocationRequestBody(locationFormValues)
         ),

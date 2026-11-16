@@ -7,9 +7,8 @@ import {
 } from "lucide-react"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { apiEndpoints } from "@/lib/constants"
-import { isRouteStatusActive } from "@/lib/route-status"
-import { fetchFromApi, getFirstApiFetchErrorMessage } from "@/lib/server/api"
-import { Auto, Driver, Route } from "@/lib/types"
+import { fetchFromApi } from "@/lib/server/api"
+import { DashboardSummary } from "@/lib/types"
 
 interface KpiCardProps {
   label: string
@@ -50,44 +49,39 @@ interface KpiPanelProps {
 }
 
 export async function KpiPanel({ authToken }: KpiPanelProps) {
-  const [autosResult, driversResult, routesResult] = await Promise.all([
-    fetchFromApi<Auto[]>(apiEndpoints.allAutos, authToken),
-    fetchFromApi<Driver[]>(apiEndpoints.allDrivers, authToken),
-    fetchFromApi<Route[]>(apiEndpoints.allRoutes, authToken),
-  ])
+  const dashboardSummaryResult = await fetchFromApi<DashboardSummary>(
+    apiEndpoints.dashboardSummary,
+    authToken
+  )
 
-  if (
-    !autosResult.isSucceeded ||
-    !driversResult.isSucceeded ||
-    !routesResult.isSucceeded
-  ) {
+  if (!dashboardSummaryResult.isSucceeded) {
     return (
       <LoadErrorMessage
-        errorMessage={`Не вдалося завантажити аналітичні дані. ${getFirstApiFetchErrorMessage([autosResult, driversResult, routesResult])}`}
+        errorMessage={`Не вдалося завантажити аналітичні дані. ${dashboardSummaryResult.errorMessage}`}
       />
     )
   }
 
-  const routes = routesResult.data
-  const activeRoutesCount = routes.filter((route) =>
-    isRouteStatusActive(route.status)
-  ).length
+  const dashboardSummary = dashboardSummaryResult.data
   const activeRoutesPercentage =
-    routes.length > 0
-      ? Math.round((activeRoutesCount / routes.length) * 100)
+    dashboardSummary.routesCount > 0
+      ? Math.round(
+          (dashboardSummary.activeRoutesCount / dashboardSummary.routesCount) *
+            100
+        )
       : 0
 
   const kpiCards: KpiCardProps[] = [
     {
       label: "Усього авто",
-      value: autosResult.data.length,
+      value: dashboardSummary.autosCount,
       description: "Зареєстровано в базі",
       icon: Truck,
       colorClassName: "bg-blue-50 text-blue-600 group-hover:bg-blue-100",
     },
     {
       label: "Усього водіїв",
-      value: driversResult.data.length,
+      value: dashboardSummary.driversCount,
       description: "Зареєстровано в базі",
       icon: Users,
       colorClassName:
@@ -95,8 +89,8 @@ export async function KpiPanel({ authToken }: KpiPanelProps) {
     },
     {
       label: "Активні рейси",
-      value: activeRoutesCount,
-      description: `Із ${routes.length} загальних маршрутів`,
+      value: dashboardSummary.activeRoutesCount,
+      description: `Із ${dashboardSummary.routesCount} загальних маршрутів`,
       icon: MapIcon,
       colorClassName: "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100",
     },

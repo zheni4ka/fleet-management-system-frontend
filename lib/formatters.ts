@@ -1,20 +1,55 @@
 import { displayLocale } from "@/lib/constants"
-import { Auto, Driver, Location } from "@/lib/types"
+import { Auto, Driver, Location, Route } from "@/lib/types"
 
-export function formatLocationName(location: Location): string {
+export function formatLocationName(
+  location: Pick<Location, "city" | "country">
+): string {
   return `${location.city}, ${location.country}`
 }
 
-export function formatDriverFullName(driver: Driver): string {
+export function formatDriverFullName(
+  driver: Pick<Driver, "name" | "surname">
+): string {
   return `${driver.name} ${driver.surname}`
 }
 
-export function formatAutoTitle(auto: Auto): string {
+export function formatAutoTitle(auto: Pick<Auto, "mark" | "model">): string {
   return `${auto.mark} ${auto.model}`
 }
 
-export function formatAutoTitleWithNumber(auto: Auto): string {
+export function formatAutoTitleWithNumber(
+  auto: Pick<Auto, "mark" | "model" | "number">
+): string {
   return `${formatAutoTitle(auto)} (${auto.number})`
+}
+
+export function formatRouteStartLocationName(route: Route): string {
+  return formatLocationName({
+    city: route.startLocationCity,
+    country: route.startLocationCountry,
+  })
+}
+
+export function formatRouteDestinationLocationName(route: Route): string {
+  return formatLocationName({
+    city: route.destinationLocationCity,
+    country: route.destinationLocationCountry,
+  })
+}
+
+export function formatRouteAutoTitleWithNumber(route: Route): string {
+  return formatAutoTitleWithNumber({
+    mark: route.autoMark,
+    model: route.autoModel,
+    number: route.autoNumber,
+  })
+}
+
+export function formatRouteDriverFullName(route: Route): string {
+  return formatDriverFullName({
+    name: route.driverName,
+    surname: route.driverSurname,
+  })
 }
 
 export function formatDateTime(isoDateTime: string): string {

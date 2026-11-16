@@ -5,16 +5,17 @@ import {
   reportDriverSummariesTableColumns,
   reportRoutesTableColumns,
   routeStatusLabels,
-  unknownLocationLabel,
 } from "@/lib/constants"
 import {
   formatIsoDateOnly,
   formatDateTime,
   formatDriverFullName,
   formatHours,
-  formatLocationName,
+  formatRouteDestinationLocationName,
+  formatRouteDriverFullName,
+  formatRouteStartLocationName,
 } from "@/lib/formatters"
-import { Driver, Location, RoutesPeriodReport } from "@/lib/types"
+import { RoutesPeriodReport } from "@/lib/types"
 
 interface ReportStatCardProps {
   label: string
@@ -32,34 +33,11 @@ function ReportStatCard({ label, value }: ReportStatCardProps) {
 
 interface RoutesPeriodReportViewProps {
   routesPeriodReport: RoutesPeriodReport
-  drivers: Driver[]
-  locations: Location[]
 }
 
 export function RoutesPeriodReportView({
   routesPeriodReport,
-  drivers,
-  locations,
 }: RoutesPeriodReportViewProps) {
-  const driversById = new Map(drivers.map((driver) => [driver.id, driver]))
-  const locationsById = new Map(
-    locations.map((location) => [location.id, location])
-  )
-
-  const getDriverFullName = (driverId: number): string => {
-    const driver = driversById.get(driverId)
-    return driver === undefined
-      ? `Водій ID: ${driverId}`
-      : formatDriverFullName(driver)
-  }
-
-  const getLocationName = (locationId: number): string => {
-    const location = locationsById.get(locationId)
-    return location === undefined
-      ? unknownLocationLabel
-      : formatLocationName(location)
-  }
-
   const reportStatCards = [
     {
       label: "Усього рейсів",
@@ -129,7 +107,10 @@ export function RoutesPeriodReportView({
               {routesPeriodReport.driverSummaries.map((driverSummary) => (
                 <TableRow key={driverSummary.driverId}>
                   <TableCell className="font-medium">
-                    {getDriverFullName(driverSummary.driverId)}
+                    {formatDriverFullName({
+                      name: driverSummary.driverName,
+                      surname: driverSummary.driverSurname,
+                    })}
                   </TableCell>
                   <TableCell className="text-center">
                     {driverSummary.routesCount}
@@ -165,8 +146,8 @@ export function RoutesPeriodReportView({
                     {route.id}
                   </TableCell>
                   <TableCell className="font-medium">
-                    {getLocationName(route.startLocationId)} →{" "}
-                    {getLocationName(route.destinationLocationId)}
+                    {formatRouteStartLocationName(route)} →{" "}
+                    {formatRouteDestinationLocationName(route)}
                   </TableCell>
                   <TableCell className="text-xs">
                     {formatDateTime(route.departureTime)}
@@ -174,7 +155,7 @@ export function RoutesPeriodReportView({
                   <TableCell className="text-xs">
                     {formatDateTime(route.arrivalTime)}
                   </TableCell>
-                  <TableCell>{getDriverFullName(route.driverId)}</TableCell>
+                  <TableCell>{formatRouteDriverFullName(route)}</TableCell>
                   <TableCell className="text-right">
                     {routeStatusLabels[route.status]}
                   </TableCell>

@@ -44,7 +44,7 @@ export default function EditDriverModal({ driver }: EditDriverModalProps) {
 
     const isDriverUpdated = await runApiMutation(
       () =>
-        sendApiRequest(apiEndpoints.drivers, HttpMethod.Put, {
+        sendApiRequest(apiEndpoints.updateDriver, HttpMethod.Put, {
           id: driver.id,
           ...createDriverRequestBody(driverFormValues),
         }),

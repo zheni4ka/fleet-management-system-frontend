@@ -70,25 +70,33 @@ export const appRoutes = Object.freeze({
 
 export const apiEndpoints = Object.freeze({
   login: "/api/Account/login",
-  registerAccount: "/api/Account/register",
-  accounts: "/api/Account",
-  autos: "/api/Auto",
-  allAutos: "/api/Auto/all",
-  drivers: "/api/Driver",
-  allDrivers: "/api/Driver/all",
-  routes: "/api/Route",
-  allRoutes: "/api/Route/all",
-  locations: "/api/Location",
-  allLocations: "/api/Location/all",
-  routesPeriodReport: "/api/Route/periodReport",
-  autoMaintenance: "/api/AutoMaintenance",
-  autoMaintenanceByAuto: "/api/AutoMaintenance/auto",
-  autosPagedList: "/api/Auto/pagedList",
-  driversPagedList: "/api/Driver/pagedList",
-  locationsPagedList: "/api/Location/pagedList",
-  dispatchersPagedList: "/api/Account/dispatchersPagedList",
-  routesPagedList: "/api/Route/pagedList",
-  auditLogsPagedList: "/api/AuditLog/pagedList",
+  registerAccount: "/api/Account/registerAccount",
+  dispatchersPagedList: "/api/Account/getDispatchersPagedList",
+  deleteUser: "/api/Account/deleteUser",
+  createAuto: "/api/Auto/createAuto",
+  updateAuto: "/api/Auto/updateAuto",
+  deleteAuto: "/api/Auto/deleteAuto",
+  autosPagedList: "/api/Auto/getAutosPagedList",
+  autoLookupOptions: "/api/Auto/getAutoLookupOptions",
+  createDriver: "/api/Driver/createDriver",
+  updateDriver: "/api/Driver/updateDriver",
+  deleteDriver: "/api/Driver/deleteDriver",
+  driversPagedList: "/api/Driver/getDriversPagedList",
+  driverLookupOptions: "/api/Driver/getDriverLookupOptions",
+  createLocation: "/api/Location/createLocation",
+  deleteLocation: "/api/Location/deleteLocation",
+  locationsPagedList: "/api/Location/getLocationsPagedList",
+  locationLookupOptions: "/api/Location/getLocationLookupOptions",
+  createRoute: "/api/Route/createRoute",
+  updateRoute: "/api/Route/updateRoute",
+  deleteRoute: "/api/Route/deleteRoute",
+  routesPagedList: "/api/Route/getRoutesPagedList",
+  routesPeriodReport: "/api/Route/getRoutesPeriodReport",
+  createAutoMaintenance: "/api/AutoMaintenance/createAutoMaintenance",
+  updateAutoMaintenance: "/api/AutoMaintenance/updateAutoMaintenance",
+  autoMaintenancesByAutoId: "/api/AutoMaintenance/getAutoMaintenancesByAutoId",
+  auditLogsPagedList: "/api/AuditLog/getAuditLogsPagedList",
+  dashboardSummary: "/api/Dashboard/getDashboardSummary",
 })
 
 export const listSearchParamNames = Object.freeze({
@@ -197,8 +205,6 @@ export const autoColorOptions: ReadonlyArray<string> = Object.freeze([
   "Сірий",
   "Жовтий",
 ])
-
-export const unknownLocationLabel = "Невідома"
 
 export const headerNavigationLinks: ReadonlyArray<NavigationLink> =
   Object.freeze([

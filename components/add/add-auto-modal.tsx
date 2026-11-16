@@ -34,7 +34,7 @@ export default function AddAutoModal() {
     const isAutoCreated = await runApiMutation(
       () =>
         sendApiRequest(
-          apiEndpoints.autos,
+          apiEndpoints.createAuto,
           HttpMethod.Post,
           createAutoRequestBody(autoFormValues)
         ),

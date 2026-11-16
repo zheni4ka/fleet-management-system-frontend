@@ -30,11 +30,11 @@ import {
 } from "@/lib/forms/searchable-select-options"
 import { isRouteStatusActive } from "@/lib/route-status"
 import {
-  Auto,
-  Driver,
+  AutoLookupOption,
+  DriverLookupOption,
   EditRouteFormValues,
   HttpMethod,
-  Location,
+  LocationLookupOption,
   Route,
   RouteStatus,
 } from "@/lib/types"
@@ -42,17 +42,17 @@ import { parseEnumValue } from "@/lib/utils"
 
 interface EditRouteModalProps {
   route: Route
-  autos: Auto[]
-  drivers: Driver[]
-  locations: Location[]
+  autoLookupOptions: AutoLookupOption[]
+  driverLookupOptions: DriverLookupOption[]
+  locationLookupOptions: LocationLookupOption[]
   isRouteUpdating: boolean
 }
 
 export default function EditRouteModal({
   route,
-  autos,
-  drivers,
-  locations,
+  autoLookupOptions,
+  driverLookupOptions,
+  locationLookupOptions,
   isRouteUpdating,
 }: EditRouteModalProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -62,7 +62,9 @@ export default function EditRouteModal({
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
 
   const isRouteEditable = isRouteStatusActive(route.status)
-  const locationOptions = createLocationSearchableSelectOptions(locations)
+  const locationOptions = createLocationSearchableSelectOptions(
+    locationLookupOptions
+  )
   const selectableRouteStatuses = [
     route.status,
     ...allowedRouteStatusTransitions[route.status],
@@ -91,7 +93,7 @@ export default function EditRouteModal({
     const isRouteUpdated = await runApiMutation(
       () =>
         sendApiRequest(
-          `${apiEndpoints.routes}/${route.id}`,
+          apiEndpoints.updateRoute,
           HttpMethod.Put,
           createEditRouteRequestBody(route.id, editRouteFormValues)
         ),
@@ -161,7 +163,9 @@ export default function EditRouteModal({
           <div className="grid gap-3 sm:grid-cols-2">
             <FormField label="Водій">
               <SearchableSelect
-                options={createDriverSearchableSelectOptions(drivers)}
+                options={createDriverSearchableSelectOptions(
+                  driverLookupOptions
+                )}
                 selectedValue={editRouteFormValues.driverId}
                 onSelectedValueChange={(driverId) =>
                   updateEditRouteFormValues({ driverId })
@@ -173,7 +177,10 @@ export default function EditRouteModal({
             </FormField>
             <FormField label="Автомобіль">
               <SearchableSelect
-                options={createAutoSearchableSelectOptions(autos, route.autoId)}
+                options={createAutoSearchableSelectOptions(
+                  autoLookupOptions,
+                  route.autoId
+                )}
                 selectedValue={editRouteFormValues.autoId}
                 onSelectedValueChange={(autoId) =>
                   updateEditRouteFormValues({ autoId })
