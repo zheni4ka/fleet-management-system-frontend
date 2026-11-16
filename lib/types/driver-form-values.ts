@@ -3,4 +3,5 @@ export interface DriverFormValues {
   surname: string
   patronymic: string
   licenseNumber: string
+  depotId: string
 }

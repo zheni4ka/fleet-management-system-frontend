@@ -11,7 +11,11 @@ import {
   getListFilterValuesFromPageSearchParams,
   getListQueryFromPageSearchParams,
 } from "@/lib/search-params"
-import { fetchFromApi, getAdminAuthTokenOrRedirect } from "@/lib/server/api"
+import {
+  fetchFromApi,
+  getAdminAuthTokenOrRedirect,
+  getFirstApiFetchErrorMessage,
+} from "@/lib/server/api"
 import {
   DispatcherSortField,
   ListPageState,
@@ -19,6 +23,7 @@ import {
 } from "@/lib/types"
 import { createPagedListSchema } from "@/lib/schemas/paged-list-schema"
 import { dispatcherSchema } from "@/lib/schemas/dispatcher-schema"
+import { depotsSchema } from "@/lib/schemas/depot-schema"
 import { PageContainer } from "@/components/page-container"
 
 interface DispatchersPageProps {
@@ -41,15 +46,18 @@ export default async function DispatchersPage({
       dispatchersListFilterFields
     ),
   }
-  const dispatchersPageResult = await fetchFromApi(
-    createListApiPath(
-      apiEndpoints.dispatchersPagedList,
-      dispatchersListPageState.listQuery,
-      dispatchersListPageState.filterValues
+  const [dispatchersPageResult, depotsResult] = await Promise.all([
+    fetchFromApi(
+      createListApiPath(
+        apiEndpoints.dispatchersPagedList,
+        dispatchersListPageState.listQuery,
+        dispatchersListPageState.filterValues
+      ),
+      authToken,
+      createPagedListSchema(dispatcherSchema)
     ),
-    authToken,
-    createPagedListSchema(dispatcherSchema)
-  )
+    fetchFromApi(apiEndpoints.depots, authToken, depotsSchema),
+  ])
 
   return (
     <PageContainer>
@@ -57,7 +65,9 @@ export default async function DispatchersPage({
         title="Диспетчери"
         description="Управління обліковими записами персоналу."
       >
-        <AddDispatcherModal />
+        {depotsResult.isSucceeded && (
+          <AddDispatcherModal depots={depotsResult.data} />
+        )}
       </PageHeader>
 
       <ListFilterPanel
@@ -66,10 +76,11 @@ export default async function DispatchersPage({
         listFilterFields={dispatchersListFilterFields}
       />
 
-      {dispatchersPageResult.isSucceeded ? (
+      {dispatchersPageResult.isSucceeded && depotsResult.isSucceeded ? (
         <>
           <DispatchersTable
             dispatchers={dispatchersPageResult.data.items}
+            depots={depotsResult.data}
             listPageState={dispatchersListPageState}
           />
           <ListPagination
@@ -78,7 +89,12 @@ export default async function DispatchersPage({
           />
         </>
       ) : (
-        <LoadErrorMessage errorMessage={dispatchersPageResult.errorMessage} />
+        <LoadErrorMessage
+          errorMessage={getFirstApiFetchErrorMessage([
+            dispatchersPageResult,
+            depotsResult,
+          ])}
+        />
       )}
     </PageContainer>
   )

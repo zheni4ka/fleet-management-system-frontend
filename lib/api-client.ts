@@ -64,8 +64,8 @@ export async function sendApiRequestForData<
 >(
   apiPath: string,
   httpMethod: HttpMethod,
-  requestBody: object,
-  responseSchema: TResponseSchema
+  responseSchema: TResponseSchema,
+  requestBody?: object
 ): Promise<z.infer<TResponseSchema>> {
   const response = await sendProxiedApiRequest(apiPath, httpMethod, requestBody)
   return parseApiResponseBody(apiPath, await response.json(), responseSchema)

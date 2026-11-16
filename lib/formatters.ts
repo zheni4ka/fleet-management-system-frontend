@@ -1,5 +1,5 @@
 import { localeCodes } from "@/lib/constants"
-import { Auto, Driver, Location, Route } from "@/lib/types"
+import { Auto, Depot, Driver, Location, Route } from "@/lib/types"
 
 export function formatLocationName(
   location: Pick<Location, "city" | "country">
@@ -85,4 +85,21 @@ export function formatIsoDateOnly(isoDateOnly: string): string {
     Number(monthText) - 1,
     Number(dayText)
   ).toLocaleDateString(localeCodes.display)
+}
+
+export function formatDepotNames(
+  depotIds: ReadonlyArray<number>,
+  depots: ReadonlyArray<Depot>
+): string {
+  return depotIds
+    .map((depotId) => {
+      const matchingDepot = depots.find((depot) => depot.id === depotId)
+      if (matchingDepot === undefined) {
+        throw new Error(
+          `Депо з ідентифікатором ${depotId} відсутнє у списку депо.`
+        )
+      }
+      return matchingDepot.name
+    })
+    .join(", ")
 }

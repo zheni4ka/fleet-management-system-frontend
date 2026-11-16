@@ -32,8 +32,8 @@ export function ResetUserPasswordTableRowAction({
         const resetUserPasswordResponse = await sendApiRequestForData(
           apiEndpoints.resetUserPassword,
           HttpMethod.Post,
-          { userId },
-          resetUserPasswordResponseSchema
+          resetUserPasswordResponseSchema,
+          { userId }
         )
         setTemporaryPassword(resetUserPasswordResponse.temporaryPassword)
       },

@@ -4,4 +4,5 @@ export interface CreateAutoRequestModel {
   color: string
   number: string
   capacity: number
+  depotId: number
 }

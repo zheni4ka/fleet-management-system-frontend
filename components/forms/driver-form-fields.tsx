@@ -1,14 +1,17 @@
 import { Input } from "@/components/ui/input"
 import { FormField } from "@/components/ui/form-field"
 import { driverFormFields } from "@/lib/constants"
-import { DriverFormValues } from "@/lib/types"
+import { DepotSelectField } from "@/components/forms/depot-select-field"
+import { Depot, DriverFormValues } from "@/lib/types"
 
 interface DriverFormFieldsProps {
+  depots: ReadonlyArray<Depot>
   driverFormValues: DriverFormValues
   onDriverFormValuesChange: (driverFormValues: DriverFormValues) => void
 }
 
 export function DriverFormFields({
+  depots,
   driverFormValues,
   onDriverFormValuesChange,
 }: DriverFormFieldsProps) {
@@ -27,6 +30,16 @@ export function DriverFormFields({
           />
         </FormField>
       ))}
+      <DepotSelectField
+        depots={depots}
+        selectedDepotId={driverFormValues.depotId}
+        onSelectedDepotIdChange={(selectedDepotId) =>
+          onDriverFormValuesChange({
+            ...driverFormValues,
+            depotId: selectedDepotId,
+          })
+        }
+      />
     </>
   )
 }

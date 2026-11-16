@@ -15,13 +15,17 @@ import {
   createUpdateAutoRequestModel,
   getAutoFormValidationError,
 } from "@/lib/forms/auto-form"
-import { Auto, HttpMethod } from "@/lib/types"
+import { Auto, Depot, HttpMethod } from "@/lib/types"
 
 interface EditAutoModalProps {
   auto: Auto
+  depots: ReadonlyArray<Depot>
 }
 
-export default function EditAutoModal({ auto }: EditAutoModalProps) {
+export default function EditAutoModal({
+  auto,
+  depots,
+}: EditAutoModalProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [autoFormValues, setAutoFormValues] = useState(() =>
     createAutoFormValuesFromAuto(auto)
@@ -75,6 +79,7 @@ export default function EditAutoModal({ auto }: EditAutoModalProps) {
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <AutoFormFields
+            depots={depots}
             autoFormValues={autoFormValues}
             onAutoFormValuesChange={setAutoFormValues}
           />

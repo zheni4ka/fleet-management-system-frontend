@@ -5,4 +5,5 @@ export const driverLookupOptionSchema = z.object({
   name: z.string(),
   surname: z.string(),
   licenseNumber: z.string(),
+  depotId: z.number().int(),
 })

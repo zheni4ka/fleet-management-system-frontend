@@ -15,13 +15,17 @@ import {
   createDriverRequestBody,
   getDriverFormValidationError,
 } from "@/lib/forms/driver-form"
-import { Driver, HttpMethod } from "@/lib/types"
+import { Driver, Depot, HttpMethod } from "@/lib/types"
 
 interface EditDriverModalProps {
   driver: Driver
+  depots: ReadonlyArray<Depot>
 }
 
-export default function EditDriverModal({ driver }: EditDriverModalProps) {
+export default function EditDriverModal({
+  driver,
+  depots,
+}: EditDriverModalProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [driverFormValues, setDriverFormValues] = useState(() =>
     createDriverFormValuesFromDriver(driver)
@@ -76,6 +80,7 @@ export default function EditDriverModal({ driver }: EditDriverModalProps) {
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <DriverFormFields
+            depots={depots}
             driverFormValues={driverFormValues}
             onDriverFormValuesChange={setDriverFormValues}
           />

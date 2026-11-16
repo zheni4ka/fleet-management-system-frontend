@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import EditDriverModal from "@/components/edit/edit-driver-modal"
-import { DeleteTableRowAction } from "@/components/tables/delete-table-row-action"
+import { ArchivableTableRowActions } from "@/components/tables/archivable-table-row-actions"
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import { formatDriverFullName } from "@/lib/formatters"
@@ -10,15 +10,27 @@ import {
   apiEndpoints,
   commonUiTexts,
   driversTableColumns,
+  listFilterTexts,
 } from "@/lib/constants"
-import { BadgeTone, Driver, DriverSortField, ListPageState } from "@/lib/types"
+import {
+  BadgeTone,
+  Depot,
+  Driver,
+  DriverSortField,
+  ListPageState,
+} from "@/lib/types"
 
 interface DriversTableProps {
   drivers: Driver[]
+  depots: ReadonlyArray<Depot>
   listPageState: ListPageState<DriverSortField>
 }
 
-export function DriversTable({ drivers, listPageState }: DriversTableProps) {
+export function DriversTable({
+  drivers,
+  depots,
+  listPageState,
+}: DriversTableProps) {
   return (
     <div className="overflow-hidden rounded-md border bg-white">
       <Table>
@@ -45,17 +57,35 @@ export function DriversTable({ drivers, listPageState }: DriversTableProps) {
               <TableCell>{driver.patronymic}</TableCell>
               <TableCell>
                 <Badge tone={BadgeTone.Info}>{driver.licenseNumber}</Badge>
+                {driver.isArchived && (
+                  <span className="ml-2">
+                    <Badge tone={BadgeTone.Neutral}>
+                      {listFilterTexts.archivedBadgeLabel}
+                    </Badge>
+                  </span>
+                )}
               </TableCell>
+              <TableCell>{driver.depotName}</TableCell>
               <TableCell className="text-center">
                 <div className="flex justify-center gap-2">
-                  <EditDriverModal driver={driver} />
-                  <DeleteTableRowAction
+                  {!driver.isArchived && (
+                    <EditDriverModal driver={driver} depots={depots} />
+                  )}
+                  <ArchivableTableRowActions
+                    isArchived={driver.isArchived}
                     deleteApiPath={`${apiEndpoints.deleteDriver}/${driver.id}`}
-                    deletionQuestion={`Видалити водія ${formatDriverFullName(driver)} (${driver.licenseNumber})?`}
+                    restoreApiPath={`${apiEndpoints.restoreDriver}/${driver.id}`}
+                    deletionQuestion={`Видалити водія ${formatDriverFullName(driver)} (${driver.licenseNumber})? Якщо його призначено на маршрути, його буде перенесено до архіву.`}
                     deletionToastMessages={{
                       loading: "Видалення водія...",
                       success: "Водія успішно видалено!",
                       error: "Не вдалося видалити водія",
+                    }}
+                    archivedInsteadOfDeletedMessage="Водія призначено на маршрути, тому його перенесено до архіву."
+                    restoreToastMessages={{
+                      loading: "Відновлення водія...",
+                      success: "Водія відновлено з архіву!",
+                      error: "Не вдалося відновити водія",
                     }}
                   />
                 </div>

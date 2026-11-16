@@ -7,4 +7,5 @@ export const autoLookupOptionSchema = z.object({
   model: z.string(),
   number: z.string(),
   status: z.enum(AutoStatus),
+  depotId: z.number().int(),
 })

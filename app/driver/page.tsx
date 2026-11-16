@@ -5,7 +5,7 @@ import { ListPagination } from "@/components/list-pagination"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
 import { apiEndpoints, appRoutes } from "@/lib/constants"
-import { driversListFilterFields } from "@/lib/forms/list-filter-fields"
+import { createDriversListFilterFields } from "@/lib/forms/list-filter-fields"
 import {
   createListApiPath,
   getListFilterValuesFromPageSearchParams,
@@ -15,15 +15,41 @@ import { fetchFromApi, getAdminAuthTokenOrRedirect } from "@/lib/server/api"
 import { DriverSortField, ListPageState, PageSearchParams } from "@/lib/types"
 import { createPagedListSchema } from "@/lib/schemas/paged-list-schema"
 import { driverSchema } from "@/lib/schemas/driver-schema"
+import { depotsSchema } from "@/lib/schemas/depot-schema"
 import { PageContainer } from "@/components/page-container"
 
 interface DriversPageProps {
   searchParams: Promise<PageSearchParams>
 }
 
+const driversPageTitle = "Водії"
+
+const driversPageDescription =
+  "Управління водіями вашого автопарку та перегляд їхніх ліцензій."
+
 export default async function DriversPage({ searchParams }: DriversPageProps) {
   const authToken = await getAdminAuthTokenOrRedirect()
   const pageSearchParams = await searchParams
+  const depotsResult = await fetchFromApi(
+    apiEndpoints.depots,
+    authToken,
+    depotsSchema
+  )
+  if (!depotsResult.isSucceeded) {
+    return (
+      <PageContainer>
+        <PageHeader
+          title={driversPageTitle}
+          description={driversPageDescription}
+        />
+        <LoadErrorMessage errorMessage={depotsResult.errorMessage} />
+      </PageContainer>
+    )
+  }
+
+  const driversListFilterFields = createDriversListFilterFields(
+    depotsResult.data
+  )
   const driversListPageState: ListPageState<DriverSortField> = {
     path: appRoutes.drivers,
     listQuery: getListQueryFromPageSearchParams(
@@ -47,11 +73,8 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
 
   return (
     <PageContainer>
-      <PageHeader
-        title="Водії"
-        description="Управління водіями вашого автопарку та перегляд їхніх ліцензій."
-      >
-        <AddDriverModal />
+      <PageHeader title={driversPageTitle} description={driversPageDescription}>
+        <AddDriverModal depots={depotsResult.data} />
       </PageHeader>
 
       <ListFilterPanel
@@ -64,6 +87,7 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
         <>
           <DriversTable
             drivers={driversPageResult.data.items}
+            depots={depotsResult.data}
             listPageState={driversListPageState}
           />
           <ListPagination

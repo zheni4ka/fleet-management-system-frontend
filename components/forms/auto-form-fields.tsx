@@ -2,14 +2,17 @@ import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
 import { FormField } from "@/components/ui/form-field"
 import { autoColorOptions } from "@/lib/constants"
-import { AutoFormValues } from "@/lib/types"
+import { DepotSelectField } from "@/components/forms/depot-select-field"
+import { AutoFormValues, Depot } from "@/lib/types"
 
 interface AutoFormFieldsProps {
+  depots: ReadonlyArray<Depot>
   autoFormValues: AutoFormValues
   onAutoFormValuesChange: (autoFormValues: AutoFormValues) => void
 }
 
 export function AutoFormFields({
+  depots,
   autoFormValues,
   onAutoFormValuesChange,
 }: AutoFormFieldsProps) {
@@ -78,6 +81,13 @@ export function AutoFormFields({
           }
         />
       </FormField>
+      <DepotSelectField
+        depots={depots}
+        selectedDepotId={autoFormValues.depotId}
+        onSelectedDepotIdChange={(selectedDepotId) =>
+          updateAutoFormValues({ depotId: selectedDepotId })
+        }
+      />
     </>
   )
 }

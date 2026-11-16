@@ -14,9 +14,13 @@ import {
   createEmptyDriverFormValues,
   getDriverFormValidationError,
 } from "@/lib/forms/driver-form"
-import { HttpMethod } from "@/lib/types"
+import { Depot, HttpMethod } from "@/lib/types"
 
-export default function AddDriverModal() {
+interface AddDriverModalProps {
+  depots: ReadonlyArray<Depot>
+}
+
+export default function AddDriverModal({ depots }: AddDriverModalProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [driverFormValues, setDriverFormValues] = useState(
     createEmptyDriverFormValues
@@ -63,6 +67,7 @@ export default function AddDriverModal() {
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <DriverFormFields
+            depots={depots}
             driverFormValues={driverFormValues}
             onDriverFormValuesChange={setDriverFormValues}
           />

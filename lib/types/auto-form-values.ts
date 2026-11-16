@@ -4,4 +4,5 @@ export interface AutoFormValues {
   color: string
   number: string
   capacity: string
+  depotId: string
 }

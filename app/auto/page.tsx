@@ -5,7 +5,7 @@ import { ListPagination } from "@/components/list-pagination"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
 import { apiEndpoints, appRoutes } from "@/lib/constants"
-import { autosListFilterFields } from "@/lib/forms/list-filter-fields"
+import { createAutosListFilterFields } from "@/lib/forms/list-filter-fields"
 import {
   createListApiPath,
   getListFilterValuesFromPageSearchParams,
@@ -15,15 +15,36 @@ import { fetchFromApi, getAdminAuthTokenOrRedirect } from "@/lib/server/api"
 import { AutoSortField, ListPageState, PageSearchParams } from "@/lib/types"
 import { createPagedListSchema } from "@/lib/schemas/paged-list-schema"
 import { autoSchema } from "@/lib/schemas/auto-schema"
+import { depotsSchema } from "@/lib/schemas/depot-schema"
 import { PageContainer } from "@/components/page-container"
 
 interface AutosPageProps {
   searchParams: Promise<PageSearchParams>
 }
 
+const autosPageTitle = "Автомобілі"
+
+const autosPageDescription =
+  "Управління автомобілями вашого автопарку та перегляд їхніх характеристик."
+
 export default async function AutosPage({ searchParams }: AutosPageProps) {
   const authToken = await getAdminAuthTokenOrRedirect()
   const pageSearchParams = await searchParams
+  const depotsResult = await fetchFromApi(
+    apiEndpoints.depots,
+    authToken,
+    depotsSchema
+  )
+  if (!depotsResult.isSucceeded) {
+    return (
+      <PageContainer>
+        <PageHeader title={autosPageTitle} description={autosPageDescription} />
+        <LoadErrorMessage errorMessage={depotsResult.errorMessage} />
+      </PageContainer>
+    )
+  }
+
+  const autosListFilterFields = createAutosListFilterFields(depotsResult.data)
   const autosListPageState: ListPageState<AutoSortField> = {
     path: appRoutes.autos,
     listQuery: getListQueryFromPageSearchParams(
@@ -47,11 +68,8 @@ export default async function AutosPage({ searchParams }: AutosPageProps) {
 
   return (
     <PageContainer>
-      <PageHeader
-        title="Автомобілі"
-        description="Управління автомобілями вашого автопарку та перегляд їхніх характеристик."
-      >
-        <AddAutoModal />
+      <PageHeader title={autosPageTitle} description={autosPageDescription}>
+        <AddAutoModal depots={depotsResult.data} />
       </PageHeader>
 
       <ListFilterPanel
@@ -64,6 +82,7 @@ export default async function AutosPage({ searchParams }: AutosPageProps) {
         <>
           <AutosTable
             autos={autosPageResult.data.items}
+            depots={depotsResult.data}
             listPageState={autosListPageState}
           />
           <ListPagination

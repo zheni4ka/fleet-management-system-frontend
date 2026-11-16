@@ -200,6 +200,7 @@ export const appRoutes = Object.freeze({
   locations: "/location",
   reports: "/report",
   auditLogs: "/audit-log",
+  depots: "/depot",
 })
 
 export const apiEndpoints = Object.freeze({
@@ -211,19 +212,28 @@ export const apiEndpoints = Object.freeze({
   loginWithExternalIdentity: "/api/Account/loginWithExternalIdentity",
   registerAccount: "/api/Account/registerAccount",
   dispatchersPagedList: "/api/Account/getDispatchersPagedList",
-  deleteUser: "/api/Account/deleteUser",
+  updateUserDepots: "/api/Account/updateUserDepots",
+  deactivateUser: "/api/Account/deactivateUser",
+  reactivateUser: "/api/Account/reactivateUser",
+  depots: "/api/Depot/getDepots",
+  createDepot: "/api/Depot/createDepot",
+  updateDepot: "/api/Depot/updateDepot",
+  deleteDepot: "/api/Depot/deleteDepot",
   createAuto: "/api/Auto/createAuto",
   updateAuto: "/api/Auto/updateAuto",
   deleteAuto: "/api/Auto/deleteAuto",
+  restoreAuto: "/api/Auto/restoreAuto",
   autosPagedList: "/api/Auto/getAutosPagedList",
   autoLookupOptions: "/api/Auto/getAutoLookupOptions",
   createDriver: "/api/Driver/createDriver",
   updateDriver: "/api/Driver/updateDriver",
   deleteDriver: "/api/Driver/deleteDriver",
+  restoreDriver: "/api/Driver/restoreDriver",
   driversPagedList: "/api/Driver/getDriversPagedList",
   driverLookupOptions: "/api/Driver/getDriverLookupOptions",
   createLocation: "/api/Location/createLocation",
   deleteLocation: "/api/Location/deleteLocation",
+  restoreLocation: "/api/Location/restoreLocation",
   locationsPagedList: "/api/Location/getLocationsPagedList",
   locationLookupOptions: "/api/Location/getLocationLookupOptions",
   createRoute: "/api/Route/createRoute",
@@ -259,6 +269,8 @@ export const listFilterSearchParamNames = Object.freeze({
   departureToDate: "departureToDate",
   driverId: "driverId",
   autoId: "autoId",
+  depotId: "depotId",
+  isArchived: "isArchived",
 })
 
 export const routesPeriodSearchParamNames: Readonly<{
@@ -277,7 +289,16 @@ export const listPaging = Object.freeze({
 export const listFilterTexts = Object.freeze({
   statusLabel: "Статус",
   allStatusesOptionLabel: "Усі статуси",
+  depotLabel: "Депо",
+  allDepotsOptionLabel: "Усі депо",
+  archiveStateLabel: "Стан",
+  activeRecordsOptionLabel: "Активні",
+  archivedRecordsOptionLabel: "Архівні",
+  archivedBadgeLabel: "В архіві",
+  deactivatedBadgeLabel: "Деактивовано",
 })
+
+export const archivedRecordsFilterValue = "true"
 
 export const routesPageTexts = Object.freeze({
   title: "Маршрути",
@@ -312,6 +333,10 @@ export const iconActionLabels = Object.freeze({
   delete: "Видалити",
   maintenance: "Технічне обслуговування",
   resetPassword: "Скинути пароль",
+  restore: "Відновити з архіву",
+  deactivate: "Деактивувати",
+  reactivate: "Активувати",
+  editDepots: "Змінити депо",
   viewOnMap: "Показати маршрут на карті",
 })
 
@@ -399,6 +424,7 @@ export const headerNavigationLinks: ReadonlyArray<NavigationLink> =
     { href: appRoutes.locations, label: "Локації", isAdminOnly: true },
     { href: appRoutes.reports, label: "Звіти", isAdminOnly: false },
     { href: appRoutes.auditLogs, label: "Журнал дій", isAdminOnly: true },
+    { href: appRoutes.depots, label: "Депо", isAdminOnly: true },
   ])
 
 export const fastAccessNavigationLinks: ReadonlyArray<NavigationLink> =
@@ -425,6 +451,7 @@ export const autosTableColumns: ReadonlyArray<TableColumn<AutoSortField>> =
     { label: "Колір", className: "w-1/6", sortField: AutoSortField.Color },
     { label: "Статус", className: "w-1/6", sortField: AutoSortField.Status },
     { label: "Номер", className: "w-1/6", sortField: AutoSortField.Number },
+    { label: "Депо", className: "w-1/6" },
     { label: "Операції", className: "w-1/6 text-center" },
   ])
 
@@ -447,6 +474,7 @@ export const driversTableColumns: ReadonlyArray<TableColumn<DriverSortField>> =
       className: "w-1/6",
       sortField: DriverSortField.LicenseNumber,
     },
+    { label: "Депо", className: "w-1/6" },
     { label: "Операції", className: "w-1/6 text-center" },
   ])
 
@@ -460,7 +488,14 @@ export const dispatchersTableColumns: ReadonlyArray<
     sortField: DispatcherSortField.Username,
   },
   { label: "Email", className: "w-1/4", sortField: DispatcherSortField.Email },
+  { label: "Депо", className: "w-1/4" },
   { label: "Операції", className: "w-1/4 text-center" },
+])
+
+export const depotsTableColumns: ReadonlyArray<TableColumn> = Object.freeze([
+  { label: "ID", className: "w-1/6" },
+  { label: "Назва", className: "w-1/2" },
+  { label: "Операції", className: "w-1/3 text-center" },
 ])
 
 export const recentRoutesTableColumns: ReadonlyArray<TableColumn> =
@@ -566,5 +601,17 @@ export const auditActionLabels: Readonly<Record<AuditAction, string>> =
     [AuditAction.UserDeleted]: "Видалено користувача",
     [AuditAction.UserPasswordReset]: "Скинуто пароль користувача",
     [AuditAction.UserPasswordChanged]: "Користувач змінив пароль",
-    [AuditAction.UserProvisioned]: "Створено користувача через корпоративний вхід",
+    [AuditAction.UserProvisioned]:
+      "Створено користувача через корпоративний вхід",
   })
+
+export const userDepotsFormMessages = Object.freeze({
+  depotsRequired: "Диспетчеру потрібно призначити щонайменше одне депо.",
+  depotsUpdated:
+    "Депо диспетчера оновлено. Зміни застосуються під час наступного оновлення сесії (до 15 хвилин).",
+})
+
+export const depotNameConstraints = Object.freeze({
+  maxLength: 100,
+  nameRequiredMessage: "Вкажіть назву депо.",
+})

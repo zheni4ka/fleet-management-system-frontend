@@ -37,6 +37,16 @@ export function RouteFormFields<
   const locationOptions = createLocationSearchableSelectOptions(
     locationLookupOptions
   )
+  const selectedAutoLookupOption = autoLookupOptions.find(
+    (autoLookupOption) => String(autoLookupOption.id) === routeFormValues.autoId
+  )
+  const selectableDriverLookupOptions =
+    selectedAutoLookupOption === undefined
+      ? driverLookupOptions
+      : driverLookupOptions.filter(
+          (driverLookupOption) =>
+            driverLookupOption.depotId === selectedAutoLookupOption.depotId
+        )
 
   const updateRouteAssignmentFormValues = (
     changedValues: Partial<RouteAssignmentFormValues>
@@ -76,7 +86,9 @@ export function RouteFormFields<
       <div className="grid gap-3 sm:grid-cols-2">
         <FormField label="Водій">
           <SearchableSelect
-            options={createDriverSearchableSelectOptions(driverLookupOptions)}
+            options={createDriverSearchableSelectOptions(
+              selectableDriverLookupOptions
+            )}
             selectedValue={routeFormValues.driverId}
             onSelectedValueChange={(driverId) =>
               updateRouteAssignmentFormValues({ driverId })

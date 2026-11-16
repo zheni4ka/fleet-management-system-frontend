@@ -14,9 +14,13 @@ import {
   createEmptyAutoFormValues,
   getAutoFormValidationError,
 } from "@/lib/forms/auto-form"
-import { HttpMethod } from "@/lib/types"
+import { Depot, HttpMethod } from "@/lib/types"
 
-export default function AddAutoModal() {
+interface AddAutoModalProps {
+  depots: ReadonlyArray<Depot>
+}
+
+export default function AddAutoModal({ depots }: AddAutoModalProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [autoFormValues, setAutoFormValues] = useState(
     createEmptyAutoFormValues
@@ -62,6 +66,7 @@ export default function AddAutoModal() {
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <AutoFormFields
+            depots={depots}
             autoFormValues={autoFormValues}
             onAutoFormValuesChange={setAutoFormValues}
           />

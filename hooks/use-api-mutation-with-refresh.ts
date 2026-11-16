@@ -12,15 +12,20 @@ export function useApiMutationWithRefresh() {
   const [isApiMutationRunning, setIsApiMutationRunning] = useState(false)
 
   const runApiMutation = async (
-    createApiMutationRequest: () => Promise<void>,
+    createApiMutationRequest: () => Promise<string | void>,
     toastMessages: ApiMutationToastMessages,
     handleConcurrencyConflict?: () => void
   ): Promise<boolean> => {
     setIsApiMutationRunning(true)
     const mutationToastId = toast.loading(toastMessages.loading)
     try {
-      await createApiMutationRequest()
-      toast.success(toastMessages.success, { id: mutationToastId })
+      const successMessageOverride = await createApiMutationRequest()
+      toast.success(
+        typeof successMessageOverride === "string"
+          ? successMessageOverride
+          : toastMessages.success,
+        { id: mutationToastId }
+      )
       router.refresh()
       return true
     } catch (error) {

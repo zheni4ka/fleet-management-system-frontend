@@ -2,6 +2,7 @@ import {
   auditActionLabels,
   autoColorOptions,
   autoStatusLabels,
+  archivedRecordsFilterValue,
   listFilterSearchParamNames,
   listFilterTexts,
   listSearchParamNames,
@@ -15,11 +16,13 @@ import {
   AuditAction,
   AutoLookupOption,
   AutoStatus,
+  Depot,
   DriverLookupOption,
   ListFilterField,
   ListFilterFieldKind,
   ListFilterOption,
   RouteStatus,
+  SelectListFilterField,
   TextListFilterField,
 } from "@/lib/types"
 
@@ -29,6 +32,36 @@ function createListSearchFilterField(placeholder: string): TextListFilterField {
     name: listSearchParamNames.search,
     label: "Пошук",
     placeholder,
+  }
+}
+
+function createArchiveStateListFilterField(): SelectListFilterField {
+  return {
+    kind: ListFilterFieldKind.Select,
+    name: listFilterSearchParamNames.isArchived,
+    label: listFilterTexts.archiveStateLabel,
+    allOptionsLabel: listFilterTexts.activeRecordsOptionLabel,
+    options: [
+      {
+        value: archivedRecordsFilterValue,
+        label: listFilterTexts.archivedRecordsOptionLabel,
+      },
+    ],
+  }
+}
+
+function createDepotListFilterField(
+  depots: ReadonlyArray<Depot>
+): SelectListFilterField {
+  return {
+    kind: ListFilterFieldKind.Select,
+    name: listFilterSearchParamNames.depotId,
+    label: listFilterTexts.depotLabel,
+    allOptionsLabel: listFilterTexts.allDepotsOptionLabel,
+    options: depots.map((depot) => ({
+      value: String(depot.id),
+      label: depot.name,
+    })),
   }
 }
 
@@ -42,8 +75,10 @@ function createListFilterOptionsFromLabels<TEnumValue extends string>(
   }))
 }
 
-export const autosListFilterFields: ReadonlyArray<ListFilterField> =
-  Object.freeze([
+export function createAutosListFilterFields(
+  depots: ReadonlyArray<Depot>
+): ReadonlyArray<ListFilterField> {
+  return [
     createListSearchFilterField("ID, марка, модель, номер"),
     {
       kind: ListFilterFieldKind.Select,
@@ -62,10 +97,20 @@ export const autosListFilterFields: ReadonlyArray<ListFilterField> =
         label: autoColor,
       })),
     },
-  ])
+    createDepotListFilterField(depots),
+    createArchiveStateListFilterField(),
+  ]
+}
 
-export const driversListFilterFields: ReadonlyArray<ListFilterField> =
-  Object.freeze([createListSearchFilterField("ID, ПІБ або посвідчення")])
+export function createDriversListFilterFields(
+  depots: ReadonlyArray<Depot>
+): ReadonlyArray<ListFilterField> {
+  return [
+    createListSearchFilterField("ID, ПІБ або посвідчення"),
+    createDepotListFilterField(depots),
+    createArchiveStateListFilterField(),
+  ]
+}
 
 export const dispatchersListFilterFields: ReadonlyArray<ListFilterField> =
   Object.freeze([createListSearchFilterField("ID, логін або email")])
@@ -79,6 +124,7 @@ export const locationsListFilterFields: ReadonlyArray<ListFilterField> =
       label: "Країна",
       placeholder: "Наприклад, Ukraine",
     },
+    createArchiveStateListFilterField(),
   ])
 
 export const auditLogsListFilterFields: ReadonlyArray<ListFilterField> =
@@ -109,7 +155,8 @@ export const auditLogsListFilterFields: ReadonlyArray<ListFilterField> =
 
 export function createRoutesListFilterFields(
   autoLookupOptions: ReadonlyArray<AutoLookupOption>,
-  driverLookupOptions: ReadonlyArray<DriverLookupOption>
+  driverLookupOptions: ReadonlyArray<DriverLookupOption>,
+  depots: ReadonlyArray<Depot>
 ): ReadonlyArray<ListFilterField> {
   return [
     {
@@ -165,6 +212,7 @@ export function createRoutesListFilterFields(
         label: formatAutoTitleWithNumber(autoLookupOption),
       })),
     },
+    createDepotListFilterField(depots),
     createListSearchFilterField("ID маршруту, місто або країна"),
   ]
 }

@@ -1,7 +1,13 @@
-import { Driver, DriverFormValues } from "@/lib/types"
+import { CreateDriverRequestModel, Driver, DriverFormValues } from "@/lib/types"
 
 export function createEmptyDriverFormValues(): DriverFormValues {
-  return { name: "", surname: "", patronymic: "", licenseNumber: "" }
+  return {
+    name: "",
+    surname: "",
+    patronymic: "",
+    licenseNumber: "",
+    depotId: "",
+  }
 }
 
 export function createDriverFormValuesFromDriver(
@@ -12,6 +18,7 @@ export function createDriverFormValuesFromDriver(
     surname: driver.surname,
     patronymic: driver.patronymic,
     licenseNumber: driver.licenseNumber,
+    depotId: String(driver.depotId),
   }
 }
 
@@ -23,20 +30,22 @@ export function getDriverFormValidationError(
     driverFormValues.surname,
     driverFormValues.patronymic,
     driverFormValues.licenseNumber,
+    driverFormValues.depotId,
   ].some((requiredFieldValue) => requiredFieldValue.trim() === "")
   if (hasEmptyRequiredField) {
-    return "Будь ласка, заповніть ім'я, прізвище, по батькові та номер посвідчення."
+    return "Будь ласка, заповніть ім'я, прізвище, по батькові, номер посвідчення та депо."
   }
   return null
 }
 
 export function createDriverRequestBody(
   driverFormValues: DriverFormValues
-): DriverFormValues {
+): CreateDriverRequestModel {
   return {
     name: driverFormValues.name.trim(),
     surname: driverFormValues.surname.trim(),
     patronymic: driverFormValues.patronymic.trim(),
     licenseNumber: driverFormValues.licenseNumber.trim(),
+    depotId: Number(driverFormValues.depotId),
   }
 }

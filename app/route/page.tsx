@@ -26,6 +26,7 @@ import {
 import { ListPageState, PageSearchParams, RouteSortField } from "@/lib/types"
 import { createPagedListSchema } from "@/lib/schemas/paged-list-schema"
 import { routeSchema } from "@/lib/schemas/route-schema"
+import { depotsSchema } from "@/lib/schemas/depot-schema"
 import { z } from "zod"
 import { autoLookupOptionSchema } from "@/lib/schemas/auto-lookup-option-schema"
 import { driverLookupOptionSchema } from "@/lib/schemas/driver-lookup-option-schema"
@@ -44,6 +45,7 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
     autoLookupOptionsResult,
     driverLookupOptionsResult,
     locationLookupOptionsResult,
+    depotsResult,
   ] = await Promise.all([
     fetchFromApi(
       apiEndpoints.autoLookupOptions,
@@ -60,12 +62,14 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
       authToken,
       z.array(locationLookupOptionSchema)
     ),
+    fetchFromApi(apiEndpoints.depots, authToken, depotsSchema),
   ])
 
   if (
     !autoLookupOptionsResult.isSucceeded ||
     !driverLookupOptionsResult.isSucceeded ||
-    !locationLookupOptionsResult.isSucceeded
+    !locationLookupOptionsResult.isSucceeded ||
+    !depotsResult.isSucceeded
   ) {
     return (
       <PageContainer>
@@ -78,6 +82,7 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
             autoLookupOptionsResult,
             driverLookupOptionsResult,
             locationLookupOptionsResult,
+            depotsResult,
           ])}
         />
       </PageContainer>
@@ -86,7 +91,8 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
 
   const routesListFilterFields = createRoutesListFilterFields(
     autoLookupOptionsResult.data,
-    driverLookupOptionsResult.data
+    driverLookupOptionsResult.data,
+    depotsResult.data
   )
   const routesListPageState: ListPageState<RouteSortField> = {
     path: appRoutes.routes,

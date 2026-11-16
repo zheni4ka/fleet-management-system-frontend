@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { FormField } from "@/components/ui/form-field"
 import ModalWindow from "@/components/ui/modal-window"
+import { DepotCheckboxList } from "@/components/forms/depot-checkbox-list"
 import { SubmitButton } from "@/components/ui/submit-button"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
@@ -13,15 +14,25 @@ import {
   accountPasswordConstraints,
   apiEndpoints,
   passwordPolicyMessages,
+  userDepotsFormMessages,
 } from "@/lib/constants"
 import { getPasswordPolicyViolationMessage } from "@/lib/forms/password-policy"
-import { HttpMethod, UserRole } from "@/lib/types"
+import { Depot, HttpMethod, UserRole } from "@/lib/types"
 
-export default function AddDispatcherModal() {
+interface AddDispatcherModalProps {
+  depots: ReadonlyArray<Depot>
+}
+
+export default function AddDispatcherModal({
+  depots,
+}: AddDispatcherModalProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [selectedDepotIds, setSelectedDepotIds] = useState<
+    ReadonlyArray<number>
+  >([])
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -33,6 +44,10 @@ export default function AddDispatcherModal() {
       toast.error(passwordPolicyViolationMessage)
       return
     }
+    if (selectedDepotIds.length === 0) {
+      toast.error(userDepotsFormMessages.depotsRequired)
+      return
+    }
 
     const isDispatcherRegistered = await runApiMutation(
       () =>
@@ -41,6 +56,7 @@ export default function AddDispatcherModal() {
           email: email.trim(),
           password,
           role: UserRole.Dispatcher,
+          depotIds: selectedDepotIds,
         }),
       {
         loading: "Створення облікового запису...",
@@ -52,6 +68,7 @@ export default function AddDispatcherModal() {
       setUsername("")
       setEmail("")
       setPassword("")
+      setSelectedDepotIds([])
       setIsModalOpen(false)
     }
   }
@@ -96,6 +113,11 @@ export default function AddDispatcherModal() {
               placeholder={passwordPolicyMessages.hint}
             />
           </FormField>
+          <DepotCheckboxList
+            depots={depots}
+            selectedDepotIds={selectedDepotIds}
+            onSelectedDepotIdsChange={setSelectedDepotIds}
+          />
           <SubmitButton isSubmitting={isApiMutationRunning}>
             Зберегти
           </SubmitButton>

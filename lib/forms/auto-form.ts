@@ -12,6 +12,7 @@ export function createEmptyAutoFormValues(): AutoFormValues {
     color: "",
     number: "",
     capacity: "",
+    depotId: "",
   }
 }
 
@@ -22,6 +23,7 @@ export function createAutoFormValuesFromAuto(auto: Auto): AutoFormValues {
     color: auto.color,
     number: auto.number,
     capacity: String(auto.capacity),
+    depotId: String(auto.depotId),
   }
 }
 
@@ -41,6 +43,7 @@ export function getAutoFormValidationError(
     autoFormValues.model,
     autoFormValues.color,
     autoFormValues.number,
+    autoFormValues.depotId,
   ].some((requiredFieldValue) => requiredFieldValue.trim() === "")
   if (hasEmptyRequiredField) {
     return "Будь ласка, заповніть всі поля форми."
@@ -66,6 +69,7 @@ export function createCreateAutoRequestModel(
     color: autoFormValues.color,
     number: autoFormValues.number.trim(),
     capacity: autoCapacity,
+    depotId: Number(autoFormValues.depotId),
   }
 }
 
