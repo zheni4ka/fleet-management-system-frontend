@@ -4,7 +4,7 @@ import { useEffect, useId, useState, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff } from "lucide-react"
 import toast from "react-hot-toast"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { FormField } from "@/components/ui/form-field"
 import { ChangeTemporaryPasswordForm } from "@/components/change-temporary-password-form"
@@ -16,8 +16,11 @@ import {
   httpContentTypes,
   httpHeaderNames,
   httpStatusCodes,
+  loginRedirectReasonMessages,
+  loginSearchParamNames,
 } from "@/lib/constants"
 import { createLoginPath } from "@/lib/login-redirect"
+import { cn } from "@/lib/utils"
 import {
   HttpMethod,
   LoginRedirectReason,
@@ -29,7 +32,8 @@ const invalidCredentialsErrorMessage =
 
 interface LoginFormProps {
   returnPath: string
-  isSessionExpired: boolean
+  loginRedirectReason: LoginRedirectReason | null
+  isSingleSignOnConfigured: boolean
 }
 
 async function isPasswordChangeRequiredResponse(
@@ -42,7 +46,11 @@ async function isPasswordChangeRequiredResponse(
   )
 }
 
-export function LoginForm({ returnPath, isSessionExpired }: LoginFormProps) {
+export function LoginForm({
+  returnPath,
+  loginRedirectReason,
+  isSingleSignOnConfigured,
+}: LoginFormProps) {
   const router = useRouter()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
@@ -56,23 +64,25 @@ export function LoginForm({ returnPath, isSessionExpired }: LoginFormProps) {
   const passwordInputId = useId()
 
   useEffect(() => {
-    if (!isSessionExpired) {
+    if (loginRedirectReason === null) {
       return
     }
-    const clearExpiredSession = async () => {
-      try {
-        await fetch(bffRoutes.sessionLogout, { method: HttpMethod.Post })
-      } catch (error) {
-        console.error("Не вдалося очистити завершену сесію:", error)
+    const clearSessionAndShowLoginRedirectReason = async () => {
+      if (loginRedirectReason === LoginRedirectReason.SessionExpired) {
+        try {
+          await fetch(bffRoutes.sessionLogout, { method: HttpMethod.Post })
+        } catch (error) {
+          console.error("Не вдалося очистити завершену сесію:", error)
+        }
       }
-      toast.error(commonUiTexts.sessionExpiredMessage, {
-        id: LoginRedirectReason.SessionExpired,
+      toast.error(loginRedirectReasonMessages[loginRedirectReason], {
+        id: loginRedirectReason,
       })
       router.replace(createLoginPath(returnPath, null))
       router.refresh()
     }
-    void clearExpiredSession()
-  }, [isSessionExpired, returnPath, router])
+    void clearSessionAndShowLoginRedirectReason()
+  }, [loginRedirectReason, returnPath, router])
 
   const openReturnPath = () => {
     router.push(returnPath)
@@ -205,6 +215,17 @@ export function LoginForm({ returnPath, isSessionExpired }: LoginFormProps) {
             >
               {isLoginRequestRunning ? "Вхід..." : "Увійти"}
             </Button>
+            {isSingleSignOnConfigured && (
+              <a
+                href={`${bffRoutes.singleSignOnStart}?${new URLSearchParams({ [loginSearchParamNames.returnUrl]: returnPath })}`}
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "w-full"
+                )}
+              >
+                Увійти через Microsoft
+              </a>
+            )}
           </form>
         )}
       </div>

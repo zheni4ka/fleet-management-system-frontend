@@ -16,4 +16,7 @@ export enum AuditAction {
   MaintenanceDeleted = "MaintenanceDeleted",
   UserRegistered = "UserRegistered",
   UserDeleted = "UserDeleted",
+  UserPasswordReset = "UserPasswordReset",
+  UserPasswordChanged = "UserPasswordChanged",
+  UserProvisioned = "UserProvisioned",
 }

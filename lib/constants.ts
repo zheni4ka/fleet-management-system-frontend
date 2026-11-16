@@ -8,6 +8,7 @@ import { DispatcherSortField } from "@/lib/types/dispatcher-sort-field"
 import { DriverFormField } from "@/lib/types/driver-form-field"
 import { DriverSortField } from "@/lib/types/driver-sort-field"
 import { LocationSortField } from "@/lib/types/location-sort-field"
+import { LoginRedirectReason } from "@/lib/types/login-redirect-reason"
 import { NavigationLink } from "@/lib/types/navigation-link"
 import { RouteSortField } from "@/lib/types/route-sort-field"
 import { RouteStatus } from "@/lib/types/route-status"
@@ -21,6 +22,7 @@ import { UserRole } from "@/lib/types/user-role"
 export const cookieNames = Object.freeze({
   accessToken: "accessToken",
   refreshToken: "refreshToken",
+  singleSignOnTransaction: "singleSignOnTransaction",
 })
 
 export const bffRoutes = Object.freeze({
@@ -28,7 +30,28 @@ export const bffRoutes = Object.freeze({
   sessionLogout: "/api/session/logout",
   sessionChangePassword: "/api/session/change-password",
   sessionPrefix: "/api/session/",
+  singleSignOnStart: "/api/session/sso/start",
+  singleSignOnCallback: "/api/session/sso/callback",
   apiProxy: "/api/proxy",
+})
+
+export const singleSignOnSettingsEnvironmentVariableNames = Object.freeze({
+  authority: "OIDC_AUTHORITY",
+  clientId: "OIDC_CLIENT_ID",
+  clientSecret: "OIDC_CLIENT_SECRET",
+  appBaseUrl: "APP_BASE_URL",
+})
+
+export const openIdConnectProtocolValues = Object.freeze({
+  metadataPath: "/.well-known/openid-configuration",
+  responseTypeCode: "code",
+  responseModeQuery: "query",
+  scope: "openid profile email",
+  codeChallengeMethod: "S256",
+  grantTypeAuthorizationCode: "authorization_code",
+  discoveryCacheSeconds: 3600,
+  transactionCookieMaxAgeSeconds: 10 * 60,
+  randomValueByteLength: 32,
 })
 
 export const sessionRefreshSettings = Object.freeze({
@@ -57,6 +80,7 @@ export const passwordPolicyMessages = Object.freeze({
 
 export const apiProblemTypes = Object.freeze({
   passwordChangeRequired: "passwordChangeRequired",
+  externalIdentityAccessDenied: "externalIdentityAccessDenied",
 })
 
 export const httpHeaderNames = Object.freeze({
@@ -82,6 +106,8 @@ export const bffErrorMessages = Object.freeze({
   invalidRequestBody: "Некоректні дані запиту.",
   unsupportedApiPath: "Запитаний шлях API не підтримується.",
   logoutFailed: "Не вдалося вийти з системи. Спробуйте ще раз.",
+  singleSignOnNotConfigured:
+    "Вхід через корпоративний обліковий запис не налаштовано.",
 })
 
 export const backendApiPathPrefixSegment = "api"
@@ -89,6 +115,7 @@ export const backendApiPathPrefixSegment = "api"
 export const httpContentTypes = Object.freeze({
   json: "application/json",
   problemJson: "application/problem+json",
+  formUrlEncoded: "application/x-www-form-urlencoded",
 })
 
 export const browserStorageKeys = Object.freeze({
@@ -132,6 +159,22 @@ export const commonUiTexts = Object.freeze({
     "Сервер повернув дані в неочікуваному форматі.",
 })
 
+export const openIdConnectAuthorizationResponseParamNames = Object.freeze({
+  code: "code",
+  state: "state",
+  error: "error",
+})
+
+export const loginRedirectReasonMessages: Readonly<
+  Record<LoginRedirectReason, string>
+> = Object.freeze({
+  [LoginRedirectReason.SessionExpired]: commonUiTexts.sessionExpiredMessage,
+  [LoginRedirectReason.SingleSignOnFailed]:
+    "Не вдалося увійти через корпоративний обліковий запис. Спробуйте ще раз.",
+  [LoginRedirectReason.SingleSignOnAccessDenied]:
+    "Ваш корпоративний обліковий запис не має доступу до системи. Зверніться до адміністратора.",
+})
+
 export const userRoleLabels: Readonly<Record<UserRole, string>> = Object.freeze(
   {
     [UserRole.Admin]: "Адміністратор",
@@ -161,6 +204,7 @@ export const apiEndpoints = Object.freeze({
   logout: "/api/Account/logout",
   changePassword: "/api/Account/changePassword",
   resetUserPassword: "/api/Account/resetUserPassword",
+  loginWithExternalIdentity: "/api/Account/loginWithExternalIdentity",
   registerAccount: "/api/Account/registerAccount",
   dispatchersPagedList: "/api/Account/getDispatchersPagedList",
   deleteUser: "/api/Account/deleteUser",
@@ -516,4 +560,7 @@ export const auditActionLabels: Readonly<Record<AuditAction, string>> =
     [AuditAction.MaintenanceDeleted]: "Видалено техобслуговування",
     [AuditAction.UserRegistered]: "Зареєстровано користувача",
     [AuditAction.UserDeleted]: "Видалено користувача",
+    [AuditAction.UserPasswordReset]: "Скинуто пароль користувача",
+    [AuditAction.UserPasswordChanged]: "Користувач змінив пароль",
+    [AuditAction.UserProvisioned]: "Створено користувача через корпоративний вхід",
   })
