@@ -38,6 +38,7 @@ export function createCompleteAutoMaintenanceRequestModel(
 ): UpdateAutoMaintenanceRequestModel {
   return {
     id: autoMaintenance.id,
+    rowVersion: autoMaintenance.rowVersion,
     name: autoMaintenance.name,
     description: autoMaintenance.description,
     serviceDate: autoMaintenance.serviceDate,

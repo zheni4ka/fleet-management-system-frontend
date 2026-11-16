@@ -46,13 +46,15 @@ export default function EditDriverModal({ driver }: EditDriverModalProps) {
       () =>
         sendApiRequest(apiEndpoints.updateDriver, HttpMethod.Put, {
           id: driver.id,
+          rowVersion: driver.rowVersion,
           ...createDriverRequestBody(driverFormValues),
         }),
       {
         loading: "Збереження змін...",
         success: "Водія успішно оновлено!",
         error: "Не вдалося оновити водія",
-      }
+      },
+      () => setIsModalOpen(false)
     )
     if (isDriverUpdated) {
       setIsModalOpen(false)

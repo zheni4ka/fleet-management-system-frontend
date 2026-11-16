@@ -2,5 +2,6 @@ import { CreateAutoMaintenanceRequestModel } from "./create-auto-maintenance-req
 
 export interface UpdateAutoMaintenanceRequestModel extends CreateAutoMaintenanceRequestModel {
   id: number
+  rowVersion: string
   isCompleted: boolean
 }

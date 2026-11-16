@@ -7,4 +7,5 @@ export const autoMaintenanceSchema = z.object({
   serviceDate: z.string(),
   autoId: z.number().int(),
   isCompleted: z.boolean(),
+  rowVersion: z.base64().min(1),
 })

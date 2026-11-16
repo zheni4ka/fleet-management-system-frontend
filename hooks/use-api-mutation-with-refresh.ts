@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
+import { ConcurrencyConflictError } from "@/lib/concurrency-conflict-error"
 import { SessionExpiredError } from "@/lib/session-expired-error"
 import { ApiMutationToastMessages } from "@/lib/types"
 
@@ -12,7 +13,8 @@ export function useApiMutationWithRefresh() {
 
   const runApiMutation = async (
     createApiMutationRequest: () => Promise<void>,
-    toastMessages: ApiMutationToastMessages
+    toastMessages: ApiMutationToastMessages,
+    handleConcurrencyConflict?: () => void
   ): Promise<boolean> => {
     setIsApiMutationRunning(true)
     const mutationToastId = toast.loading(toastMessages.loading)
@@ -24,6 +26,12 @@ export function useApiMutationWithRefresh() {
     } catch (error) {
       if (error instanceof SessionExpiredError) {
         toast.dismiss(mutationToastId)
+        return false
+      }
+      if (error instanceof ConcurrencyConflictError) {
+        toast.error(error.message, { id: mutationToastId })
+        handleConcurrencyConflict?.()
+        router.refresh()
         return false
       }
       console.error(toastMessages.error, error)

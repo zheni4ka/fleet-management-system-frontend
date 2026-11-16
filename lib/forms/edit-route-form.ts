@@ -17,11 +17,12 @@ export function createEditRouteFormValuesFromRoute(
 }
 
 export function createUpdateRouteRequestModel(
-  routeId: number,
+  route: Route,
   editRouteFormValues: EditRouteFormValues
 ): UpdateRouteRequestModel {
   return {
-    id: routeId,
+    id: route.id,
+    rowVersion: route.rowVersion,
     startLocationId: Number(editRouteFormValues.startLocationId),
     destinationLocationId: Number(editRouteFormValues.destinationLocationId),
     autoId: Number(editRouteFormValues.autoId),

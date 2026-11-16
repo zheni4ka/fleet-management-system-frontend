@@ -6,4 +6,5 @@ export const driverSchema = z.object({
   surname: z.string(),
   patronymic: z.string(),
   licenseNumber: z.string(),
+  rowVersion: z.base64().min(1),
 })

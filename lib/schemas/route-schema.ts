@@ -19,4 +19,5 @@ export const routeSchema = z.object({
   driverName: z.string(),
   driverSurname: z.string(),
   status: z.enum(RouteStatus),
+  rowVersion: z.base64().min(1),
 })

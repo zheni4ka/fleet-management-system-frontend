@@ -79,13 +79,14 @@ export default function EditRouteModal({
         sendApiRequest(
           apiEndpoints.updateRoute,
           HttpMethod.Put,
-          createUpdateRouteRequestModel(route.id, editRouteFormValues)
+          createUpdateRouteRequestModel(route, editRouteFormValues)
         ),
       {
         loading: "Збереження змін маршруту...",
         success: "Маршрут успішно оновлено!",
         error: "Не вдалося оновити маршрут",
-      }
+      },
+      () => setIsModalOpen(false)
     )
     if (isRouteUpdated) {
       setIsModalOpen(false)

@@ -9,4 +9,5 @@ export const autoSchema = z.object({
   number: z.string(),
   capacity: z.number(),
   status: z.enum(AutoStatus),
+  rowVersion: z.base64().min(1),
 })

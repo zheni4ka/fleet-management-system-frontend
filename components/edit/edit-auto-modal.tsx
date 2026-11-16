@@ -46,13 +46,14 @@ export default function EditAutoModal({ auto }: EditAutoModalProps) {
         sendApiRequest(
           apiEndpoints.updateAuto,
           HttpMethod.Put,
-          createUpdateAutoRequestModel(auto.id, autoFormValues)
+          createUpdateAutoRequestModel(auto, autoFormValues)
         ),
       {
         loading: "Збереження змін...",
         success: "Автомобіль успішно оновлено!",
         error: "Не вдалося оновити автомобіль",
-      }
+      },
+      () => setIsModalOpen(false)
     )
     if (isAutoUpdated) {
       setIsModalOpen(false)

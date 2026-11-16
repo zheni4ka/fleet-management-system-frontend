@@ -1,11 +1,13 @@
 import { z } from "zod"
 import {
+  apiProblemTypes,
   bffRoutes,
   httpContentTypes,
   httpHeaderNames,
   httpStatusCodes,
 } from "@/lib/constants"
-import { getApiErrorMessage } from "@/lib/api-error-message"
+import { getApiErrorMessage, getApiProblemType } from "@/lib/api-error-message"
+import { ConcurrencyConflictError } from "@/lib/concurrency-conflict-error"
 import { parseApiResponseBody } from "@/lib/api-response-body"
 import { createLoginPath } from "@/lib/login-redirect"
 import { SessionExpiredError } from "@/lib/session-expired-error"
@@ -35,6 +37,13 @@ async function sendProxiedApiRequest(
 
   if (response.status === httpStatusCodes.unauthorized) {
     throw endExpiredSession()
+  }
+  const isConcurrencyConflictResponse =
+    response.status === httpStatusCodes.conflict &&
+    (await getApiProblemType(response.clone())) ===
+      apiProblemTypes.concurrencyConflict
+  if (isConcurrencyConflictResponse) {
+    throw new ConcurrencyConflictError()
   }
   if (!response.ok) {
     throw new Error(await getApiErrorMessage(response))

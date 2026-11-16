@@ -101,7 +101,7 @@ export function RoutesList({
         sendApiRequest(
           apiEndpoints.updateRoute,
           HttpMethod.Put,
-          createUpdateRouteRequestModel(route.id, {
+          createUpdateRouteRequestModel(route, {
             ...createEditRouteFormValuesFromRoute(route),
             status: targetRouteStatus,
           })

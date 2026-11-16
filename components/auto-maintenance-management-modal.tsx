@@ -91,7 +91,8 @@ export default function AutoMaintenanceManagementModal({
         loading: "Завершення ТО...",
         success: "ТО успішно завершено! Авто знову доступне.",
         error: "Помилка при завершенні ТО.",
-      }
+      },
+      () => setIsModalOpen(false)
     )
     if (isMaintenanceCompleted) {
       setIsModalOpen(false)

@@ -81,6 +81,7 @@ export const passwordPolicyMessages = Object.freeze({
 export const apiProblemTypes = Object.freeze({
   passwordChangeRequired: "passwordChangeRequired",
   externalIdentityAccessDenied: "externalIdentityAccessDenied",
+  concurrencyConflict: "concurrencyConflict",
 })
 
 export const httpHeaderNames = Object.freeze({
@@ -98,6 +99,7 @@ export const httpStatusCodes = Object.freeze({
   unauthorized: 401,
   forbidden: 403,
   notFound: 404,
+  conflict: 409,
   serviceUnavailable: 503,
 })
 
@@ -149,6 +151,8 @@ export const loginSearchParamNames = Object.freeze({
 export const commonUiTexts = Object.freeze({
   sessionExpiredMessage: "Сесія завершилась. Увійдіть у систему повторно.",
   serverUnavailableMessage: "Сервер недоступний. Спробуйте пізніше.",
+  concurrencyConflictMessage:
+    "Запис змінив інший користувач. Дані на сторінці оновлено — перевірте їх і повторіть дію.",
   nothingFoundMessage: "Нічого не знайдено за вашим запитом.",
   errorPageTitle: "Щось пішло не так",
   retryButtonLabel: "Спробувати ще",

@@ -70,11 +70,12 @@ export function createCreateAutoRequestModel(
 }
 
 export function createUpdateAutoRequestModel(
-  autoId: number,
+  auto: Auto,
   autoFormValues: AutoFormValues
 ): UpdateAutoRequestModel {
   return {
-    id: autoId,
+    id: auto.id,
+    rowVersion: auto.rowVersion,
     ...createCreateAutoRequestModel(autoFormValues),
   }
 }
