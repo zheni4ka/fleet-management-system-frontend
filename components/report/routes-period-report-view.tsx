@@ -1,4 +1,5 @@
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
+import { formatUtcDateTimeWithTimeZone } from "@/lib/zoned-date-time"
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import {
@@ -8,7 +9,6 @@ import {
 } from "@/lib/constants"
 import {
   formatIsoDateOnly,
-  formatDateTime,
   formatDriverFullName,
   formatHours,
   formatRouteDestinationLocationName,
@@ -150,10 +150,16 @@ export function RoutesPeriodReportView({
                     {formatRouteDestinationLocationName(route)}
                   </TableCell>
                   <TableCell className="text-xs">
-                    {formatDateTime(route.departureTime)}
+                    {formatUtcDateTimeWithTimeZone(
+                      route.departureTimeUtc,
+                      route.startLocationTimeZoneId
+                    )}
                   </TableCell>
                   <TableCell className="text-xs">
-                    {formatDateTime(route.arrivalTime)}
+                    {formatUtcDateTimeWithTimeZone(
+                      route.arrivalTimeUtc,
+                      route.destinationLocationTimeZoneId
+                    )}
                   </TableCell>
                   <TableCell>{formatRouteDriverFullName(route)}</TableCell>
                   <TableCell className="text-right">

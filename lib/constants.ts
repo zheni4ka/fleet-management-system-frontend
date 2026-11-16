@@ -8,6 +8,7 @@ import { DispatcherSortField } from "@/lib/types/dispatcher-sort-field"
 import { DriverFormField } from "@/lib/types/driver-form-field"
 import { DriverSortField } from "@/lib/types/driver-sort-field"
 import { LocationSortField } from "@/lib/types/location-sort-field"
+import { ListFilterOption } from "@/lib/types/list-filter-option"
 import { LoginRedirectReason } from "@/lib/types/login-redirect-reason"
 import { NavigationLink } from "@/lib/types/navigation-link"
 import { RouteSortField } from "@/lib/types/route-sort-field"
@@ -625,3 +626,15 @@ export const traceContextFormat = Object.freeze({
   parentIdByteLength: 8,
   traceparentPattern: /^00-([0-9a-f]{32})-([0-9a-f]{16})-[0-9a-f]{2}$/,
 })
+
+export const locationTimeZoneOptions: ReadonlyArray<ListFilterOption> =
+  Object.freeze([
+    { value: "Europe/Kyiv", label: "Europe/Kyiv — Україна" },
+    { value: "Europe/Warsaw", label: "Europe/Warsaw — Польща" },
+    { value: "Europe/Chisinau", label: "Europe/Chisinau — Молдова" },
+    { value: "Europe/Bucharest", label: "Europe/Bucharest — Румунія" },
+    { value: "Europe/Budapest", label: "Europe/Budapest — Угорщина" },
+    { value: "Europe/Bratislava", label: "Europe/Bratislava — Словаччина" },
+    { value: "Europe/Vilnius", label: "Europe/Vilnius — Литва" },
+    { value: "Europe/Berlin", label: "Europe/Berlin — Німеччина" },
+  ])

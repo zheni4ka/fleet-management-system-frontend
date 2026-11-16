@@ -1,7 +1,9 @@
 import { routeFormValidationMessages } from "@/lib/constants"
+import { convertZonedLocalDateTimeToUtcIsoString } from "@/lib/zoned-date-time"
 import {
   AddRouteFormValues,
   CreateRouteRequestModel,
+  LocationLookupOption,
   RouteAssignmentFormValues,
   RouteStatus,
 } from "@/lib/types"
@@ -10,8 +12,8 @@ export function createEmptyAddRouteFormValues(): AddRouteFormValues {
   return {
     startLocationId: "",
     destinationLocationId: "",
-    departureTime: "",
-    arrivalTime: "",
+    departureLocalDateTime: "",
+    arrivalLocalDateTime: "",
     autoId: "",
     driverId: "",
     status: RouteStatus.Planned,
@@ -39,12 +41,66 @@ export function getRouteAssignmentFormValidationError(
   return null
 }
 
+export function findLocationTimeZoneId(
+  locationId: string,
+  locationLookupOptions: ReadonlyArray<LocationLookupOption>
+): string | null {
+  const matchingLocationLookupOption = locationLookupOptions.find(
+    (locationLookupOption) => String(locationLookupOption.id) === locationId
+  )
+  return matchingLocationLookupOption === undefined
+    ? null
+    : matchingLocationLookupOption.timeZoneId
+}
+
+function getRequiredLocationTimeZoneId(
+  locationId: string,
+  locationLookupOptions: ReadonlyArray<LocationLookupOption>
+): string {
+  const locationTimeZoneId = findLocationTimeZoneId(
+    locationId,
+    locationLookupOptions
+  )
+  if (locationTimeZoneId === null) {
+    throw new Error(`Локацію з ідентифікатором ${locationId} не знайдено.`)
+  }
+  return locationTimeZoneId
+}
+
+export function createCreateRouteRequestModel(
+  addRouteFormValues: AddRouteFormValues,
+  locationLookupOptions: ReadonlyArray<LocationLookupOption>
+): CreateRouteRequestModel {
+  return {
+    startLocationId: Number(addRouteFormValues.startLocationId),
+    destinationLocationId: Number(addRouteFormValues.destinationLocationId),
+    departureTimeUtc: convertZonedLocalDateTimeToUtcIsoString(
+      addRouteFormValues.departureLocalDateTime,
+      getRequiredLocationTimeZoneId(
+        addRouteFormValues.startLocationId,
+        locationLookupOptions
+      )
+    ),
+    arrivalTimeUtc: convertZonedLocalDateTimeToUtcIsoString(
+      addRouteFormValues.arrivalLocalDateTime,
+      getRequiredLocationTimeZoneId(
+        addRouteFormValues.destinationLocationId,
+        locationLookupOptions
+      )
+    ),
+    autoId: Number(addRouteFormValues.autoId),
+    driverId: Number(addRouteFormValues.driverId),
+    status: addRouteFormValues.status,
+  }
+}
+
 export function getAddRouteFormValidationError(
-  addRouteFormValues: AddRouteFormValues
+  addRouteFormValues: AddRouteFormValues,
+  locationLookupOptions: ReadonlyArray<LocationLookupOption>
 ): string | null {
   if (
-    addRouteFormValues.departureTime === "" ||
-    addRouteFormValues.arrivalTime === ""
+    addRouteFormValues.departureLocalDateTime === "" ||
+    addRouteFormValues.arrivalLocalDateTime === ""
   ) {
     return routeFormValidationMessages.requiredFieldsMissing
   }
@@ -53,25 +109,15 @@ export function getAddRouteFormValidationError(
   if (routeAssignmentFormValidationError !== null) {
     return routeAssignmentFormValidationError
   }
+  const createRouteRequestModel = createCreateRouteRequestModel(
+    addRouteFormValues,
+    locationLookupOptions
+  )
   if (
-    new Date(addRouteFormValues.arrivalTime) <=
-    new Date(addRouteFormValues.departureTime)
+    new Date(createRouteRequestModel.arrivalTimeUtc) <=
+    new Date(createRouteRequestModel.departureTimeUtc)
   ) {
     return routeFormValidationMessages.arrivalNotAfterDeparture
   }
   return null
-}
-
-export function createCreateRouteRequestModel(
-  addRouteFormValues: AddRouteFormValues
-): CreateRouteRequestModel {
-  return {
-    startLocationId: Number(addRouteFormValues.startLocationId),
-    destinationLocationId: Number(addRouteFormValues.destinationLocationId),
-    departureTime: addRouteFormValues.departureTime,
-    arrivalTime: addRouteFormValues.arrivalTime,
-    autoId: Number(addRouteFormValues.autoId),
-    driverId: Number(addRouteFormValues.driverId),
-    status: addRouteFormValues.status,
-  }
 }

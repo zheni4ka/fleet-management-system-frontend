@@ -4,12 +4,13 @@ import { useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { NativeSelect } from "@/components/ui/native-select"
 import { FormField } from "@/components/ui/form-field"
 import ModalWindow from "@/components/ui/modal-window"
 import { SubmitButton } from "@/components/ui/submit-button"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints } from "@/lib/constants"
+import { apiEndpoints, locationTimeZoneOptions } from "@/lib/constants"
 import {
   createEmptyLocationFormValues,
   createLocationRequestBody,
@@ -84,6 +85,26 @@ export default function AddLocationModal() {
                 updateLocationFormValues({ country: event.target.value })
               }
             />
+          </FormField>
+          <FormField label="Часовий пояс">
+            <NativeSelect
+              value={locationFormValues.timeZoneId}
+              onChange={(event) =>
+                updateLocationFormValues({ timeZoneId: event.target.value })
+              }
+            >
+              <option value="" disabled>
+                Оберіть часовий пояс
+              </option>
+              {locationTimeZoneOptions.map((locationTimeZoneOption) => (
+                <option
+                  key={locationTimeZoneOption.value}
+                  value={locationTimeZoneOption.value}
+                >
+                  {locationTimeZoneOption.label}
+                </option>
+              ))}
+            </NativeSelect>
           </FormField>
           <SubmitButton isSubmitting={isApiMutationRunning}>
             Зберегти

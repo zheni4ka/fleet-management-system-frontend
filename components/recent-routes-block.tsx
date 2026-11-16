@@ -1,4 +1,5 @@
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
+import { formatUtcDateTimeWithTimeZone } from "@/lib/zoned-date-time"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import {
@@ -9,7 +10,6 @@ import {
   routeStatusLabels,
 } from "@/lib/constants"
 import {
-  formatDateTime,
   formatRouteDestinationLocationName,
   formatRouteStartLocationName,
 } from "@/lib/formatters"
@@ -68,10 +68,16 @@ export async function RecentRoutesBlock({ authToken }: RecentRoutesBlockProps) {
                   {formatRouteDestinationLocationName(route)}
                 </TableCell>
                 <TableCell className="text-xs">
-                  {formatDateTime(route.departureTime)}
+                  {formatUtcDateTimeWithTimeZone(
+                    route.departureTimeUtc,
+                    route.startLocationTimeZoneId
+                  )}
                 </TableCell>
                 <TableCell className="text-xs">
-                  {formatDateTime(route.arrivalTime)}
+                  {formatUtcDateTimeWithTimeZone(
+                    route.arrivalTimeUtc,
+                    route.destinationLocationTimeZoneId
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   <span

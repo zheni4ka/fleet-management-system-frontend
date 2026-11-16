@@ -15,6 +15,7 @@ import { apiEndpoints, routeStatusLabels } from "@/lib/constants"
 import {
   createCreateRouteRequestModel,
   createEmptyAddRouteFormValues,
+  findLocationTimeZoneId,
   getAddRouteFormValidationError,
 } from "@/lib/forms/route-form"
 import {
@@ -26,6 +27,15 @@ import {
   RouteStatus,
 } from "@/lib/types"
 import { parseEnumValue } from "@/lib/utils"
+
+function createRouteTimeLabel(
+  routeTimeLabel: string,
+  locationTimeZoneId: string | null
+): string {
+  return locationTimeZoneId === null
+    ? `${routeTimeLabel} (оберіть локацію)`
+    : `${routeTimeLabel}, ${locationTimeZoneId}`
+}
 
 interface AddRouteModalProps {
   autoLookupOptions: AutoLookupOption[]
@@ -52,8 +62,10 @@ export default function AddRouteModal({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const addRouteFormValidationError =
-      getAddRouteFormValidationError(addRouteFormValues)
+    const addRouteFormValidationError = getAddRouteFormValidationError(
+      addRouteFormValues,
+      locationLookupOptions
+    )
     if (addRouteFormValidationError !== null) {
       toast.error(addRouteFormValidationError)
       return
@@ -64,7 +76,10 @@ export default function AddRouteModal({
         sendApiRequest(
           apiEndpoints.createRoute,
           HttpMethod.Post,
-          createCreateRouteRequestModel(addRouteFormValues)
+          createCreateRouteRequestModel(
+            addRouteFormValues,
+            locationLookupOptions
+          )
         ),
       {
         loading: "Збереження маршруту...",
@@ -99,23 +114,41 @@ export default function AddRouteModal({
           />
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <FormField label="Час відправлення">
+            <FormField
+              label={createRouteTimeLabel(
+                "Час відправлення",
+                findLocationTimeZoneId(
+                  addRouteFormValues.startLocationId,
+                  locationLookupOptions
+                )
+              )}
+            >
               <Input
                 type="datetime-local"
-                value={addRouteFormValues.departureTime}
+                value={addRouteFormValues.departureLocalDateTime}
                 onChange={(event) =>
                   updateAddRouteFormValues({
-                    departureTime: event.target.value,
+                    departureLocalDateTime: event.target.value,
                   })
                 }
               />
             </FormField>
-            <FormField label="Час прибуття">
+            <FormField
+              label={createRouteTimeLabel(
+                "Час прибуття",
+                findLocationTimeZoneId(
+                  addRouteFormValues.destinationLocationId,
+                  locationLookupOptions
+                )
+              )}
+            >
               <Input
                 type="datetime-local"
-                value={addRouteFormValues.arrivalTime}
+                value={addRouteFormValues.arrivalLocalDateTime}
                 onChange={(event) =>
-                  updateAddRouteFormValues({ arrivalTime: event.target.value })
+                  updateAddRouteFormValues({
+                    arrivalLocalDateTime: event.target.value,
+                  })
                 }
               />
             </FormField>

@@ -8,7 +8,7 @@ import {
   routeStatusBadgeClassNames,
   routeStatusLabels,
 } from "@/lib/constants"
-import { formatDateTime } from "@/lib/formatters"
+import { formatUtcDateTimeWithTimeZone } from "@/lib/zoned-date-time"
 import { canRouteStatusChangeTo } from "@/lib/route-status"
 import { Route, RouteStatus } from "@/lib/types"
 
@@ -43,8 +43,20 @@ export function RouteCard({
   )
 
   const routeDetailRows = [
-    { label: "Виїзд", value: formatDateTime(route.departureTime) },
-    { label: "Прибуття", value: formatDateTime(route.arrivalTime) },
+    {
+      label: "Виїзд",
+      value: formatUtcDateTimeWithTimeZone(
+        route.departureTimeUtc,
+        route.startLocationTimeZoneId
+      ),
+    },
+    {
+      label: "Прибуття",
+      value: formatUtcDateTimeWithTimeZone(
+        route.arrivalTimeUtc,
+        route.destinationLocationTimeZoneId
+      ),
+    },
     { label: "Авто", value: autoTitle },
     { label: "Водій", value: driverFullName },
   ]
