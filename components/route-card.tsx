@@ -1,13 +1,10 @@
+import { useLocale, useTranslations } from "next-intl"
+import { resolveAppLocale } from "@/lib/app-locale"
 import * as React from "react"
 import { MapIcon, Trash2 } from "lucide-react"
 import { IconActionButton } from "@/components/icon-action-button"
 import { Button } from "@/components/ui/button"
-import {
-  iconActionLabels,
-  routeStatusActions,
-  routeStatusBadgeClassNames,
-  routeStatusLabels,
-} from "@/lib/constants"
+import { routeStatusActions, routeStatusBadgeClassNames } from "@/lib/constants"
 import { formatUtcDateTimeWithTimeZone } from "@/lib/zoned-date-time"
 import { canRouteStatusChangeTo } from "@/lib/route-status"
 import { Route, RouteStatus } from "@/lib/types"
@@ -37,6 +34,11 @@ export function RouteCard({
   onStatusChange,
   onDelete,
 }: RouteCardProps) {
+  const appLocale = resolveAppLocale(useLocale())
+  const routeStatusTranslations = useTranslations("routeStatus")
+  const iconActionTranslations = useTranslations("iconActions")
+  const routeTranslations = useTranslations("routes")
+  const routeStatusActionTranslations = useTranslations("routeStatusActions")
   const availableRouteStatusActions = routeStatusActions.filter(
     (routeStatusAction) =>
       canRouteStatusChangeTo(route.status, routeStatusAction.targetRouteStatus)
@@ -44,21 +46,23 @@ export function RouteCard({
 
   const routeDetailRows = [
     {
-      label: "Виїзд",
+      label: routeTranslations("cardDepartureLabel"),
       value: formatUtcDateTimeWithTimeZone(
         route.departureTimeUtc,
-        route.startLocationTimeZoneId
+        route.startLocationTimeZoneId,
+        appLocale
       ),
     },
     {
-      label: "Прибуття",
+      label: routeTranslations("cardArrivalLabel"),
       value: formatUtcDateTimeWithTimeZone(
         route.arrivalTimeUtc,
-        route.destinationLocationTimeZoneId
+        route.destinationLocationTimeZoneId,
+        appLocale
       ),
     },
-    { label: "Авто", value: autoTitle },
-    { label: "Водій", value: driverFullName },
+    { label: routeTranslations("cardAutoLabel"), value: autoTitle },
+    { label: routeTranslations("cardDriverLabel"), value: driverFullName },
   ]
 
   return (
@@ -71,20 +75,20 @@ export function RouteCard({
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${routeStatusBadgeClassNames[route.status]}`}
           >
-            {routeStatusLabels[route.status]}
+            {routeStatusTranslations(route.status)}
           </span>
         </div>
         <div className="flex items-center gap-1">
           <IconActionButton
             icon={MapIcon}
-            label={iconActionLabels.viewOnMap}
+            label={iconActionTranslations("viewOnMap")}
             variant="outline"
             onClick={onSelect}
           />
           {editRouteAction}
           <IconActionButton
             icon={Trash2}
-            label={iconActionLabels.delete}
+            label={iconActionTranslations("delete")}
             variant="destructive"
             disabled={isRouteUpdating}
             onClick={onDelete}
@@ -122,7 +126,9 @@ export function RouteCard({
                 }
               >
                 <RouteStatusActionIcon aria-hidden="true" />
-                {routeStatusAction.label}
+                {routeStatusActionTranslations(
+                  routeStatusAction.targetRouteStatus
+                )}
               </Button>
             )
           })}

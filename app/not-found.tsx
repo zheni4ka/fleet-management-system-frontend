@@ -2,17 +2,19 @@ import Link from "next/link"
 import { SearchX } from "lucide-react"
 import { StatusMessagePage } from "@/components/status-message-page"
 import { Button } from "@/components/ui/button"
-import { appRoutes, commonUiTexts } from "@/lib/constants"
+import { useTranslations } from "next-intl"
+import { appRoutes } from "@/lib/constants"
 
 export default function NotFoundPage() {
+  const commonTranslations = useTranslations("common")
   return (
     <StatusMessagePage
       icon={SearchX}
-      title="Сторінку не знайдено"
-      description="Можливо, адресу введено з помилкою або сторінку було переміщено."
+      title={commonTranslations("notFoundPageTitle")}
+      description={commonTranslations("notFoundPageDescription")}
     >
       <Button asChild>
-        <Link href={appRoutes.home}>{commonUiTexts.homeLinkLabel}</Link>
+        <Link href={appRoutes.home}>{commonTranslations("homeLinkLabel")}</Link>
       </Button>
     </StatusMessagePage>
   )

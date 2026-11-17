@@ -3,12 +3,12 @@ import { isAuthTokenUnexpiredForAtLeast } from "@/lib/auth-token"
 import {
   appRoutes,
   bffRoutes,
-  commonUiTexts,
   cookieNames,
   httpHeaderNames,
   httpStatusCodes,
   sessionRefreshSettings,
 } from "@/lib/constants"
+import { resolveAppLocale } from "@/lib/app-locale"
 import { createLoginPath } from "@/lib/login-redirect"
 import { refreshBackendSession } from "@/lib/server/backend-session"
 import {
@@ -22,6 +22,7 @@ import {
   setSessionResponseCookies,
 } from "@/lib/server/session-cookies"
 import { LoginRedirectReason, SessionRefreshStatus } from "@/lib/types"
+import { createRequestMessageTranslator } from "@/lib/server/request-message-translator"
 
 function isApiProxyRequest(request: NextRequest): boolean {
   return request.nextUrl.pathname.startsWith(`${bffRoutes.apiProxy}/`)
@@ -31,7 +32,7 @@ function endExpiredSession(request: NextRequest): NextResponse {
   const expiredSessionResponse = isApiProxyRequest(request)
     ? createProblemResponse(
         httpStatusCodes.unauthorized,
-        commonUiTexts.sessionExpiredMessage
+        createRequestMessageTranslator(request)("common.sessionExpiredMessage")
       )
     : NextResponse.redirect(
         new URL(
@@ -50,7 +51,11 @@ function continueWithTracedRequest(request: NextRequest): NextResponse {
   return NextResponse.next({ request: { headers: request.headers } })
 }
 
-function ensureRequestTraceparent(request: NextRequest): void {
+function prepareForwardedRequestHeaders(request: NextRequest): void {
+  request.headers.set(
+    httpHeaderNames.acceptLanguage,
+    resolveAppLocale(request.cookies.get(cookieNames.locale)?.value)
+  )
   const incomingTraceparent = request.headers.get(httpHeaderNames.traceparent)
   const isIncomingTraceparentValid =
     incomingTraceparent !== null &&
@@ -61,7 +66,7 @@ function ensureRequestTraceparent(request: NextRequest): void {
 }
 
 export async function proxy(request: NextRequest) {
-  ensureRequestTraceparent(request)
+  prepareForwardedRequestHeaders(request)
   const isLoginPageRequested = request.nextUrl.pathname === appRoutes.login
   const isSessionRouteRequested = request.nextUrl.pathname.startsWith(
     bffRoutes.sessionPrefix
@@ -95,6 +100,7 @@ export async function proxy(request: NextRequest) {
   switch (sessionRefreshResult.status) {
     case SessionRefreshStatus.Refreshed: {
       setSessionRequestCookies(request.cookies, sessionRefreshResult.session)
+      prepareForwardedRequestHeaders(request)
       const refreshedSessionResponse = continueWithTracedRequest(request)
       setSessionResponseCookies(
         refreshedSessionResponse.cookies,

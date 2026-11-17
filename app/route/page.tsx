@@ -5,12 +5,8 @@ import { ListPagination } from "@/components/list-pagination"
 import { ListSortSelect } from "@/components/list-sort-select"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
-import {
-  apiEndpoints,
-  appRoutes,
-  routeSortOptions,
-  routesPageTexts,
-} from "@/lib/constants"
+import { apiEndpoints, appRoutes, routeSortOptions } from "@/lib/constants"
+import { getTranslations } from "next-intl/server"
 import { createRoutesListFilterFields } from "@/lib/forms/list-filter-fields"
 import {
   createListApiPath,
@@ -40,6 +36,9 @@ interface RoutesPageProps {
 export default async function RoutesPage({ searchParams }: RoutesPageProps) {
   const authToken = await getAuthTokenOrRedirect()
   const pageSearchParams = await searchParams
+  const translateMessage = await getTranslations()
+  const routesPageTitle = translateMessage("pages.routesTitle")
+  const routesPageDescription = translateMessage("pages.routesDescription")
 
   const [
     autoLookupOptionsResult,
@@ -74,8 +73,8 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
     return (
       <PageContainer>
         <PageHeader
-          title={routesPageTexts.title}
-          description={routesPageTexts.description}
+          title={routesPageTitle}
+          description={routesPageDescription}
         />
         <LoadErrorMessage
           errorMessage={getFirstApiFetchErrorMessage([
@@ -92,7 +91,8 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
   const routesListFilterFields = createRoutesListFilterFields(
     autoLookupOptionsResult.data,
     driverLookupOptionsResult.data,
-    depotsResult.data
+    depotsResult.data,
+    translateMessage
   )
   const routesListPageState: ListPageState<RouteSortField> = {
     path: appRoutes.routes,
@@ -117,10 +117,7 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
 
   return (
     <PageContainer>
-      <PageHeader
-        title={routesPageTexts.title}
-        description={routesPageTexts.description}
-      >
+      <PageHeader title={routesPageTitle} description={routesPageDescription}>
         <AddRouteModal
           autoLookupOptions={autoLookupOptionsResult.data}
           driverLookupOptions={driverLookupOptionsResult.data}
@@ -129,7 +126,7 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
       </PageHeader>
 
       <ListFilterPanel
-        title="Розширений пошук маршрутів"
+        title={translateMessage("pages.routesFilterTitle")}
         listPageState={routesListPageState}
         listFilterFields={routesListFilterFields}
       />

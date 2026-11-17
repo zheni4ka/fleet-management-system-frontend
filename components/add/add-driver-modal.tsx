@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
@@ -21,6 +22,9 @@ interface AddDriverModalProps {
 }
 
 export default function AddDriverModal({ depots }: AddDriverModalProps) {
+  const driverTranslations = useTranslations("drivers")
+  const formValidationTranslations = useTranslations("formValidation")
+  const commonTranslations = useTranslations("common")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [driverFormValues, setDriverFormValues] = useState(
     createEmptyDriverFormValues
@@ -32,7 +36,7 @@ export default function AddDriverModal({ depots }: AddDriverModalProps) {
     const driverFormValidationError =
       getDriverFormValidationError(driverFormValues)
     if (driverFormValidationError !== null) {
-      toast.error(driverFormValidationError)
+      toast.error(formValidationTranslations(driverFormValidationError))
       return
     }
 
@@ -44,9 +48,9 @@ export default function AddDriverModal({ depots }: AddDriverModalProps) {
           createDriverRequestBody(driverFormValues)
         ),
       {
-        loading: "Збереження водія...",
-        success: "Водія успішно додано!",
-        error: "Помилка при додаванні водія. Спробуйте ще раз.",
+        loading: driverTranslations("createLoading"),
+        success: driverTranslations("createSuccess"),
+        error: driverTranslations("createError"),
       }
     )
     if (isDriverCreated) {
@@ -58,12 +62,12 @@ export default function AddDriverModal({ depots }: AddDriverModalProps) {
   return (
     <>
       <Button hoverEffect="grow" onClick={() => setIsModalOpen(true)}>
-        Додати водія
+        {driverTranslations("addButtonLabel")}
       </Button>
       <ModalWindow
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Додати водія"
+        title={driverTranslations("addTitle")}
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <DriverFormFields
@@ -72,7 +76,7 @@ export default function AddDriverModal({ depots }: AddDriverModalProps) {
             onDriverFormValuesChange={setDriverFormValues}
           />
           <SubmitButton isSubmitting={isApiMutationRunning}>
-            Зберегти
+            {commonTranslations("saveButtonLabel")}
           </SubmitButton>
         </form>
       </ModalWindow>

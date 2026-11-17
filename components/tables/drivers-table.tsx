@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import EditDriverModal from "@/components/edit/edit-driver-modal"
@@ -6,12 +7,7 @@ import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import { formatDriverFullName } from "@/lib/formatters"
 import { hasActiveListFilters } from "@/lib/search-params"
-import {
-  apiEndpoints,
-  commonUiTexts,
-  driversTableColumns,
-  listFilterTexts,
-} from "@/lib/constants"
+import { apiEndpoints, driversTableColumns } from "@/lib/constants"
 import {
   BadgeTone,
   Depot,
@@ -31,6 +27,9 @@ export function DriversTable({
   depots,
   listPageState,
 }: DriversTableProps) {
+  const listFilterTranslations = useTranslations("listFilters")
+  const driverTranslations = useTranslations("drivers")
+  const commonTranslations = useTranslations("common")
   return (
     <div className="overflow-hidden rounded-md border bg-white">
       <Table>
@@ -44,8 +43,8 @@ export function DriversTable({
               columnCount={driversTableColumns.length}
               message={
                 hasActiveListFilters(listPageState)
-                  ? commonUiTexts.nothingFoundMessage
-                  : "Водіїв поки немає в системі."
+                  ? commonTranslations("nothingFoundMessage")
+                  : driverTranslations("emptyList")
               }
             />
           )}
@@ -60,7 +59,7 @@ export function DriversTable({
                 {driver.isArchived && (
                   <span className="ml-2">
                     <Badge tone={BadgeTone.Neutral}>
-                      {listFilterTexts.archivedBadgeLabel}
+                      {listFilterTranslations("archivedBadgeLabel")}
                     </Badge>
                   </span>
                 )}
@@ -75,17 +74,22 @@ export function DriversTable({
                     isArchived={driver.isArchived}
                     deleteApiPath={`${apiEndpoints.deleteDriver}/${driver.id}`}
                     restoreApiPath={`${apiEndpoints.restoreDriver}/${driver.id}`}
-                    deletionQuestion={`Видалити водія ${formatDriverFullName(driver)} (${driver.licenseNumber})? Якщо його призначено на маршрути, його буде перенесено до архіву.`}
+                    deletionQuestion={driverTranslations("deletionQuestion", {
+                      driverFullName: formatDriverFullName(driver),
+                      licenseNumber: driver.licenseNumber,
+                    })}
                     deletionToastMessages={{
-                      loading: "Видалення водія...",
-                      success: "Водія успішно видалено!",
-                      error: "Не вдалося видалити водія",
+                      loading: driverTranslations("deleteLoading"),
+                      success: driverTranslations("deleteSuccess"),
+                      error: driverTranslations("deleteError"),
                     }}
-                    archivedInsteadOfDeletedMessage="Водія призначено на маршрути, тому його перенесено до архіву."
+                    archivedInsteadOfDeletedMessage={driverTranslations(
+                      "archivedInsteadOfDeleted"
+                    )}
                     restoreToastMessages={{
-                      loading: "Відновлення водія...",
-                      success: "Водія відновлено з архіву!",
-                      error: "Не вдалося відновити водія",
+                      loading: driverTranslations("restoreLoading"),
+                      success: driverTranslations("restoreSuccess"),
+                      error: driverTranslations("restoreError"),
                     }}
                   />
                 </div>

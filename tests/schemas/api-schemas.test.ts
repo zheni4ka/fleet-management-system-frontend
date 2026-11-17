@@ -64,6 +64,7 @@ describe("sessionResponseSchema", () => {
         username: "admin",
         email: null,
         roles: ["Admin"],
+        preferredLanguage: "uk",
       }).success
     ).toBe(true)
     expect(

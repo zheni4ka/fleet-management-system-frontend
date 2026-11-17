@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { useTranslations } from "next-intl"
 import { PageContainer } from "@/components/page-container"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -20,9 +21,10 @@ interface PageSkeletonLayoutProps {
 }
 
 function PageSkeletonLayout({ children }: PageSkeletonLayoutProps) {
+  const commonTranslations = useTranslations("common")
   return (
     <PageContainer role="status" aria-busy="true">
-      <span className="sr-only">Завантаження...</span>
+      <span className="sr-only">{commonTranslations("loadingLabel")}</span>
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-2">
           <Skeleton className="h-8 w-48" />
@@ -63,6 +65,7 @@ interface TablePageSkeletonProps {
 }
 
 export function TablePageSkeleton({ tableColumns }: TablePageSkeletonProps) {
+  const tableColumnsTranslations = useTranslations("tableColumns")
   return (
     <PageSkeletonLayout>
       <FilterPanelSkeleton />
@@ -72,10 +75,10 @@ export function TablePageSkeleton({ tableColumns }: TablePageSkeletonProps) {
             <TableRow>
               {tableColumns.map((tableColumn) => (
                 <TableHead
-                  key={tableColumn.label}
+                  key={tableColumn.labelMessageKey}
                   className={tableColumn.className}
                 >
-                  {tableColumn.label}
+                  {tableColumnsTranslations(tableColumn.labelMessageKey)}
                 </TableHead>
               ))}
             </TableRow>
@@ -86,7 +89,7 @@ export function TablePageSkeleton({ tableColumns }: TablePageSkeletonProps) {
               (_, skeletonRowNumber) => (
                 <TableRow key={skeletonRowNumber}>
                   {tableColumns.map((tableColumn) => (
-                    <TableCell key={tableColumn.label}>
+                    <TableCell key={tableColumn.labelMessageKey}>
                       <Skeleton className="h-5 w-full" />
                     </TableCell>
                   ))}

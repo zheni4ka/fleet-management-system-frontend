@@ -1,6 +1,6 @@
+import { useTranslations } from "next-intl"
 import { FormField } from "@/components/ui/form-field"
 import { SearchableSelect } from "@/components/ui/searchable-select"
-import { routeFormSelectTexts } from "@/lib/constants"
 import {
   createAutoSearchableSelectOptions,
   createDriverSearchableSelectOptions,
@@ -34,6 +34,8 @@ export function RouteFormFields<
   locationLookupOptions,
   alwaysSelectableAutoId,
 }: RouteFormFieldsProps<TRouteFormValues>) {
+  const autoStatusTranslations = useTranslations("autoStatus")
+  const routeTranslations = useTranslations("routes")
   const locationOptions = createLocationSearchableSelectOptions(
     locationLookupOptions
   )
@@ -57,34 +59,34 @@ export function RouteFormFields<
   return (
     <>
       <div className="grid gap-3 sm:grid-cols-2">
-        <FormField label="Початкова локація">
+        <FormField label={routeTranslations("startLocationLabel")}>
           <SearchableSelect
             options={locationOptions}
             selectedValue={routeFormValues.startLocationId}
             onSelectedValueChange={(startLocationId) =>
               updateRouteAssignmentFormValues({ startLocationId })
             }
-            placeholder={routeFormSelectTexts.startLocationPlaceholder}
-            searchPlaceholder={routeFormSelectTexts.locationSearchPlaceholder}
-            emptyMessage={routeFormSelectTexts.locationEmptyMessage}
+            placeholder={routeTranslations("startLocationPlaceholder")}
+            searchPlaceholder={routeTranslations("locationSearchPlaceholder")}
+            emptyMessage={routeTranslations("locationEmptyMessage")}
           />
         </FormField>
-        <FormField label="Кінцева локація">
+        <FormField label={routeTranslations("destinationLocationLabel")}>
           <SearchableSelect
             options={locationOptions}
             selectedValue={routeFormValues.destinationLocationId}
             onSelectedValueChange={(destinationLocationId) =>
               updateRouteAssignmentFormValues({ destinationLocationId })
             }
-            placeholder={routeFormSelectTexts.destinationLocationPlaceholder}
-            searchPlaceholder={routeFormSelectTexts.locationSearchPlaceholder}
-            emptyMessage={routeFormSelectTexts.locationEmptyMessage}
+            placeholder={routeTranslations("destinationLocationPlaceholder")}
+            searchPlaceholder={routeTranslations("locationSearchPlaceholder")}
+            emptyMessage={routeTranslations("locationEmptyMessage")}
           />
         </FormField>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <FormField label="Водій">
+        <FormField label={routeTranslations("driverLabel")}>
           <SearchableSelect
             options={createDriverSearchableSelectOptions(
               selectableDriverLookupOptions
@@ -93,24 +95,25 @@ export function RouteFormFields<
             onSelectedValueChange={(driverId) =>
               updateRouteAssignmentFormValues({ driverId })
             }
-            placeholder={routeFormSelectTexts.driverPlaceholder}
-            searchPlaceholder={routeFormSelectTexts.driverSearchPlaceholder}
-            emptyMessage={routeFormSelectTexts.driverEmptyMessage}
+            placeholder={routeTranslations("driverPlaceholder")}
+            searchPlaceholder={routeTranslations("driverSearchPlaceholder")}
+            emptyMessage={routeTranslations("driverEmptyMessage")}
           />
         </FormField>
-        <FormField label="Автомобіль">
+        <FormField label={routeTranslations("autoLabel")}>
           <SearchableSelect
             options={createAutoSearchableSelectOptions(
               autoLookupOptions,
-              alwaysSelectableAutoId
+              alwaysSelectableAutoId,
+              (autoStatus) => autoStatusTranslations(autoStatus)
             )}
             selectedValue={routeFormValues.autoId}
             onSelectedValueChange={(autoId) =>
               updateRouteAssignmentFormValues({ autoId })
             }
-            placeholder={routeFormSelectTexts.autoPlaceholder}
-            searchPlaceholder={routeFormSelectTexts.autoSearchPlaceholder}
-            emptyMessage={routeFormSelectTexts.autoEmptyMessage}
+            placeholder={routeTranslations("autoPlaceholder")}
+            searchPlaceholder={routeTranslations("autoSearchPlaceholder")}
+            emptyMessage={routeTranslations("autoEmptyMessage")}
           />
         </FormField>
       </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef } from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -32,6 +33,7 @@ export function ConfirmationDialog({
   onConfirm,
   onCancel,
 }: ConfirmationDialogProps) {
+  const commonTranslations = useTranslations("common")
   const confirmButtonRef = useRef<HTMLButtonElement>(null)
   const elementFocusedBeforeOpenRef = useRef<HTMLElement | null>(null)
 
@@ -75,7 +77,7 @@ export function ConfirmationDialog({
             disabled={isConfirming}
             onClick={onCancel}
           >
-            Скасувати
+            {commonTranslations("cancelButtonLabel")}
           </Button>
           <Button
             ref={confirmButtonRef}

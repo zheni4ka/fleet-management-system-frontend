@@ -4,7 +4,11 @@ import {
 } from "@/lib/constants"
 import { formatLocalIsoDate } from "@/lib/formatters"
 import { getPageSearchParamValue } from "@/lib/search-params"
-import { PageSearchParams, RoutesPeriodFormValues } from "@/lib/types"
+import {
+  FormValidationError,
+  PageSearchParams,
+  RoutesPeriodFormValues,
+} from "@/lib/types"
 
 export function createRoutesPeriodFormValuesFromPageSearchParams(
   pageSearchParams: PageSearchParams
@@ -32,15 +36,15 @@ export function getIsRoutesPeriodFormFilled(
 
 export function getRoutesPeriodFormValidationError(
   routesPeriodFormValues: RoutesPeriodFormValues
-): string | null {
+): FormValidationError | null {
   if (!getIsRoutesPeriodFormFilled(routesPeriodFormValues)) {
-    return "Оберіть початкову та кінцеву дату періоду."
+    return FormValidationError.RoutesPeriodDatesMissing
   }
   if (
     routesPeriodFormValues.periodEndDate <
     routesPeriodFormValues.periodStartDate
   ) {
-    return "Кінець періоду не може бути раніше за його початок."
+    return FormValidationError.RoutesPeriodEndBeforeStart
   }
   return null
 }

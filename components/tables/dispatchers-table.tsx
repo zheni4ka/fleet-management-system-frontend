@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { EditUserDepotsModal } from "@/components/edit/edit-user-depots-modal"
@@ -7,11 +8,7 @@ import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import { formatDepotNames } from "@/lib/formatters"
 import { hasActiveListFilters } from "@/lib/search-params"
-import {
-  commonUiTexts,
-  dispatchersTableColumns,
-  listFilterTexts,
-} from "@/lib/constants"
+import { dispatchersTableColumns } from "@/lib/constants"
 import {
   BadgeTone,
   Depot,
@@ -31,6 +28,9 @@ export function DispatchersTable({
   depots,
   listPageState,
 }: DispatchersTableProps) {
+  const listFilterTranslations = useTranslations("listFilters")
+  const dispatcherTranslations = useTranslations("dispatchers")
+  const commonTranslations = useTranslations("common")
   return (
     <div className="overflow-hidden rounded-md border bg-white">
       <Table>
@@ -44,8 +44,8 @@ export function DispatchersTable({
               columnCount={dispatchersTableColumns.length}
               message={
                 hasActiveListFilters(listPageState)
-                  ? commonUiTexts.nothingFoundMessage
-                  : "Диспетчерів поки немає."
+                  ? commonTranslations("nothingFoundMessage")
+                  : dispatcherTranslations("emptyList")
               }
             />
           )}
@@ -59,7 +59,7 @@ export function DispatchersTable({
                 {dispatcher.isDeactivated && (
                   <span className="ml-2">
                     <Badge tone={BadgeTone.Neutral}>
-                      {listFilterTexts.deactivatedBadgeLabel}
+                      {listFilterTranslations("deactivatedBadgeLabel")}
                     </Badge>
                   </span>
                 )}

@@ -1,12 +1,13 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useState } from "react"
 import { UserCheck, UserX } from "lucide-react"
 import { ConfirmationDialog } from "@/components/confirmation-dialog"
 import { IconActionButton } from "@/components/icon-action-button"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints, iconActionLabels } from "@/lib/constants"
+import { apiEndpoints } from "@/lib/constants"
 import { Dispatcher, HttpMethod } from "@/lib/types"
 
 interface UserActivationTableRowActionProps {
@@ -16,6 +17,8 @@ interface UserActivationTableRowActionProps {
 export function UserActivationTableRowAction({
   dispatcher,
 }: UserActivationTableRowActionProps) {
+  const iconActionTranslations = useTranslations("iconActions")
+  const dispatcherTranslations = useTranslations("dispatchers")
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
   const [isDeactivationConfirmationOpen, setIsDeactivationConfirmationOpen] =
     useState(false)
@@ -24,7 +27,7 @@ export function UserActivationTableRowAction({
     return (
       <IconActionButton
         icon={UserCheck}
-        label={iconActionLabels.reactivate}
+        label={iconActionTranslations("reactivate")}
         variant="outline"
         disabled={isApiMutationRunning}
         onClick={() =>
@@ -35,9 +38,9 @@ export function UserActivationTableRowAction({
                 HttpMethod.Post
               ),
             {
-              loading: "Активація облікового запису...",
-              success: "Обліковий запис активовано!",
-              error: "Не вдалося активувати обліковий запис",
+              loading: dispatcherTranslations("reactivateLoading"),
+              success: dispatcherTranslations("reactivateSuccess"),
+              error: dispatcherTranslations("reactivateError"),
             }
           )
         }
@@ -53,9 +56,9 @@ export function UserActivationTableRowAction({
           HttpMethod.Post
         ),
       {
-        loading: "Деактивація облікового запису...",
-        success: "Обліковий запис деактивовано!",
-        error: "Не вдалося деактивувати обліковий запис",
+        loading: dispatcherTranslations("deactivateLoading"),
+        success: dispatcherTranslations("deactivateSuccess"),
+        error: dispatcherTranslations("deactivateError"),
       }
     )
     if (isUserDeactivated) {
@@ -67,17 +70,19 @@ export function UserActivationTableRowAction({
     <>
       <IconActionButton
         icon={UserX}
-        label={iconActionLabels.deactivate}
+        label={iconActionTranslations("deactivate")}
         variant="destructive"
         disabled={isApiMutationRunning}
         onClick={() => setIsDeactivationConfirmationOpen(true)}
       />
       <ConfirmationDialog
         isOpen={isDeactivationConfirmationOpen}
-        title="Деактивація облікового запису"
-        message={`Деактивувати диспетчера ${dispatcher.username}? Усі його сесії буде завершено, а вхід заблоковано до повторної активації.`}
-        confirmLabel="Деактивувати"
-        confirmingLabel="Деактивація..."
+        title={dispatcherTranslations("deactivateTitle")}
+        message={dispatcherTranslations("deactivateQuestion", {
+          username: dispatcher.username,
+        })}
+        confirmLabel={dispatcherTranslations("deactivateConfirmLabel")}
+        confirmingLabel={dispatcherTranslations("deactivateConfirmingLabel")}
         isConfirming={isApiMutationRunning}
         onConfirm={confirmDeactivation}
         onCancel={() => setIsDeactivationConfirmationOpen(false)}

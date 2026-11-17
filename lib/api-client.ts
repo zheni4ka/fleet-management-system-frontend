@@ -6,7 +6,11 @@ import {
   httpHeaderNames,
   httpStatusCodes,
 } from "@/lib/constants"
-import { getApiErrorMessage, getApiProblemType } from "@/lib/api-error-message"
+import {
+  getApiProblemMessage,
+  getApiProblemType,
+} from "@/lib/api-error-message"
+import { ApiRequestFailedError } from "@/lib/api-request-failed-error"
 import { ConcurrencyConflictError } from "@/lib/concurrency-conflict-error"
 import { parseApiResponseBody } from "@/lib/api-response-body"
 import { createLoginPath } from "@/lib/login-redirect"
@@ -46,7 +50,10 @@ async function sendProxiedApiRequest(
     throw new ConcurrencyConflictError()
   }
   if (!response.ok) {
-    throw new Error(await getApiErrorMessage(response))
+    throw new ApiRequestFailedError(
+      response.status,
+      await getApiProblemMessage(response)
+    )
   }
   return response
 }
@@ -59,9 +66,7 @@ export async function sendApiRequest(
   await sendProxiedApiRequest(apiPath, httpMethod, requestBody)
 }
 
-export async function sendApiRequestForData<
-  TResponseSchema extends z.ZodType,
->(
+export async function sendApiRequestForData<TResponseSchema extends z.ZodType>(
   apiPath: string,
   httpMethod: HttpMethod,
   responseSchema: TResponseSchema,

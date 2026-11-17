@@ -5,7 +5,8 @@ import { ListPagination } from "@/components/list-pagination"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
 import { apiEndpoints, appRoutes } from "@/lib/constants"
-import { locationsListFilterFields } from "@/lib/forms/list-filter-fields"
+import { getTranslations } from "next-intl/server"
+import { createLocationsListFilterFields } from "@/lib/forms/list-filter-fields"
 import {
   createListApiPath,
   getListFilterValuesFromPageSearchParams,
@@ -26,6 +27,9 @@ export default async function LocationsPage({
 }: LocationsPageProps) {
   const authToken = await getAdminAuthTokenOrRedirect()
   const pageSearchParams = await searchParams
+  const translateMessage = await getTranslations()
+  const locationsListFilterFields =
+    createLocationsListFilterFields(translateMessage)
   const locationsListPageState: ListPageState<LocationSortField> = {
     path: appRoutes.locations,
     listQuery: getListQueryFromPageSearchParams(
@@ -50,14 +54,14 @@ export default async function LocationsPage({
   return (
     <PageContainer>
       <PageHeader
-        title="Локації"
-        description="Довідник міст і країн, між якими прокладаються маршрути."
+        title={translateMessage("pages.locationsTitle")}
+        description={translateMessage("pages.locationsDescription")}
       >
         <AddLocationModal />
       </PageHeader>
 
       <ListFilterPanel
-        title="Пошук локацій"
+        title={translateMessage("pages.locationsFilterTitle")}
         listPageState={locationsListPageState}
         listFilterFields={locationsListFilterFields}
       />

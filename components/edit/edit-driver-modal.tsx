@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
 import { Pencil } from "lucide-react"
@@ -9,7 +10,7 @@ import { IconActionButton } from "@/components/icon-action-button"
 import { DriverFormFields } from "@/components/forms/driver-form-fields"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints, iconActionLabels } from "@/lib/constants"
+import { apiEndpoints } from "@/lib/constants"
 import {
   createDriverFormValuesFromDriver,
   createDriverRequestBody,
@@ -26,6 +27,10 @@ export default function EditDriverModal({
   driver,
   depots,
 }: EditDriverModalProps) {
+  const iconActionTranslations = useTranslations("iconActions")
+  const driverTranslations = useTranslations("drivers")
+  const formValidationTranslations = useTranslations("formValidation")
+  const commonTranslations = useTranslations("common")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [driverFormValues, setDriverFormValues] = useState(() =>
     createDriverFormValuesFromDriver(driver)
@@ -42,7 +47,7 @@ export default function EditDriverModal({
     const driverFormValidationError =
       getDriverFormValidationError(driverFormValues)
     if (driverFormValidationError !== null) {
-      toast.error(driverFormValidationError)
+      toast.error(formValidationTranslations(driverFormValidationError))
       return
     }
 
@@ -54,9 +59,9 @@ export default function EditDriverModal({
           ...createDriverRequestBody(driverFormValues),
         }),
       {
-        loading: "Збереження змін...",
-        success: "Водія успішно оновлено!",
-        error: "Не вдалося оновити водія",
+        loading: driverTranslations("updateLoading"),
+        success: driverTranslations("updateSuccess"),
+        error: driverTranslations("updateError"),
       },
       () => setIsModalOpen(false)
     )
@@ -69,12 +74,12 @@ export default function EditDriverModal({
     <>
       <IconActionButton
         icon={Pencil}
-        label={iconActionLabels.edit}
+        label={iconActionTranslations("edit")}
         variant="outline"
         onClick={handleOpen}
       />
       <ModalWindow
-        title="Редагувати водія"
+        title={driverTranslations("editTitle")}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       >
@@ -85,7 +90,7 @@ export default function EditDriverModal({
             onDriverFormValuesChange={setDriverFormValues}
           />
           <SubmitButton isSubmitting={isApiMutationRunning}>
-            Зберегти
+            {commonTranslations("saveButtonLabel")}
           </SubmitButton>
         </form>
       </ModalWindow>

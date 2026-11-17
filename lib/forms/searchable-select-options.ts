@@ -1,4 +1,3 @@
-import { autoStatusLabels } from "@/lib/constants"
 import {
   formatAutoTitleWithNumber,
   formatDriverFullName,
@@ -36,7 +35,8 @@ export function createDriverSearchableSelectOptions(
 
 export function createAutoSearchableSelectOptions(
   autoLookupOptions: ReadonlyArray<AutoLookupOption>,
-  alwaysSelectableAutoId: number | null
+  alwaysSelectableAutoId: number | null,
+  translateAutoStatus: (autoStatus: AutoStatus) => string
 ): ReadonlyArray<SearchableSelectOption> {
   return autoLookupOptions.map((autoLookupOption) => {
     const isAutoUnavailable =
@@ -47,7 +47,7 @@ export function createAutoSearchableSelectOptions(
       label: formatAutoTitleWithNumber(autoLookupOption),
       isDisabled: isAutoUnavailable,
       disabledReason: isAutoUnavailable
-        ? autoStatusLabels[autoLookupOption.status]
+        ? translateAutoStatus(autoLookupOption.status)
         : null,
     }
   })

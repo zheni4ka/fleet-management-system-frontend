@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
@@ -10,7 +11,7 @@ import ModalWindow from "@/components/ui/modal-window"
 import { SubmitButton } from "@/components/ui/submit-button"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints, locationTimeZoneOptions } from "@/lib/constants"
+import { apiEndpoints, locationTimeZoneIds } from "@/lib/constants"
 import {
   createEmptyLocationFormValues,
   createLocationRequestBody,
@@ -19,6 +20,10 @@ import {
 import { HttpMethod, LocationFormValues } from "@/lib/types"
 
 export default function AddLocationModal() {
+  const locationTranslations = useTranslations("locations")
+  const timeZoneTranslations = useTranslations("timeZones")
+  const formValidationTranslations = useTranslations("formValidation")
+  const commonTranslations = useTranslations("common")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [locationFormValues, setLocationFormValues] = useState(
     createEmptyLocationFormValues
@@ -36,7 +41,7 @@ export default function AddLocationModal() {
     const locationFormValidationError =
       getLocationFormValidationError(locationFormValues)
     if (locationFormValidationError !== null) {
-      toast.error(locationFormValidationError)
+      toast.error(formValidationTranslations(locationFormValidationError))
       return
     }
 
@@ -48,9 +53,9 @@ export default function AddLocationModal() {
           createLocationRequestBody(locationFormValues)
         ),
       {
-        loading: "Збереження локації...",
-        success: "Локацію успішно додано!",
-        error: "Помилка при додаванні локації. Спробуйте ще раз.",
+        loading: locationTranslations("createLoading"),
+        success: locationTranslations("createSuccess"),
+        error: locationTranslations("createError"),
       }
     )
     if (isLocationCreated) {
@@ -62,15 +67,15 @@ export default function AddLocationModal() {
   return (
     <>
       <Button hoverEffect="grow" onClick={() => setIsModalOpen(true)}>
-        Додати локацію
+        {locationTranslations("addButtonLabel")}
       </Button>
       <ModalWindow
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Додати локацію"
+        title={locationTranslations("addTitle")}
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <FormField label="Місто">
+          <FormField label={locationTranslations("cityLabel")}>
             <Input
               value={locationFormValues.city}
               onChange={(event) =>
@@ -78,7 +83,7 @@ export default function AddLocationModal() {
               }
             />
           </FormField>
-          <FormField label="Країна">
+          <FormField label={locationTranslations("countryLabel")}>
             <Input
               value={locationFormValues.country}
               onChange={(event) =>
@@ -86,7 +91,7 @@ export default function AddLocationModal() {
               }
             />
           </FormField>
-          <FormField label="Часовий пояс">
+          <FormField label={locationTranslations("timeZoneLabel")}>
             <NativeSelect
               value={locationFormValues.timeZoneId}
               onChange={(event) =>
@@ -94,20 +99,17 @@ export default function AddLocationModal() {
               }
             >
               <option value="" disabled>
-                Оберіть часовий пояс
+                {locationTranslations("timeZonePlaceholder")}
               </option>
-              {locationTimeZoneOptions.map((locationTimeZoneOption) => (
-                <option
-                  key={locationTimeZoneOption.value}
-                  value={locationTimeZoneOption.value}
-                >
-                  {locationTimeZoneOption.label}
+              {locationTimeZoneIds.map((locationTimeZoneId) => (
+                <option key={locationTimeZoneId} value={locationTimeZoneId}>
+                  {timeZoneTranslations(locationTimeZoneId)}
                 </option>
               ))}
             </NativeSelect>
           </FormField>
           <SubmitButton isSubmitting={isApiMutationRunning}>
-            Зберегти
+            {commonTranslations("saveButtonLabel")}
           </SubmitButton>
         </form>
       </ModalWindow>

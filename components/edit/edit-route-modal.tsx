@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
 import { Pencil } from "lucide-react"
 import toast from "react-hot-toast"
@@ -11,12 +12,7 @@ import { SubmitButton } from "@/components/ui/submit-button"
 import { RouteFormFields } from "@/components/forms/route-form-fields"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import {
-  allowedRouteStatusTransitions,
-  apiEndpoints,
-  iconActionLabels,
-  routeStatusLabels,
-} from "@/lib/constants"
+import { allowedRouteStatusTransitions, apiEndpoints } from "@/lib/constants"
 import {
   createEditRouteFormValuesFromRoute,
   createUpdateRouteRequestModel,
@@ -48,6 +44,10 @@ export default function EditRouteModal({
   locationLookupOptions,
   isRouteUpdating,
 }: EditRouteModalProps) {
+  const routeStatusTranslations = useTranslations("routeStatus")
+  const iconActionTranslations = useTranslations("iconActions")
+  const routeTranslations = useTranslations("routes")
+  const formValidationTranslations = useTranslations("formValidation")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editRouteFormValues, setEditRouteFormValues] = useState(() =>
     createEditRouteFormValuesFromRoute(route)
@@ -70,7 +70,9 @@ export default function EditRouteModal({
     const routeAssignmentFormValidationError =
       getRouteAssignmentFormValidationError(editRouteFormValues)
     if (routeAssignmentFormValidationError !== null) {
-      toast.error(routeAssignmentFormValidationError)
+      toast.error(
+        formValidationTranslations(routeAssignmentFormValidationError)
+      )
       return
     }
 
@@ -82,9 +84,9 @@ export default function EditRouteModal({
           createUpdateRouteRequestModel(route, editRouteFormValues)
         ),
       {
-        loading: "Збереження змін маршруту...",
-        success: "Маршрут успішно оновлено!",
-        error: "Не вдалося оновити маршрут",
+        loading: routeTranslations("updateLoading"),
+        success: routeTranslations("updateSuccess"),
+        error: routeTranslations("updateError"),
       },
       () => setIsModalOpen(false)
     )
@@ -101,7 +103,7 @@ export default function EditRouteModal({
     <>
       <IconActionButton
         icon={Pencil}
-        label={iconActionLabels.edit}
+        label={iconActionTranslations("edit")}
         variant="outline"
         disabled={isRouteUpdating}
         onClick={handleOpen}
@@ -109,7 +111,7 @@ export default function EditRouteModal({
       <ModalWindow
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={`Редагувати маршрут #${route.id}`}
+        title={routeTranslations("editTitle", { routeId: route.id })}
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <RouteFormFields
@@ -121,7 +123,7 @@ export default function EditRouteModal({
             alwaysSelectableAutoId={route.autoId}
           />
 
-          <FormField label="Статус маршруту">
+          <FormField label={routeTranslations("statusLabel")}>
             <NativeSelect
               value={editRouteFormValues.status}
               onChange={(event) =>
@@ -133,18 +135,18 @@ export default function EditRouteModal({
             >
               {selectableRouteStatuses.map((routeStatus) => (
                 <option key={routeStatus} value={routeStatus}>
-                  {routeStatusLabels[routeStatus]}
+                  {routeStatusTranslations(routeStatus)}
                 </option>
               ))}
             </NativeSelect>
           </FormField>
 
           <p className="text-xs text-slate-500">
-            Час відправлення та прибуття після створення маршруту не змінюється.
+            {routeTranslations("timesNotEditableHint")}
           </p>
 
           <SubmitButton isSubmitting={isApiMutationRunning}>
-            Зберегти зміни
+            {routeTranslations("saveChangesButtonLabel")}
           </SubmitButton>
         </form>
       </ModalWindow>

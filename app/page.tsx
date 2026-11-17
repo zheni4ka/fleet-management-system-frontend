@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getTranslations } from "next-intl/server"
 import KpiPanel from "@/components/dashboard/kpi-panel"
 import RecentRoutesBlock from "@/components/recent-routes-block"
 import FastAccess from "@/components/fast-access"
@@ -9,15 +10,16 @@ import { UserRole } from "@/lib/types"
 
 export default async function HomePage() {
   const authToken = await getAuthTokenOrRedirect()
+  const homeTranslations = await getTranslations("home")
 
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-7xl flex-col space-y-8 bg-slate-50/50 px-1 py-6 sm:p-6 sm:pt-8">
       <div className="relative overflow-hidden rounded-3xl p-8 text-black shadow-lg">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Огляд автопарку
+          {homeTranslations("overviewTitle")}
         </h1>
         <p className="mt-2 text-lg text-slate-500">
-          Актуальна статистика та управління логістикою на сьогодні.
+          {homeTranslations("overviewDescription")}
         </p>
       </div>
 
@@ -29,13 +31,13 @@ export default async function HomePage() {
         <div className="space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 md:col-span-2 lg:col-span-3">
           <div className="mt-4 flex items-center justify-between">
             <h2 className="text-xl font-bold tracking-tight text-slate-800">
-              Останні маршрути
+              {homeTranslations("recentRoutesTitle")}
             </h2>
             <Link
               href={appRoutes.routes}
               className="flex items-center gap-1 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 hover:underline"
             >
-              Переглянути всі →
+              {homeTranslations("viewAllRoutes")}
             </Link>
           </div>
           <RecentRoutesBlock authToken={authToken} />
@@ -43,7 +45,7 @@ export default async function HomePage() {
 
         <div className="space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 lg:col-span-1">
           <h2 className="mt-4 text-xl font-bold tracking-tight text-slate-800">
-            Швидкий доступ
+            {homeTranslations("fastAccessTitle")}
           </h2>
           <FastAccess
             isAdmin={hasAuthTokenUserRole(authToken, UserRole.Admin)}

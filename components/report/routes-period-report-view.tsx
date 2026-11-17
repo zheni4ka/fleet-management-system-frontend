@@ -1,3 +1,5 @@
+import { useLocale, useTranslations } from "next-intl"
+import { resolveAppLocale } from "@/lib/app-locale"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { formatUtcDateTimeWithTimeZone } from "@/lib/zoned-date-time"
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
@@ -5,7 +7,6 @@ import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import {
   reportDriverSummariesTableColumns,
   reportRoutesTableColumns,
-  routeStatusLabels,
 } from "@/lib/constants"
 import {
   formatIsoDateOnly,
@@ -15,7 +16,7 @@ import {
   formatRouteDriverFullName,
   formatRouteStartLocationName,
 } from "@/lib/formatters"
-import { RoutesPeriodReport } from "@/lib/types"
+import { RouteStatus, RoutesPeriodReport } from "@/lib/types"
 
 interface ReportStatCardProps {
   label: string
@@ -38,37 +39,43 @@ interface RoutesPeriodReportViewProps {
 export function RoutesPeriodReportView({
   routesPeriodReport,
 }: RoutesPeriodReportViewProps) {
+  const appLocale = resolveAppLocale(useLocale())
+  const routeStatusTranslations = useTranslations("routeStatus")
+  const reportTranslations = useTranslations("reports")
   const reportStatCards = [
     {
-      label: "Усього рейсів",
+      label: reportTranslations("totalRoutesLabel"),
       value: String(routesPeriodReport.totalRoutesCount),
     },
     {
-      label: "Заплановано",
+      label: routeStatusTranslations(RouteStatus.Planned),
       value: String(routesPeriodReport.plannedRoutesCount),
     },
     {
-      label: "В процесі",
+      label: routeStatusTranslations(RouteStatus.InProgress),
       value: String(routesPeriodReport.inProgressRoutesCount),
     },
     {
-      label: "Виконано",
+      label: routeStatusTranslations(RouteStatus.Completed),
       value: String(routesPeriodReport.completedRoutesCount),
     },
     {
-      label: "Скасовано",
+      label: routeStatusTranslations(RouteStatus.Cancelled),
       value: String(routesPeriodReport.cancelledRoutesCount),
     },
     {
-      label: "Годин у дорозі (виконані)",
-      value: formatHours(routesPeriodReport.completedRoutesDrivingHours),
+      label: reportTranslations("completedDrivingHoursLabel"),
+      value: formatHours(
+        routesPeriodReport.completedRoutesDrivingHours,
+        appLocale
+      ),
     },
     {
-      label: "Задіяно автомобілів",
+      label: reportTranslations("involvedAutosLabel"),
       value: String(routesPeriodReport.involvedAutosCount),
     },
     {
-      label: "Задіяно водіїв",
+      label: reportTranslations("involvedDriversLabel"),
       value: String(routesPeriodReport.involvedDriversCount),
     },
   ]
@@ -76,8 +83,16 @@ export function RoutesPeriodReportView({
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-semibold text-slate-800">
-        Звіт за період {formatIsoDateOnly(routesPeriodReport.periodStartDate)} —{" "}
-        {formatIsoDateOnly(routesPeriodReport.periodEndDate)}
+        {reportTranslations("periodTitle", {
+          periodStartDate: formatIsoDateOnly(
+            routesPeriodReport.periodStartDate,
+            appLocale
+          ),
+          periodEndDate: formatIsoDateOnly(
+            routesPeriodReport.periodEndDate,
+            appLocale
+          ),
+        })}
       </h2>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -91,7 +106,9 @@ export function RoutesPeriodReportView({
       </div>
 
       <section className="space-y-2">
-        <h3 className="font-semibold text-slate-700">Навантаження водіїв</h3>
+        <h3 className="font-semibold text-slate-700">
+          {reportTranslations("driverLoadTitle")}
+        </h3>
         <div className="overflow-hidden rounded-md border bg-white">
           <Table>
             <TableColumnsHeader
@@ -101,7 +118,7 @@ export function RoutesPeriodReportView({
               {routesPeriodReport.driverSummaries.length === 0 && (
                 <EmptyTableRow
                   columnCount={reportDriverSummariesTableColumns.length}
-                  message="За обраний період рейсів немає."
+                  message={reportTranslations("noRoutesInPeriod")}
                 />
               )}
               {routesPeriodReport.driverSummaries.map((driverSummary) => (
@@ -119,7 +136,10 @@ export function RoutesPeriodReportView({
                     {driverSummary.completedRoutesCount}
                   </TableCell>
                   <TableCell className="text-center">
-                    {formatHours(driverSummary.completedRoutesDrivingHours)}
+                    {formatHours(
+                      driverSummary.completedRoutesDrivingHours,
+                      appLocale
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -129,7 +149,9 @@ export function RoutesPeriodReportView({
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-semibold text-slate-700">Рейси за період</h3>
+        <h3 className="font-semibold text-slate-700">
+          {reportTranslations("routesTitle")}
+        </h3>
         <div className="overflow-hidden rounded-md border bg-white">
           <Table>
             <TableColumnsHeader tableColumns={reportRoutesTableColumns} />
@@ -137,7 +159,7 @@ export function RoutesPeriodReportView({
               {routesPeriodReport.routes.length === 0 && (
                 <EmptyTableRow
                   columnCount={reportRoutesTableColumns.length}
-                  message="За обраний період рейсів немає."
+                  message={reportTranslations("noRoutesInPeriod")}
                 />
               )}
               {routesPeriodReport.routes.map((route) => (
@@ -152,18 +174,20 @@ export function RoutesPeriodReportView({
                   <TableCell className="text-xs">
                     {formatUtcDateTimeWithTimeZone(
                       route.departureTimeUtc,
-                      route.startLocationTimeZoneId
+                      route.startLocationTimeZoneId,
+                      appLocale
                     )}
                   </TableCell>
                   <TableCell className="text-xs">
                     {formatUtcDateTimeWithTimeZone(
                       route.arrivalTimeUtc,
-                      route.destinationLocationTimeZoneId
+                      route.destinationLocationTimeZoneId,
+                      appLocale
                     )}
                   </TableCell>
                   <TableCell>{formatRouteDriverFullName(route)}</TableCell>
                   <TableCell className="text-right">
-                    {routeStatusLabels[route.status]}
+                    {routeStatusTranslations(route.status)}
                   </TableCell>
                 </TableRow>
               ))}

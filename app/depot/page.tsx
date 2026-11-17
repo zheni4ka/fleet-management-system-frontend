@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server"
 import { DepotNameModal } from "@/components/depot-name-modal"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageContainer } from "@/components/page-container"
@@ -9,6 +10,7 @@ import { fetchFromApi, getAdminAuthTokenOrRedirect } from "@/lib/server/api"
 
 export default async function DepotsPage() {
   const authToken = await getAdminAuthTokenOrRedirect()
+  const pageTranslations = await getTranslations("pages")
   const depotsResult = await fetchFromApi(
     apiEndpoints.depots,
     authToken,
@@ -18,8 +20,8 @@ export default async function DepotsPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="Депо"
-        description="Організаційні підрозділи: диспетчери бачать і змінюють лише автомобілі, водіїв і маршрути своїх депо."
+        title={pageTranslations("depotsTitle")}
+        description={pageTranslations("depotsDescription")}
       >
         <DepotNameModal editedDepot={null} />
       </PageHeader>

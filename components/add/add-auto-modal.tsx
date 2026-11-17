@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
@@ -21,6 +22,9 @@ interface AddAutoModalProps {
 }
 
 export default function AddAutoModal({ depots }: AddAutoModalProps) {
+  const autoTranslations = useTranslations("autos")
+  const formValidationTranslations = useTranslations("formValidation")
+  const commonTranslations = useTranslations("common")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [autoFormValues, setAutoFormValues] = useState(
     createEmptyAutoFormValues
@@ -31,7 +35,7 @@ export default function AddAutoModal({ depots }: AddAutoModalProps) {
     event.preventDefault()
     const autoFormValidationError = getAutoFormValidationError(autoFormValues)
     if (autoFormValidationError !== null) {
-      toast.error(autoFormValidationError)
+      toast.error(formValidationTranslations(autoFormValidationError))
       return
     }
 
@@ -43,9 +47,9 @@ export default function AddAutoModal({ depots }: AddAutoModalProps) {
           createCreateAutoRequestModel(autoFormValues)
         ),
       {
-        loading: "Збереження автомобіля...",
-        success: "Автомобіль успішно додано!",
-        error: "Помилка при додаванні автомобіля. Спробуйте ще раз.",
+        loading: autoTranslations("createLoading"),
+        success: autoTranslations("createSuccess"),
+        error: autoTranslations("createError"),
       }
     )
     if (isAutoCreated) {
@@ -57,12 +61,12 @@ export default function AddAutoModal({ depots }: AddAutoModalProps) {
   return (
     <>
       <Button hoverEffect="grow" onClick={() => setIsModalOpen(true)}>
-        Додати автомобіль
+        {autoTranslations("addButtonLabel")}
       </Button>
       <ModalWindow
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Додати автомобіль"
+        title={autoTranslations("addTitle")}
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <AutoFormFields
@@ -71,7 +75,7 @@ export default function AddAutoModal({ depots }: AddAutoModalProps) {
             onAutoFormValuesChange={setAutoFormValues}
           />
           <SubmitButton isSubmitting={isApiMutationRunning}>
-            Зберегти
+            {commonTranslations("saveButtonLabel")}
           </SubmitButton>
         </form>
       </ModalWindow>

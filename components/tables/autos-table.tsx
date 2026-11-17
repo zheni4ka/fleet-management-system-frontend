@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import EditAutoModal from "@/components/edit/edit-auto-modal"
@@ -6,13 +7,7 @@ import { ArchivableTableRowActions } from "@/components/tables/archivable-table-
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import { hasActiveListFilters } from "@/lib/search-params"
-import {
-  apiEndpoints,
-  autoStatusLabels,
-  autosTableColumns,
-  commonUiTexts,
-  listFilterTexts,
-} from "@/lib/constants"
+import { apiEndpoints, autosTableColumns } from "@/lib/constants"
 import { formatAutoTitle, formatAutoTitleWithNumber } from "@/lib/formatters"
 import {
   Auto,
@@ -29,6 +24,10 @@ interface AutosTableProps {
 }
 
 export function AutosTable({ autos, depots, listPageState }: AutosTableProps) {
+  const autoStatusTranslations = useTranslations("autoStatus")
+  const listFilterTranslations = useTranslations("listFilters")
+  const autoTranslations = useTranslations("autos")
+  const commonTranslations = useTranslations("common")
   return (
     <div className="overflow-hidden rounded-md border bg-white">
       <Table>
@@ -42,8 +41,8 @@ export function AutosTable({ autos, depots, listPageState }: AutosTableProps) {
               columnCount={autosTableColumns.length}
               message={
                 hasActiveListFilters(listPageState)
-                  ? commonUiTexts.nothingFoundMessage
-                  : "Автомобілів поки немає в системі."
+                  ? commonTranslations("nothingFoundMessage")
+                  : autoTranslations("emptyList")
               }
             />
           )}
@@ -55,7 +54,7 @@ export function AutosTable({ autos, depots, listPageState }: AutosTableProps) {
               <TableCell>{auto.color}</TableCell>
               <TableCell>
                 <Badge tone={BadgeTone.Neutral}>
-                  {autoStatusLabels[auto.status]}
+                  {autoStatusTranslations(auto.status)}
                 </Badge>
               </TableCell>
               <TableCell>
@@ -63,7 +62,7 @@ export function AutosTable({ autos, depots, listPageState }: AutosTableProps) {
                 {auto.isArchived && (
                   <span className="ml-2">
                     <Badge tone={BadgeTone.Neutral}>
-                      {listFilterTexts.archivedBadgeLabel}
+                      {listFilterTranslations("archivedBadgeLabel")}
                     </Badge>
                   </span>
                 )}
@@ -84,17 +83,21 @@ export function AutosTable({ autos, depots, listPageState }: AutosTableProps) {
                     isArchived={auto.isArchived}
                     deleteApiPath={`${apiEndpoints.deleteAuto}/${auto.id}`}
                     restoreApiPath={`${apiEndpoints.restoreAuto}/${auto.id}`}
-                    deletionQuestion={`Видалити авто ${formatAutoTitleWithNumber(auto)}? Якщо воно використовується в маршрутах, його буде перенесено до архіву.`}
+                    deletionQuestion={autoTranslations("deletionQuestion", {
+                      autoTitle: formatAutoTitleWithNumber(auto),
+                    })}
                     deletionToastMessages={{
-                      loading: "Видалення автомобіля...",
-                      success: "Автомобіль успішно видалено!",
-                      error: "Не вдалося видалити автомобіль",
+                      loading: autoTranslations("deleteLoading"),
+                      success: autoTranslations("deleteSuccess"),
+                      error: autoTranslations("deleteError"),
                     }}
-                    archivedInsteadOfDeletedMessage="Автомобіль використовується в маршрутах, тому його перенесено до архіву."
+                    archivedInsteadOfDeletedMessage={autoTranslations(
+                      "archivedInsteadOfDeleted"
+                    )}
                     restoreToastMessages={{
-                      loading: "Відновлення автомобіля...",
-                      success: "Автомобіль відновлено з архіву!",
-                      error: "Не вдалося відновити автомобіль",
+                      loading: autoTranslations("restoreLoading"),
+                      success: autoTranslations("restoreSuccess"),
+                      error: autoTranslations("restoreError"),
                     }}
                   />
                 </div>

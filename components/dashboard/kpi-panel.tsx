@@ -5,6 +5,7 @@ import {
   Truck,
   Users,
 } from "lucide-react"
+import { getTranslations } from "next-intl/server"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { apiEndpoints } from "@/lib/constants"
 import { fetchFromApi } from "@/lib/server/api"
@@ -49,6 +50,7 @@ interface KpiPanelProps {
 }
 
 export async function KpiPanel({ authToken }: KpiPanelProps) {
+  const homeTranslations = await getTranslations("home")
   const dashboardSummaryResult = await fetchFromApi(
     apiEndpoints.dashboardSummary,
     authToken,
@@ -58,7 +60,9 @@ export async function KpiPanel({ authToken }: KpiPanelProps) {
   if (!dashboardSummaryResult.isSucceeded) {
     return (
       <LoadErrorMessage
-        errorMessage={`Не вдалося завантажити аналітичні дані. ${dashboardSummaryResult.errorMessage}`}
+        errorMessage={homeTranslations("kpiLoadFailed", {
+          errorMessage: dashboardSummaryResult.errorMessage,
+        })}
       />
     )
   }
@@ -74,31 +78,33 @@ export async function KpiPanel({ authToken }: KpiPanelProps) {
 
   const kpiCards: KpiCardProps[] = [
     {
-      label: "Усього авто",
+      label: homeTranslations("autosCountLabel"),
       value: dashboardSummary.autosCount,
-      description: "Зареєстровано в базі",
+      description: homeTranslations("registeredDescription"),
       icon: Truck,
       colorClassName: "bg-blue-50 text-blue-600 group-hover:bg-blue-100",
     },
     {
-      label: "Усього водіїв",
+      label: homeTranslations("driversCountLabel"),
       value: dashboardSummary.driversCount,
-      description: "Зареєстровано в базі",
+      description: homeTranslations("registeredDescription"),
       icon: Users,
       colorClassName:
         "bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100",
     },
     {
-      label: "Активні рейси",
+      label: homeTranslations("activeRoutesLabel"),
       value: dashboardSummary.activeRoutesCount,
-      description: `Із ${dashboardSummary.routesCount} загальних маршрутів`,
+      description: homeTranslations("activeRoutesDescription", {
+        routesCount: dashboardSummary.routesCount,
+      }),
       icon: MapIcon,
       colorClassName: "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100",
     },
     {
-      label: "Завантаженість",
+      label: homeTranslations("utilizationLabel"),
       value: `${activeRoutesPercentage}%`,
-      description: "Відсоток активних маршрутів",
+      description: homeTranslations("utilizationDescription"),
       icon: Activity,
       colorClassName: "bg-orange-50 text-orange-600 group-hover:bg-orange-100",
     },

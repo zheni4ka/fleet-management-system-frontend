@@ -1,35 +1,32 @@
 import { CheckCircle, Play, XCircle } from "lucide-react"
-import { AuditAction } from "@/lib/types/audit-action"
+import { AppLocale } from "@/lib/types/app-locale"
 import { AuditLogSortField } from "@/lib/types/audit-log-sort-field"
 import { AutoSortField } from "@/lib/types/auto-sort-field"
-import { AutoStatus } from "@/lib/types/auto-status"
 import { BadgeTone } from "@/lib/types/badge-tone"
 import { DispatcherSortField } from "@/lib/types/dispatcher-sort-field"
 import { DriverFormField } from "@/lib/types/driver-form-field"
 import { DriverSortField } from "@/lib/types/driver-sort-field"
 import { LocationSortField } from "@/lib/types/location-sort-field"
-import { ListFilterOption } from "@/lib/types/list-filter-option"
-import { LoginRedirectReason } from "@/lib/types/login-redirect-reason"
 import { NavigationLink } from "@/lib/types/navigation-link"
 import { RouteSortField } from "@/lib/types/route-sort-field"
 import { RouteStatus } from "@/lib/types/route-status"
 import { RouteStatusAction } from "@/lib/types/route-status-action"
 import { RoutesPeriodFormValues } from "@/lib/types/routes-period-form-values"
-import { SortDirection } from "@/lib/types/sort-direction"
 import { SortOption } from "@/lib/types/sort-option"
 import { TableColumn } from "@/lib/types/table-column"
-import { UserRole } from "@/lib/types/user-role"
 
 export const cookieNames = Object.freeze({
   accessToken: "accessToken",
   refreshToken: "refreshToken",
   singleSignOnTransaction: "singleSignOnTransaction",
+  locale: "NEXT_LOCALE",
 })
 
 export const bffRoutes = Object.freeze({
   sessionLogin: "/api/session/login",
   sessionLogout: "/api/session/logout",
   sessionChangePassword: "/api/session/change-password",
+  sessionLanguage: "/api/session/language",
   sessionPrefix: "/api/session/",
   singleSignOnStart: "/api/session/sso/start",
   singleSignOnCallback: "/api/session/sso/callback",
@@ -67,18 +64,6 @@ export const accountPasswordConstraints = Object.freeze({
   lowercaseLetterPattern: /[a-z]/,
 })
 
-export const passwordPolicyMessages = Object.freeze({
-  tooShort: `Пароль має містити щонайменше ${accountPasswordConstraints.minLength} символів.`,
-  tooLong: `Пароль не може перевищувати ${accountPasswordConstraints.maxLength} символів.`,
-  digitMissing: "Пароль має містити щонайменше одну цифру.",
-  uppercaseLetterMissing:
-    "Пароль має містити щонайменше одну велику латинську літеру.",
-  lowercaseLetterMissing:
-    "Пароль має містити щонайменше одну малу латинську літеру.",
-  confirmationMismatch: "Паролі не збігаються.",
-  hint: `Мінімум ${accountPasswordConstraints.minLength} символів, велика й мала латинські літери та цифра`,
-})
-
 export const apiProblemTypes = Object.freeze({
   passwordChangeRequired: "passwordChangeRequired",
   externalIdentityAccessDenied: "externalIdentityAccessDenied",
@@ -92,6 +77,7 @@ export const httpHeaderNames = Object.freeze({
   host: "Host",
   forwardedFor: "X-Forwarded-For",
   traceparent: "traceparent",
+  acceptLanguage: "Accept-Language",
 })
 
 export const httpStatusCodes = Object.freeze({
@@ -103,15 +89,6 @@ export const httpStatusCodes = Object.freeze({
   notFound: 404,
   conflict: 409,
   serviceUnavailable: 503,
-})
-
-export const bffErrorMessages = Object.freeze({
-  crossOriginRequestRejected: "Запит з іншого джерела відхилено.",
-  invalidRequestBody: "Некоректні дані запиту.",
-  unsupportedApiPath: "Запитаний шлях API не підтримується.",
-  logoutFailed: "Не вдалося вийти з системи. Спробуйте ще раз.",
-  singleSignOnNotConfigured:
-    "Вхід через корпоративний обліковий запис не налаштовано.",
 })
 
 export const backendApiPathPrefixSegment = "api"
@@ -150,46 +127,10 @@ export const loginSearchParamNames = Object.freeze({
   reason: "reason",
 })
 
-export const commonUiTexts = Object.freeze({
-  sessionExpiredMessage: "Сесія завершилась. Увійдіть у систему повторно.",
-  serverUnavailableMessage: "Сервер недоступний. Спробуйте пізніше.",
-  concurrencyConflictMessage:
-    "Запис змінив інший користувач. Дані на сторінці оновлено — перевірте їх і повторіть дію.",
-  nothingFoundMessage: "Нічого не знайдено за вашим запитом.",
-  errorPageTitle: "Щось пішло не так",
-  retryButtonLabel: "Спробувати ще",
-  homeLinkLabel: "На головну",
-  closeButtonLabel: "Закрити",
-  deletedUserLabel: "Видалений користувач",
-  unexpectedApiResponseFormatMessage:
-    "Сервер повернув дані в неочікуваному форматі.",
-})
-
 export const openIdConnectAuthorizationResponseParamNames = Object.freeze({
   code: "code",
   state: "state",
   error: "error",
-})
-
-export const loginRedirectReasonMessages: Readonly<
-  Record<LoginRedirectReason, string>
-> = Object.freeze({
-  [LoginRedirectReason.SessionExpired]: commonUiTexts.sessionExpiredMessage,
-  [LoginRedirectReason.SingleSignOnFailed]:
-    "Не вдалося увійти через корпоративний обліковий запис. Спробуйте ще раз.",
-  [LoginRedirectReason.SingleSignOnAccessDenied]:
-    "Ваш корпоративний обліковий запис не має доступу до системи. Зверніться до адміністратора.",
-})
-
-export const userRoleLabels: Readonly<Record<UserRole, string>> = Object.freeze(
-  {
-    [UserRole.Admin]: "Адміністратор",
-    [UserRole.Dispatcher]: "Диспетчер",
-  }
-)
-
-export const localeCodes = Object.freeze({
-  display: "uk-UA",
 })
 
 export const appRoutes = Object.freeze({
@@ -212,6 +153,7 @@ export const apiEndpoints = Object.freeze({
   changePassword: "/api/v1/Account/changePassword",
   resetUserPassword: "/api/v1/Account/resetUserPassword",
   loginWithExternalIdentity: "/api/v1/Account/loginWithExternalIdentity",
+  updatePreferredLanguage: "/api/v1/Account/updatePreferredLanguage",
   registerAccount: "/api/v1/Account/registerAccount",
   dispatchersPagedList: "/api/v1/Account/getDispatchersPagedList",
   updateUserDepots: "/api/v1/Account/updateUserDepots",
@@ -245,7 +187,8 @@ export const apiEndpoints = Object.freeze({
   routesPeriodReport: "/api/v1/Route/getRoutesPeriodReport",
   createAutoMaintenance: "/api/v1/AutoMaintenance/createAutoMaintenance",
   updateAutoMaintenance: "/api/v1/AutoMaintenance/updateAutoMaintenance",
-  autoMaintenancesByAutoId: "/api/v1/AutoMaintenance/getAutoMaintenancesByAutoId",
+  autoMaintenancesByAutoId:
+    "/api/v1/AutoMaintenance/getAutoMaintenancesByAutoId",
   auditLogsPagedList: "/api/v1/AuditLog/getAuditLogsPagedList",
   dashboardSummary: "/api/v1/Dashboard/getDashboardSummary",
 })
@@ -288,25 +231,7 @@ export const listPaging = Object.freeze({
   pageSizeOptions: Object.freeze([10, 20, 50, 100]),
 })
 
-export const listFilterTexts = Object.freeze({
-  statusLabel: "Статус",
-  allStatusesOptionLabel: "Усі статуси",
-  depotLabel: "Депо",
-  allDepotsOptionLabel: "Усі депо",
-  archiveStateLabel: "Стан",
-  activeRecordsOptionLabel: "Активні",
-  archivedRecordsOptionLabel: "Архівні",
-  archivedBadgeLabel: "В архіві",
-  deactivatedBadgeLabel: "Деактивовано",
-})
-
 export const archivedRecordsFilterValue = "true"
-
-export const routesPageTexts = Object.freeze({
-  title: "Маршрути",
-  description:
-    "Перегляд доступних маршрутів із деталями відправлення, прибуття, автомобіля та водія.",
-})
 
 export const recentRoutesBlockSettings = Object.freeze({
   routesCount: 5,
@@ -316,68 +241,16 @@ export const routesPeriodPresetSettings = Object.freeze({
   lastWeekDaysCount: 7,
 })
 
-export const sortDirectionLabels: Readonly<Record<SortDirection, string>> =
-  Object.freeze({
-    [SortDirection.Ascending]: "За зростанням",
-    [SortDirection.Descending]: "За спаданням",
-  })
-
 export const routeSortOptions: ReadonlyArray<SortOption<RouteSortField>> =
   Object.freeze([
-    { sortField: RouteSortField.DepartureTime, label: "Час відправлення" },
-    { sortField: RouteSortField.ArrivalTime, label: "Час прибуття" },
-    { sortField: RouteSortField.Status, label: "Статус" },
-    { sortField: RouteSortField.Id, label: "ID" },
+    {
+      sortField: RouteSortField.DepartureTime,
+      labelMessageKey: "departureTime",
+    },
+    { sortField: RouteSortField.ArrivalTime, labelMessageKey: "arrivalTime" },
+    { sortField: RouteSortField.Status, labelMessageKey: "status" },
+    { sortField: RouteSortField.Id, labelMessageKey: "id" },
   ])
-
-export const iconActionLabels = Object.freeze({
-  edit: "Редагувати",
-  delete: "Видалити",
-  maintenance: "Технічне обслуговування",
-  resetPassword: "Скинути пароль",
-  restore: "Відновити з архіву",
-  deactivate: "Деактивувати",
-  reactivate: "Активувати",
-  editDepots: "Змінити депо",
-  viewOnMap: "Показати маршрут на карті",
-})
-
-export const routeFormSelectTexts = Object.freeze({
-  startLocationPlaceholder: "Оберіть початкову локацію",
-  destinationLocationPlaceholder: "Оберіть кінцеву локацію",
-  locationSearchPlaceholder: "Пошук міста або країни...",
-  locationEmptyMessage: "Локацію не знайдено",
-  driverPlaceholder: "Оберіть водія",
-  driverSearchPlaceholder: "Пошук за ПІБ або посвідченням...",
-  driverEmptyMessage: "Водія не знайдено",
-  autoPlaceholder: "Оберіть авто",
-  autoSearchPlaceholder: "Пошук за маркою або номером...",
-  autoEmptyMessage: "Автомобіль не знайдено",
-})
-
-export const routeFormValidationMessages = Object.freeze({
-  requiredFieldsMissing:
-    "Будь ласка, заповніть всі поля форми перед збереженням.",
-  sameStartAndDestinationLocation:
-    "Початкова та кінцева локації мають відрізнятися.",
-  arrivalNotAfterDeparture:
-    "Час прибуття має бути пізніше за час відправлення.",
-})
-
-export const autoStatusLabels: Readonly<Record<AutoStatus, string>> =
-  Object.freeze({
-    [AutoStatus.Available]: "Доступне",
-    [AutoStatus.InService]: "В експлуатації",
-    [AutoStatus.UnderMaintenance]: "На техобслуговуванні",
-  })
-
-export const routeStatusLabels: Readonly<Record<RouteStatus, string>> =
-  Object.freeze({
-    [RouteStatus.Planned]: "Заплановано",
-    [RouteStatus.InProgress]: "В процесі",
-    [RouteStatus.Completed]: "Виконано",
-    [RouteStatus.Cancelled]: "Скасовано",
-  })
 
 export const routeStatusBadgeClassNames: Readonly<Record<RouteStatus, string>> =
   Object.freeze({
@@ -419,120 +292,173 @@ export const autoColorOptions: ReadonlyArray<string> = Object.freeze([
 
 export const headerNavigationLinks: ReadonlyArray<NavigationLink> =
   Object.freeze([
-    { href: appRoutes.drivers, label: "Водії", isAdminOnly: true },
-    { href: appRoutes.autos, label: "Авто", isAdminOnly: true },
-    { href: appRoutes.dispatchers, label: "Диспетчери", isAdminOnly: true },
-    { href: appRoutes.routes, label: "Маршрути", isAdminOnly: false },
-    { href: appRoutes.locations, label: "Локації", isAdminOnly: true },
-    { href: appRoutes.reports, label: "Звіти", isAdminOnly: false },
-    { href: appRoutes.auditLogs, label: "Журнал дій", isAdminOnly: true },
-    { href: appRoutes.depots, label: "Депо", isAdminOnly: true },
+    { href: appRoutes.drivers, labelMessageKey: "drivers", isAdminOnly: true },
+    { href: appRoutes.autos, labelMessageKey: "autos", isAdminOnly: true },
+    {
+      href: appRoutes.dispatchers,
+      labelMessageKey: "dispatchers",
+      isAdminOnly: true,
+    },
+    { href: appRoutes.routes, labelMessageKey: "routes", isAdminOnly: false },
+    {
+      href: appRoutes.locations,
+      labelMessageKey: "locations",
+      isAdminOnly: true,
+    },
+    { href: appRoutes.reports, labelMessageKey: "reports", isAdminOnly: false },
+    {
+      href: appRoutes.auditLogs,
+      labelMessageKey: "auditLogs",
+      isAdminOnly: true,
+    },
+    { href: appRoutes.depots, labelMessageKey: "depots", isAdminOnly: true },
   ])
 
 export const fastAccessNavigationLinks: ReadonlyArray<NavigationLink> =
   Object.freeze([
-    { href: appRoutes.drivers, label: "База водіїв", isAdminOnly: true },
-    { href: appRoutes.autos, label: "Облік автомобілів", isAdminOnly: true },
+    {
+      href: appRoutes.drivers,
+      labelMessageKey: "driversFastAccess",
+      isAdminOnly: true,
+    },
+    {
+      href: appRoutes.autos,
+      labelMessageKey: "autosFastAccess",
+      isAdminOnly: true,
+    },
     {
       href: appRoutes.routes,
-      label: "Логістика маршрутів",
+      labelMessageKey: "routesFastAccess",
       isAdminOnly: false,
     },
     {
       href: appRoutes.reports,
-      label: "Звіти за період",
+      labelMessageKey: "reportsFastAccess",
       isAdminOnly: false,
     },
   ])
 
 export const autosTableColumns: ReadonlyArray<TableColumn<AutoSortField>> =
   Object.freeze([
-    { label: "ID", className: "w-1/12", sortField: AutoSortField.Id },
-    { label: "Марка", className: "w-1/6", sortField: AutoSortField.Mark },
-    { label: "Модель", className: "w-1/6", sortField: AutoSortField.Model },
-    { label: "Колір", className: "w-1/6", sortField: AutoSortField.Color },
-    { label: "Статус", className: "w-1/6", sortField: AutoSortField.Status },
-    { label: "Номер", className: "w-1/6", sortField: AutoSortField.Number },
-    { label: "Депо", className: "w-1/6" },
-    { label: "Операції", className: "w-1/6 text-center" },
+    { labelMessageKey: "id", className: "w-1/12", sortField: AutoSortField.Id },
+    {
+      labelMessageKey: "mark",
+      className: "w-1/6",
+      sortField: AutoSortField.Mark,
+    },
+    {
+      labelMessageKey: "model",
+      className: "w-1/6",
+      sortField: AutoSortField.Model,
+    },
+    {
+      labelMessageKey: "color",
+      className: "w-1/6",
+      sortField: AutoSortField.Color,
+    },
+    {
+      labelMessageKey: "status",
+      className: "w-1/6",
+      sortField: AutoSortField.Status,
+    },
+    {
+      labelMessageKey: "number",
+      className: "w-1/6",
+      sortField: AutoSortField.Number,
+    },
+    { labelMessageKey: "depot", className: "w-1/6" },
+    { labelMessageKey: "operations", className: "w-1/6 text-center" },
   ])
 
 export const driversTableColumns: ReadonlyArray<TableColumn<DriverSortField>> =
   Object.freeze([
-    { label: "ID", className: "w-1/6", sortField: DriverSortField.Id },
-    { label: "Ім'я", className: "w-1/6", sortField: DriverSortField.Name },
     {
-      label: "Прізвище",
+      labelMessageKey: "id",
+      className: "w-1/6",
+      sortField: DriverSortField.Id,
+    },
+    {
+      labelMessageKey: "name",
+      className: "w-1/6",
+      sortField: DriverSortField.Name,
+    },
+    {
+      labelMessageKey: "surname",
       className: "w-1/6",
       sortField: DriverSortField.Surname,
     },
     {
-      label: "По батькові",
+      labelMessageKey: "patronymic",
       className: "w-1/6",
       sortField: DriverSortField.Patronymic,
     },
     {
-      label: "Посвідчення водія",
+      labelMessageKey: "licenseNumber",
       className: "w-1/6",
       sortField: DriverSortField.LicenseNumber,
     },
-    { label: "Депо", className: "w-1/6" },
-    { label: "Операції", className: "w-1/6 text-center" },
+    { labelMessageKey: "depot", className: "w-1/6" },
+    { labelMessageKey: "operations", className: "w-1/6 text-center" },
   ])
 
 export const dispatchersTableColumns: ReadonlyArray<
   TableColumn<DispatcherSortField>
 > = Object.freeze([
-  { label: "ID", className: "w-1/4", sortField: DispatcherSortField.Id },
   {
-    label: "Логін",
+    labelMessageKey: "id",
+    className: "w-1/4",
+    sortField: DispatcherSortField.Id,
+  },
+  {
+    labelMessageKey: "username",
     className: "w-1/4",
     sortField: DispatcherSortField.Username,
   },
-  { label: "Email", className: "w-1/4", sortField: DispatcherSortField.Email },
-  { label: "Депо", className: "w-1/4" },
-  { label: "Операції", className: "w-1/4 text-center" },
+  {
+    labelMessageKey: "email",
+    className: "w-1/4",
+    sortField: DispatcherSortField.Email,
+  },
+  { labelMessageKey: "depot", className: "w-1/4" },
+  { labelMessageKey: "operations", className: "w-1/4 text-center" },
 ])
 
 export const depotsTableColumns: ReadonlyArray<TableColumn> = Object.freeze([
-  { label: "ID", className: "w-1/6" },
-  { label: "Назва", className: "w-1/2" },
-  { label: "Операції", className: "w-1/3 text-center" },
+  { labelMessageKey: "id", className: "w-1/6" },
+  { labelMessageKey: "depotName", className: "w-1/2" },
+  { labelMessageKey: "operations", className: "w-1/3 text-center" },
 ])
 
 export const recentRoutesTableColumns: ReadonlyArray<TableColumn> =
   Object.freeze([
-    { label: "ID", className: "w-1/6" },
-    { label: "Звідки → Куди", className: "w-2/6" },
-    { label: "Відправлення", className: "w-1/6" },
-    { label: "Прибуття", className: "w-1/6" },
-    { label: "Статус", className: "w-1/6 text-right" },
+    { labelMessageKey: "id", className: "w-1/6" },
+    { labelMessageKey: "fromTo", className: "w-2/6" },
+    { labelMessageKey: "departure", className: "w-1/6" },
+    { labelMessageKey: "arrival", className: "w-1/6" },
+    { labelMessageKey: "status", className: "w-1/6 text-right" },
   ])
 
 export const driverFormFields: ReadonlyArray<DriverFormField> = Object.freeze([
-  { name: "name", label: "Ім'я" },
-  { name: "surname", label: "Прізвище" },
-  { name: "patronymic", label: "По батькові" },
-  { name: "licenseNumber", label: "Посвідчення водія" },
+  { name: "name", labelMessageKey: "nameLabel" },
+  { name: "surname", labelMessageKey: "surnameLabel" },
+  { name: "patronymic", labelMessageKey: "patronymicLabel" },
+  { name: "licenseNumber", labelMessageKey: "licenseNumberLabel" },
 ])
 
 export const routeStatusActions: ReadonlyArray<RouteStatusAction> =
   Object.freeze([
     {
       targetRouteStatus: RouteStatus.InProgress,
-      label: "Розпочати",
       icon: Play,
       variant: "accent",
     },
     {
       targetRouteStatus: RouteStatus.Completed,
-      label: "Завершити",
       icon: CheckCircle,
       variant: "success",
     },
     {
       targetRouteStatus: RouteStatus.Cancelled,
-      label: "Скасувати",
       icon: XCircle,
       variant: "warning",
     },
@@ -541,82 +467,70 @@ export const routeStatusActions: ReadonlyArray<RouteStatusAction> =
 export const locationsTableColumns: ReadonlyArray<
   TableColumn<LocationSortField>
 > = Object.freeze([
-  { label: "ID", className: "w-1/6", sortField: LocationSortField.Id },
-  { label: "Місто", className: "w-1/3", sortField: LocationSortField.City },
-  { label: "Країна", className: "w-1/3", sortField: LocationSortField.Country },
-  { label: "Операції", className: "w-1/6 text-center" },
+  {
+    labelMessageKey: "id",
+    className: "w-1/6",
+    sortField: LocationSortField.Id,
+  },
+  {
+    labelMessageKey: "city",
+    className: "w-1/3",
+    sortField: LocationSortField.City,
+  },
+  {
+    labelMessageKey: "country",
+    className: "w-1/3",
+    sortField: LocationSortField.Country,
+  },
+  { labelMessageKey: "operations", className: "w-1/6 text-center" },
 ])
 
 export const auditLogsTableColumns: ReadonlyArray<
   TableColumn<AuditLogSortField>
 > = Object.freeze([
-  { label: "Час", className: "w-1/6", sortField: AuditLogSortField.Time },
-  { label: "Дія", className: "w-1/5", sortField: AuditLogSortField.Action },
   {
-    label: "Користувач",
+    labelMessageKey: "time",
+    className: "w-1/6",
+    sortField: AuditLogSortField.Time,
+  },
+  {
+    labelMessageKey: "action",
+    className: "w-1/5",
+    sortField: AuditLogSortField.Action,
+  },
+  {
+    labelMessageKey: "user",
     className: "w-1/6",
     sortField: AuditLogSortField.DispatcherUsername,
   },
   {
-    label: "ID об'єкта",
+    labelMessageKey: "entityId",
     className: "w-1/12",
     sortField: AuditLogSortField.EntityId,
   },
-  { label: "Зміни", className: "w-1/3" },
+  { labelMessageKey: "changes", className: "w-1/3" },
 ])
 
 export const reportDriverSummariesTableColumns: ReadonlyArray<TableColumn> =
   Object.freeze([
-    { label: "Водій", className: "w-2/5" },
-    { label: "Усього рейсів", className: "w-1/5 text-center" },
-    { label: "Виконано", className: "w-1/5 text-center" },
-    { label: "Годин у дорозі", className: "w-1/5 text-center" },
+    { labelMessageKey: "driver", className: "w-2/5" },
+    { labelMessageKey: "routesCount", className: "w-1/5 text-center" },
+    { labelMessageKey: "completedRoutesCount", className: "w-1/5 text-center" },
+    { labelMessageKey: "drivingHours", className: "w-1/5 text-center" },
   ])
 
 export const reportRoutesTableColumns: ReadonlyArray<TableColumn> =
   Object.freeze([
-    { label: "ID", className: "w-1/12" },
-    { label: "Звідки → Куди", className: "w-3/12" },
-    { label: "Відправлення", className: "w-2/12" },
-    { label: "Прибуття", className: "w-2/12" },
-    { label: "Водій", className: "w-2/12" },
-    { label: "Статус", className: "w-2/12 text-right" },
+    { labelMessageKey: "id", className: "w-1/12" },
+    { labelMessageKey: "fromTo", className: "w-3/12" },
+    { labelMessageKey: "departure", className: "w-2/12" },
+    { labelMessageKey: "arrival", className: "w-2/12" },
+    { labelMessageKey: "driver", className: "w-2/12" },
+    { labelMessageKey: "status", className: "w-2/12 text-right" },
   ])
-
-export const auditActionLabels: Readonly<Record<AuditAction, string>> =
-  Object.freeze({
-    [AuditAction.RouteCreated]: "Створено маршрут",
-    [AuditAction.RouteUpdated]: "Змінено маршрут",
-    [AuditAction.RouteDeleted]: "Видалено маршрут",
-    [AuditAction.AutoCreated]: "Додано автомобіль",
-    [AuditAction.AutoUpdated]: "Змінено автомобіль",
-    [AuditAction.AutoStatusChanged]: "Змінено статус автомобіля",
-    [AuditAction.AutoDeleted]: "Видалено автомобіль",
-    [AuditAction.DriverCreated]: "Додано водія",
-    [AuditAction.DriverUpdated]: "Змінено водія",
-    [AuditAction.DriverDeleted]: "Видалено водія",
-    [AuditAction.LocationCreated]: "Додано локацію",
-    [AuditAction.LocationDeleted]: "Видалено локацію",
-    [AuditAction.MaintenanceCreated]: "Створено техобслуговування",
-    [AuditAction.MaintenanceUpdated]: "Змінено техобслуговування",
-    [AuditAction.MaintenanceDeleted]: "Видалено техобслуговування",
-    [AuditAction.UserRegistered]: "Зареєстровано користувача",
-    [AuditAction.UserDeleted]: "Видалено користувача",
-    [AuditAction.UserPasswordReset]: "Скинуто пароль користувача",
-    [AuditAction.UserPasswordChanged]: "Користувач змінив пароль",
-    [AuditAction.UserProvisioned]:
-      "Створено користувача через корпоративний вхід",
-  })
-
-export const userDepotsFormMessages = Object.freeze({
-  depotsRequired: "Диспетчеру потрібно призначити щонайменше одне депо.",
-  depotsUpdated:
-    "Депо диспетчера оновлено. Зміни застосуються під час наступного оновлення сесії (до 15 хвилин).",
-})
 
 export const depotNameConstraints = Object.freeze({
   maxLength: 100,
-  nameRequiredMessage: "Вкажіть назву депо.",
 })
 
 export const traceContextFormat = Object.freeze({
@@ -627,14 +541,21 @@ export const traceContextFormat = Object.freeze({
   traceparentPattern: /^00-([0-9a-f]{32})-([0-9a-f]{16})-[0-9a-f]{2}$/,
 })
 
-export const locationTimeZoneOptions: ReadonlyArray<ListFilterOption> =
-  Object.freeze([
-    { value: "Europe/Kyiv", label: "Europe/Kyiv — Україна" },
-    { value: "Europe/Warsaw", label: "Europe/Warsaw — Польща" },
-    { value: "Europe/Chisinau", label: "Europe/Chisinau — Молдова" },
-    { value: "Europe/Bucharest", label: "Europe/Bucharest — Румунія" },
-    { value: "Europe/Budapest", label: "Europe/Budapest — Угорщина" },
-    { value: "Europe/Bratislava", label: "Europe/Bratislava — Словаччина" },
-    { value: "Europe/Vilnius", label: "Europe/Vilnius — Литва" },
-    { value: "Europe/Berlin", label: "Europe/Berlin — Німеччина" },
-  ])
+export const locationTimeZoneIds: ReadonlyArray<string> = Object.freeze([
+  "Europe/Kyiv",
+  "Europe/Warsaw",
+  "Europe/Chisinau",
+  "Europe/Bucharest",
+  "Europe/Budapest",
+  "Europe/Bratislava",
+  "Europe/Vilnius",
+  "Europe/Berlin",
+])
+
+export const defaultAppLocale = AppLocale.Ukrainian
+
+export const intlLocaleCodes: Readonly<Record<AppLocale, string>> =
+  Object.freeze({
+    [AppLocale.Ukrainian]: "uk-UA",
+    [AppLocale.English]: "en-GB",
+  })

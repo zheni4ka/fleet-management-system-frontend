@@ -1,9 +1,9 @@
 import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
+import { getTranslations } from "next-intl/server"
 import { z } from "zod"
 import {
   appRoutes,
-  commonUiTexts,
   cookieNames,
   httpHeaderNames,
   httpStatusCodes,
@@ -51,6 +51,7 @@ export async function fetchFromApi<TResponseSchema extends z.ZodType>(
   responseSchema: TResponseSchema
 ): Promise<ApiFetchResult<z.infer<TResponseSchema>>> {
   const incomingRequestHeaders = await headers()
+  const commonTranslations = await getTranslations("common")
   let response: Response
   try {
     response = await fetch(`${getServerApiBaseUrl()}${apiPath}`, {
@@ -70,7 +71,7 @@ export async function fetchFromApi<TResponseSchema extends z.ZodType>(
     )
     return {
       isSucceeded: false,
-      errorMessage: commonUiTexts.serverUnavailableMessage,
+      errorMessage: commonTranslations("serverUnavailableMessage"),
     }
   }
 
@@ -82,7 +83,9 @@ export async function fetchFromApi<TResponseSchema extends z.ZodType>(
       isSucceeded: false,
       errorMessage: await getApiErrorMessage(
         response,
-        `Помилка завантаження даних (Статус: ${response.status})`
+        commonTranslations("dataLoadFailedMessage", {
+          status: response.status,
+        })
       ),
     }
   }
@@ -100,5 +103,5 @@ export function getFirstApiFetchErrorMessage(
       return apiFetchResult.errorMessage
     }
   }
-  throw new Error("Серед результатів запитів немає жодної помилки.")
+  throw new Error("None of the API fetch results contains an error.")
 }

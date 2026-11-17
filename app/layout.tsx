@@ -2,6 +2,8 @@ import "./globals.css"
 import { Inter } from "next/font/google"
 import { Metadata } from "next"
 import { Toaster } from "react-hot-toast"
+import { NextIntlClientProvider } from "next-intl"
+import { getLocale } from "next-intl/server"
 import { Header } from "@/components/header"
 import {
   getKnownUserRolesFromAuthToken,
@@ -30,27 +32,30 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const appLocale = await getLocale()
   const authToken = await getAuthTokenFromCookies()
   const unexpiredAuthToken =
     authToken !== null && isAuthTokenUnexpired(authToken) ? authToken : null
 
   return (
-    <html className={`${inter.className} p-3 sm:p-6`} lang="uk">
+    <html className={`${inter.className} p-3 sm:p-6`} lang={appLocale}>
       <body className="antialiased">
-        {unexpiredAuthToken !== null && (
-          <Header
-            className="fixed inset-x-0 top-0 z-45 w-full"
-            isAdmin={hasAuthTokenUserRole(unexpiredAuthToken, UserRole.Admin)}
-            currentUserName={getUserNameFromAuthToken(unexpiredAuthToken)}
-            currentUserRoles={getKnownUserRolesFromAuthToken(
-              unexpiredAuthToken
-            )}
-          />
-        )}
-        <main className={unexpiredAuthToken === null ? undefined : "pt-8"}>
-          {children}
-        </main>
-        <Toaster position="bottom-right" reverseOrder={false} />
+        <NextIntlClientProvider>
+          {unexpiredAuthToken !== null && (
+            <Header
+              className="fixed inset-x-0 top-0 z-45 w-full"
+              isAdmin={hasAuthTokenUserRole(unexpiredAuthToken, UserRole.Admin)}
+              currentUserName={getUserNameFromAuthToken(unexpiredAuthToken)}
+              currentUserRoles={getKnownUserRolesFromAuthToken(
+                unexpiredAuthToken
+              )}
+            />
+          )}
+          <main className={unexpiredAuthToken === null ? undefined : "pt-8"}>
+            {children}
+          </main>
+          <Toaster position="bottom-right" reverseOrder={false} />
+        </NextIntlClientProvider>
       </body>
     </html>
   )

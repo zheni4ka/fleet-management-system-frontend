@@ -1,6 +1,7 @@
 import {
   AutoMaintenance,
   CreateAutoMaintenanceRequestModel,
+  FormValidationError,
   MaintenanceFormValues,
   UpdateAutoMaintenanceRequestModel,
 } from "@/lib/types"
@@ -11,12 +12,12 @@ export function createEmptyMaintenanceFormValues(): MaintenanceFormValues {
 
 export function getMaintenanceFormValidationError(
   maintenanceFormValues: MaintenanceFormValues
-): string | null {
+): FormValidationError | null {
   const hasEmptyRequiredField = Object.values(maintenanceFormValues).some(
     (maintenanceFieldValue) => maintenanceFieldValue.trim() === ""
   )
   if (hasEmptyRequiredField) {
-    return "Заповніть всі поля!"
+    return FormValidationError.MaintenanceRequiredFieldsMissing
   }
   return null
 }

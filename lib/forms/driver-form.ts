@@ -1,4 +1,9 @@
-import { CreateDriverRequestModel, Driver, DriverFormValues } from "@/lib/types"
+import {
+  CreateDriverRequestModel,
+  Driver,
+  DriverFormValues,
+  FormValidationError,
+} from "@/lib/types"
 
 export function createEmptyDriverFormValues(): DriverFormValues {
   return {
@@ -24,7 +29,7 @@ export function createDriverFormValuesFromDriver(
 
 export function getDriverFormValidationError(
   driverFormValues: DriverFormValues
-): string | null {
+): FormValidationError | null {
   const hasEmptyRequiredField = [
     driverFormValues.name,
     driverFormValues.surname,
@@ -33,7 +38,7 @@ export function getDriverFormValidationError(
     driverFormValues.depotId,
   ].some((requiredFieldValue) => requiredFieldValue.trim() === "")
   if (hasEmptyRequiredField) {
-    return "Будь ласка, заповніть ім'я, прізвище, по батькові, номер посвідчення та депо."
+    return FormValidationError.DriverRequiredFieldsMissing
   }
   return null
 }

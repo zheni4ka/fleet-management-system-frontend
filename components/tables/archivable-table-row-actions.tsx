@@ -1,12 +1,12 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useState } from "react"
 import { ArchiveRestore, Trash2 } from "lucide-react"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { IconActionButton } from "@/components/icon-action-button"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest, sendApiRequestForData } from "@/lib/api-client"
-import { iconActionLabels } from "@/lib/constants"
 import { archivingDeleteResponseSchema } from "@/lib/schemas/archiving-delete-response-schema"
 import { ApiMutationToastMessages, HttpMethod } from "@/lib/types"
 
@@ -29,6 +29,7 @@ export function ArchivableTableRowActions({
   archivedInsteadOfDeletedMessage,
   restoreToastMessages,
 }: ArchivableTableRowActionsProps) {
+  const iconActionTranslations = useTranslations("iconActions")
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
   const [isDeletionConfirmationOpen, setIsDeletionConfirmationOpen] =
     useState(false)
@@ -37,7 +38,7 @@ export function ArchivableTableRowActions({
     return (
       <IconActionButton
         icon={ArchiveRestore}
-        label={iconActionLabels.restore}
+        label={iconActionTranslations("restore")}
         variant="outline"
         disabled={isApiMutationRunning}
         onClick={() =>
@@ -70,7 +71,7 @@ export function ArchivableTableRowActions({
     <>
       <IconActionButton
         icon={Trash2}
-        label={iconActionLabels.delete}
+        label={iconActionTranslations("delete")}
         variant="destructive"
         onClick={() => setIsDeletionConfirmationOpen(true)}
         disabled={isApiMutationRunning}

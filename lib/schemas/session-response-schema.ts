@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { AppLocale } from "@/lib/types/app-locale"
 
 export const sessionResponseSchema = z.object({
   accessToken: z.string(),
@@ -8,4 +9,5 @@ export const sessionResponseSchema = z.object({
   username: z.string(),
   email: z.string().nullable(),
   roles: z.array(z.string()),
+  preferredLanguage: z.enum(AppLocale),
 })

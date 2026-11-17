@@ -1,12 +1,8 @@
 import {
-  auditActionLabels,
   autoColorOptions,
-  autoStatusLabels,
   archivedRecordsFilterValue,
   listFilterSearchParamNames,
-  listFilterTexts,
   listSearchParamNames,
-  routeStatusLabels,
 } from "@/lib/constants"
 import {
   formatAutoTitleWithNumber,
@@ -21,43 +17,50 @@ import {
   ListFilterField,
   ListFilterFieldKind,
   ListFilterOption,
+  MessageTranslator,
   RouteStatus,
   SelectListFilterField,
   TextListFilterField,
 } from "@/lib/types"
 
-function createListSearchFilterField(placeholder: string): TextListFilterField {
+function createListSearchFilterField(
+  translateMessage: MessageTranslator,
+  placeholderMessageKey: string
+): TextListFilterField {
   return {
     kind: ListFilterFieldKind.Text,
     name: listSearchParamNames.search,
-    label: "Пошук",
-    placeholder,
+    label: translateMessage("listFilters.searchLabel"),
+    placeholder: translateMessage(`listFilters.${placeholderMessageKey}`),
   }
 }
 
-function createArchiveStateListFilterField(): SelectListFilterField {
+function createArchiveStateListFilterField(
+  translateMessage: MessageTranslator
+): SelectListFilterField {
   return {
     kind: ListFilterFieldKind.Select,
     name: listFilterSearchParamNames.isArchived,
-    label: listFilterTexts.archiveStateLabel,
-    allOptionsLabel: listFilterTexts.activeRecordsOptionLabel,
+    label: translateMessage("listFilters.archiveStateLabel"),
+    allOptionsLabel: translateMessage("listFilters.activeRecordsOptionLabel"),
     options: [
       {
         value: archivedRecordsFilterValue,
-        label: listFilterTexts.archivedRecordsOptionLabel,
+        label: translateMessage("listFilters.archivedRecordsOptionLabel"),
       },
     ],
   }
 }
 
 function createDepotListFilterField(
-  depots: ReadonlyArray<Depot>
+  depots: ReadonlyArray<Depot>,
+  translateMessage: MessageTranslator
 ): SelectListFilterField {
   return {
     kind: ListFilterFieldKind.Select,
     name: listFilterSearchParamNames.depotId,
-    label: listFilterTexts.depotLabel,
-    allOptionsLabel: listFilterTexts.allDepotsOptionLabel,
+    label: translateMessage("listFilters.depotLabel"),
+    allOptionsLabel: translateMessage("listFilters.allDepotsOptionLabel"),
     options: depots.map((depot) => ({
       value: String(depot.id),
       label: depot.name,
@@ -65,138 +68,162 @@ function createDepotListFilterField(
   }
 }
 
-function createListFilterOptionsFromLabels<TEnumValue extends string>(
-  enumValueLabels: Readonly<Record<TEnumValue, string>>,
-  enumObject: Record<string, TEnumValue>
+function createTranslatedEnumListFilterOptions<TEnumValue extends string>(
+  enumObject: Record<string, TEnumValue>,
+  enumMessageNamespace: string,
+  translateMessage: MessageTranslator
 ): ReadonlyArray<ListFilterOption> {
   return Object.values(enumObject).map((enumValue) => ({
     value: enumValue,
-    label: enumValueLabels[enumValue],
+    label: translateMessage(`${enumMessageNamespace}.${enumValue}`),
   }))
 }
 
 export function createAutosListFilterFields(
-  depots: ReadonlyArray<Depot>
+  depots: ReadonlyArray<Depot>,
+  translateMessage: MessageTranslator
 ): ReadonlyArray<ListFilterField> {
   return [
-    createListSearchFilterField("ID, марка, модель, номер"),
+    createListSearchFilterField(translateMessage, "autoSearchPlaceholder"),
     {
       kind: ListFilterFieldKind.Select,
       name: listFilterSearchParamNames.status,
-      label: listFilterTexts.statusLabel,
-      allOptionsLabel: listFilterTexts.allStatusesOptionLabel,
-      options: createListFilterOptionsFromLabels(autoStatusLabels, AutoStatus),
+      label: translateMessage("listFilters.statusLabel"),
+      allOptionsLabel: translateMessage("listFilters.allStatusesOptionLabel"),
+      options: createTranslatedEnumListFilterOptions(
+        AutoStatus,
+        "autoStatus",
+        translateMessage
+      ),
     },
     {
       kind: ListFilterFieldKind.Select,
       name: listFilterSearchParamNames.color,
-      label: "Колір",
-      allOptionsLabel: "Усі кольори",
+      label: translateMessage("listFilters.colorLabel"),
+      allOptionsLabel: translateMessage("listFilters.allColorsOptionLabel"),
       options: autoColorOptions.map((autoColor) => ({
         value: autoColor,
         label: autoColor,
       })),
     },
-    createDepotListFilterField(depots),
-    createArchiveStateListFilterField(),
+    createDepotListFilterField(depots, translateMessage),
+    createArchiveStateListFilterField(translateMessage),
   ]
 }
 
 export function createDriversListFilterFields(
-  depots: ReadonlyArray<Depot>
+  depots: ReadonlyArray<Depot>,
+  translateMessage: MessageTranslator
 ): ReadonlyArray<ListFilterField> {
   return [
-    createListSearchFilterField("ID, ПІБ або посвідчення"),
-    createDepotListFilterField(depots),
-    createArchiveStateListFilterField(),
+    createListSearchFilterField(translateMessage, "driverSearchPlaceholder"),
+    createDepotListFilterField(depots, translateMessage),
+    createArchiveStateListFilterField(translateMessage),
   ]
 }
 
-export const dispatchersListFilterFields: ReadonlyArray<ListFilterField> =
-  Object.freeze([createListSearchFilterField("ID, логін або email")])
+export function createDispatchersListFilterFields(
+  translateMessage: MessageTranslator
+): ReadonlyArray<ListFilterField> {
+  return [
+    createListSearchFilterField(
+      translateMessage,
+      "dispatcherSearchPlaceholder"
+    ),
+  ]
+}
 
-export const locationsListFilterFields: ReadonlyArray<ListFilterField> =
-  Object.freeze([
-    createListSearchFilterField("ID, місто або країна"),
+export function createLocationsListFilterFields(
+  translateMessage: MessageTranslator
+): ReadonlyArray<ListFilterField> {
+  return [
+    createListSearchFilterField(translateMessage, "locationSearchPlaceholder"),
     {
       kind: ListFilterFieldKind.Text,
       name: listFilterSearchParamNames.country,
-      label: "Країна",
-      placeholder: "Наприклад, Ukraine",
+      label: translateMessage("listFilters.countryLabel"),
+      placeholder: translateMessage("listFilters.countryPlaceholder"),
     },
-    createArchiveStateListFilterField(),
-  ])
+    createArchiveStateListFilterField(translateMessage),
+  ]
+}
 
-export const auditLogsListFilterFields: ReadonlyArray<ListFilterField> =
-  Object.freeze([
-    createListSearchFilterField("Користувач або ID об'єкта"),
+export function createAuditLogsListFilterFields(
+  translateMessage: MessageTranslator
+): ReadonlyArray<ListFilterField> {
+  return [
+    createListSearchFilterField(translateMessage, "auditLogSearchPlaceholder"),
     {
       kind: ListFilterFieldKind.Select,
       name: listFilterSearchParamNames.action,
-      label: "Дія",
-      allOptionsLabel: "Усі дії",
-      options: createListFilterOptionsFromLabels(
-        auditActionLabels,
-        AuditAction
+      label: translateMessage("listFilters.actionLabel"),
+      allOptionsLabel: translateMessage("listFilters.allActionsOptionLabel"),
+      options: createTranslatedEnumListFilterOptions(
+        AuditAction,
+        "auditAction",
+        translateMessage
       ),
     },
     {
       kind: ListFilterFieldKind.Date,
       name: listFilterSearchParamNames.timeFromDate,
-      label: "Дата з",
+      label: translateMessage("listFilters.dateFromLabel"),
     },
     {
       kind: ListFilterFieldKind.Date,
       name: listFilterSearchParamNames.timeToDate,
-      label: "Дата по",
+      label: translateMessage("listFilters.dateToLabel"),
       rangeStartFieldName: listFilterSearchParamNames.timeFromDate,
     },
-  ])
+  ]
+}
 
 export function createRoutesListFilterFields(
   autoLookupOptions: ReadonlyArray<AutoLookupOption>,
   driverLookupOptions: ReadonlyArray<DriverLookupOption>,
-  depots: ReadonlyArray<Depot>
+  depots: ReadonlyArray<Depot>,
+  translateMessage: MessageTranslator
 ): ReadonlyArray<ListFilterField> {
   return [
     {
       kind: ListFilterFieldKind.Text,
       name: listFilterSearchParamNames.startCity,
-      label: "Місто відправлення",
+      label: translateMessage("listFilters.startCityLabel"),
       placeholder: "",
     },
     {
       kind: ListFilterFieldKind.Text,
       name: listFilterSearchParamNames.destinationCity,
-      label: "Місто прибуття",
+      label: translateMessage("listFilters.destinationCityLabel"),
       placeholder: "",
     },
     {
       kind: ListFilterFieldKind.Date,
       name: listFilterSearchParamNames.departureFromDate,
-      label: "Відправлення з",
+      label: translateMessage("listFilters.departureFromLabel"),
     },
     {
       kind: ListFilterFieldKind.Date,
       name: listFilterSearchParamNames.departureToDate,
-      label: "Відправлення по",
+      label: translateMessage("listFilters.departureToLabel"),
       rangeStartFieldName: listFilterSearchParamNames.departureFromDate,
     },
     {
       kind: ListFilterFieldKind.Select,
       name: listFilterSearchParamNames.status,
-      label: listFilterTexts.statusLabel,
-      allOptionsLabel: listFilterTexts.allStatusesOptionLabel,
-      options: createListFilterOptionsFromLabels(
-        routeStatusLabels,
-        RouteStatus
+      label: translateMessage("listFilters.statusLabel"),
+      allOptionsLabel: translateMessage("listFilters.allStatusesOptionLabel"),
+      options: createTranslatedEnumListFilterOptions(
+        RouteStatus,
+        "routeStatus",
+        translateMessage
       ),
     },
     {
       kind: ListFilterFieldKind.Select,
       name: listFilterSearchParamNames.driverId,
-      label: "Водій",
-      allOptionsLabel: "Усі водії",
+      label: translateMessage("listFilters.driverLabel"),
+      allOptionsLabel: translateMessage("listFilters.allDriversOptionLabel"),
       options: driverLookupOptions.map((driverLookupOption) => ({
         value: String(driverLookupOption.id),
         label: formatDriverFullName(driverLookupOption),
@@ -205,14 +232,14 @@ export function createRoutesListFilterFields(
     {
       kind: ListFilterFieldKind.Select,
       name: listFilterSearchParamNames.autoId,
-      label: "Автомобіль",
-      allOptionsLabel: "Усі автомобілі",
+      label: translateMessage("listFilters.autoLabel"),
+      allOptionsLabel: translateMessage("listFilters.allAutosOptionLabel"),
       options: autoLookupOptions.map((autoLookupOption) => ({
         value: String(autoLookupOption.id),
         label: formatAutoTitleWithNumber(autoLookupOption),
       })),
     },
-    createDepotListFilterField(depots),
-    createListSearchFilterField("ID маршруту, місто або країна"),
+    createDepotListFilterField(depots, translateMessage),
+    createListSearchFilterField(translateMessage, "routeSearchPlaceholder"),
   ]
 }

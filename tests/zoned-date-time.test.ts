@@ -3,6 +3,7 @@ import {
   convertZonedLocalDateTimeToUtcIsoString,
   formatUtcDateTimeWithTimeZone,
 } from "@/lib/zoned-date-time"
+import { AppLocale } from "@/lib/types"
 
 describe("convertZonedLocalDateTimeToUtcIsoString", () => {
   it.each([
@@ -31,7 +32,8 @@ describe("formatUtcDateTimeWithTimeZone", () => {
   it("shows the wall clock of the location and its zone id", () => {
     const formattedDateTime = formatUtcDateTimeWithTimeZone(
       "2026-12-01T06:00:00Z",
-      "Europe/Kyiv"
+      "Europe/Kyiv",
+      AppLocale.Ukrainian
     )
 
     expect(formattedDateTime).toContain("08:00")

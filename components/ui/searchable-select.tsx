@@ -3,7 +3,9 @@
 import { useId, useState, type KeyboardEvent } from "react"
 import { Popover as PopoverPrimitive } from "radix-ui"
 import { Check, ChevronsUpDown, Search } from "lucide-react"
-import { localeCodes } from "@/lib/constants"
+import { useLocale } from "next-intl"
+import { resolveAppLocale } from "@/lib/app-locale"
+import { intlLocaleCodes } from "@/lib/constants"
 import { SearchableSelectOption } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -18,10 +20,11 @@ interface SearchableSelectProps {
 
 function getIsOptionMatchingSearchQuery(
   option: SearchableSelectOption,
-  normalizedSearchQuery: string
+  normalizedSearchQuery: string,
+  intlLocaleCode: string
 ): boolean {
   return option.label
-    .toLocaleLowerCase(localeCodes.display)
+    .toLocaleLowerCase(intlLocaleCode)
     .includes(normalizedSearchQuery)
 }
 
@@ -33,6 +36,7 @@ export function SearchableSelect({
   searchPlaceholder,
   emptyMessage,
 }: SearchableSelectProps) {
+  const intlLocaleCode = intlLocaleCodes[resolveAppLocale(useLocale())]
   const listboxId = useId()
   const optionIdPrefix = useId()
   const [isOpen, setIsOpen] = useState(false)
@@ -46,9 +50,13 @@ export function SearchableSelect({
   )
   const normalizedSearchQuery = searchQuery
     .trim()
-    .toLocaleLowerCase(localeCodes.display)
+    .toLocaleLowerCase(intlLocaleCode)
   const visibleOptions = options.filter((option) =>
-    getIsOptionMatchingSearchQuery(option, normalizedSearchQuery)
+    getIsOptionMatchingSearchQuery(
+      option,
+      normalizedSearchQuery,
+      intlLocaleCode
+    )
   )
   const enabledVisibleOptions = visibleOptions.filter(
     (option) => !option.isDisabled
@@ -84,12 +92,16 @@ export function SearchableSelect({
     setSearchQuery(changedSearchQuery)
     const changedNormalizedSearchQuery = changedSearchQuery
       .trim()
-      .toLocaleLowerCase(localeCodes.display)
+      .toLocaleLowerCase(intlLocaleCode)
     setHighlightedOptionValue(
       options.find(
         (option) =>
           !option.isDisabled &&
-          getIsOptionMatchingSearchQuery(option, changedNormalizedSearchQuery)
+          getIsOptionMatchingSearchQuery(
+            option,
+            changedNormalizedSearchQuery,
+            intlLocaleCode
+          )
       )?.value ?? null
     )
   }

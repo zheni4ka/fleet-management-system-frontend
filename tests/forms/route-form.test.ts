@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest"
-import { routeFormValidationMessages } from "@/lib/constants"
 import {
   createCreateRouteRequestModel,
   createEmptyAddRouteFormValues,
   getAddRouteFormValidationError,
 } from "@/lib/forms/route-form"
-import { AddRouteFormValues, LocationLookupOption } from "@/lib/types"
+import {
+  AddRouteFormValues,
+  FormValidationError,
+  LocationLookupOption,
+} from "@/lib/types"
 
 const locationLookupOptions: ReadonlyArray<LocationLookupOption> = [
   { id: 1, city: "Kyiv", country: "Ukraine", timeZoneId: "Europe/Kyiv" },
@@ -52,7 +55,7 @@ describe("getAddRouteFormValidationError", () => {
         createKyivToWarsawFormValues({ arrivalLocalDateTime: "" }),
         locationLookupOptions
       )
-    ).toBe(routeFormValidationMessages.requiredFieldsMissing)
+    ).toBe(FormValidationError.RouteRequiredFieldsMissing)
   })
 
   it("rejects the same start and destination", () => {
@@ -61,7 +64,7 @@ describe("getAddRouteFormValidationError", () => {
         createKyivToWarsawFormValues({ destinationLocationId: "1" }),
         locationLookupOptions
       )
-    ).toBe(routeFormValidationMessages.sameStartAndDestinationLocation)
+    ).toBe(FormValidationError.SameStartAndDestinationLocation)
   })
 
   it("compares UTC instants, so an arrival that looks later on the wall clock can still be earlier", () => {
@@ -75,7 +78,7 @@ describe("getAddRouteFormValidationError", () => {
         }),
         locationLookupOptions
       )
-    ).toBe(routeFormValidationMessages.arrivalNotAfterDeparture)
+    ).toBe(FormValidationError.ArrivalNotAfterDeparture)
   })
 
   it("accepts a valid route", () => {

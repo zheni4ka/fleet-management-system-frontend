@@ -1,5 +1,5 @@
-import { localeCodes } from "@/lib/constants"
-import { Auto, Depot, Driver, Location, Route } from "@/lib/types"
+import { intlLocaleCodes } from "@/lib/constants"
+import { AppLocale, Auto, Depot, Driver, Location, Route } from "@/lib/types"
 
 export function formatLocationName(
   location: Pick<Location, "city" | "country">
@@ -52,12 +52,15 @@ export function formatRouteDriverFullName(route: Route): string {
   })
 }
 
-export function formatDateTime(isoDateTime: string): string {
-  return new Date(isoDateTime).toLocaleString(localeCodes.display)
+export function formatDateTime(
+  isoDateTime: string,
+  appLocale: AppLocale
+): string {
+  return new Date(isoDateTime).toLocaleString(intlLocaleCodes[appLocale])
 }
 
-export function formatDate(isoDate: string): string {
-  return new Date(isoDate).toLocaleDateString(localeCodes.display)
+export function formatDate(isoDate: string, appLocale: AppLocale): string {
+  return new Date(isoDate).toLocaleDateString(intlLocaleCodes[appLocale])
 }
 
 export function formatLocalIsoDate(date: Date): string {
@@ -67,11 +70,18 @@ export function formatLocalIsoDate(date: Date): string {
   return `${yearText}-${monthText}-${dayText}`
 }
 
-export function formatHours(hoursCount: number): string {
-  return `${hoursCount.toLocaleString(localeCodes.display)} год`
+export function formatHours(hoursCount: number, appLocale: AppLocale): string {
+  return new Intl.NumberFormat(intlLocaleCodes[appLocale], {
+    style: "unit",
+    unit: "hour",
+    unitDisplay: "short",
+  }).format(hoursCount)
 }
 
-export function formatIsoDateOnly(isoDateOnly: string): string {
+export function formatIsoDateOnly(
+  isoDateOnly: string,
+  appLocale: AppLocale
+): string {
   const [yearText, monthText, dayText] = isoDateOnly.split("-")
   if (
     yearText === undefined ||
@@ -84,7 +94,7 @@ export function formatIsoDateOnly(isoDateOnly: string): string {
     Number(yearText),
     Number(monthText) - 1,
     Number(dayText)
-  ).toLocaleDateString(localeCodes.display)
+  ).toLocaleDateString(intlLocaleCodes[appLocale])
 }
 
 export function formatDepotNames(

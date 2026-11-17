@@ -6,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { useTranslations } from "next-intl"
 import { DepotNameModal } from "@/components/depot-name-modal"
 import { DeleteTableRowAction } from "@/components/tables/delete-table-row-action"
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
@@ -17,6 +18,8 @@ interface DepotsTableProps {
 }
 
 export function DepotsTable({ depots }: DepotsTableProps) {
+  const tableColumnsTranslations = useTranslations("tableColumns")
+  const depotTranslations = useTranslations("depots")
   return (
     <div className="overflow-hidden rounded-md border bg-white">
       <Table>
@@ -24,10 +27,10 @@ export function DepotsTable({ depots }: DepotsTableProps) {
           <TableRow>
             {depotsTableColumns.map((depotsTableColumn) => (
               <TableHead
-                key={depotsTableColumn.label}
+                key={depotsTableColumn.labelMessageKey}
                 className={depotsTableColumn.className}
               >
-                {depotsTableColumn.label}
+                {tableColumnsTranslations(depotsTableColumn.labelMessageKey)}
               </TableHead>
             ))}
           </TableRow>
@@ -36,7 +39,7 @@ export function DepotsTable({ depots }: DepotsTableProps) {
           {depots.length === 0 && (
             <EmptyTableRow
               columnCount={depotsTableColumns.length}
-              message="Депо поки немає."
+              message={depotTranslations("emptyList")}
             />
           )}
           {depots.map((depot) => (
@@ -48,11 +51,13 @@ export function DepotsTable({ depots }: DepotsTableProps) {
                   <DepotNameModal editedDepot={depot} />
                   <DeleteTableRowAction
                     deleteApiPath={`${apiEndpoints.deleteDepot}/${depot.id}`}
-                    deletionQuestion={`Видалити депо ${depot.name}? Депо можна видалити лише тоді, коли до нього не належать автомобілі, водії, маршрути та диспетчери.`}
+                    deletionQuestion={depotTranslations("deletionQuestion", {
+                      depotName: depot.name,
+                    })}
                     deletionToastMessages={{
-                      loading: "Видалення депо...",
-                      success: "Депо видалено!",
-                      error: "Не вдалося видалити депо",
+                      loading: depotTranslations("deleteLoading"),
+                      success: depotTranslations("deleteSuccess"),
+                      error: depotTranslations("deleteError"),
                     }}
                   />
                 </div>

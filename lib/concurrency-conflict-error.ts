@@ -1,8 +1,6 @@
-import { commonUiTexts } from "@/lib/constants"
-
 export class ConcurrencyConflictError extends Error {
   constructor() {
-    super(commonUiTexts.concurrencyConflictMessage)
+    super("The record was changed by another user.")
     this.name = "ConcurrencyConflictError"
   }
 }

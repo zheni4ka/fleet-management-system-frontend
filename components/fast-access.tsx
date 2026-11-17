@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import { fastAccessNavigationLinks } from "@/lib/constants"
 
 interface FastAccessLinkProps {
@@ -25,19 +26,23 @@ interface FastAccessProps {
 }
 
 export default function FastAccess({ isAdmin }: FastAccessProps) {
+  const navigationTranslations = useTranslations("navigation")
+  const homeTranslations = useTranslations("home")
   const visibleFastAccessNavigationLinks = fastAccessNavigationLinks.filter(
     (navigationLink) => isAdmin || !navigationLink.isAdminOnly
   )
 
   return (
     <div>
-      <p className="text-sm text-slate-500">Керування автопарком в один клік</p>
+      <p className="text-sm text-slate-500">
+        {homeTranslations("fastAccessDescription")}
+      </p>
       <div className="mt-4 flex flex-col gap-2">
         {visibleFastAccessNavigationLinks.map((navigationLink) => (
           <FastAccessLink
             key={navigationLink.href}
             href={navigationLink.href}
-            label={navigationLink.label}
+            label={navigationTranslations(navigationLink.labelMessageKey)}
           />
         ))}
       </div>

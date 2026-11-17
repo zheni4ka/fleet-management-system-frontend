@@ -2,6 +2,7 @@ import {
   Auto,
   AutoFormValues,
   CreateAutoRequestModel,
+  FormValidationError,
   UpdateAutoRequestModel,
 } from "@/lib/types"
 
@@ -37,7 +38,7 @@ function parseAutoCapacity(rawCapacity: string): number | null {
 
 export function getAutoFormValidationError(
   autoFormValues: AutoFormValues
-): string | null {
+): FormValidationError | null {
   const hasEmptyRequiredField = [
     autoFormValues.mark,
     autoFormValues.model,
@@ -46,10 +47,10 @@ export function getAutoFormValidationError(
     autoFormValues.depotId,
   ].some((requiredFieldValue) => requiredFieldValue.trim() === "")
   if (hasEmptyRequiredField) {
-    return "Будь ласка, заповніть всі поля форми."
+    return FormValidationError.AutoRequiredFieldsMissing
   }
   if (parseAutoCapacity(autoFormValues.capacity) === null) {
-    return "Місткість має бути числом, більшим за 0."
+    return FormValidationError.AutoCapacityNotPositive
   }
   return null
 }
@@ -59,9 +60,7 @@ export function createCreateAutoRequestModel(
 ): CreateAutoRequestModel {
   const autoCapacity = parseAutoCapacity(autoFormValues.capacity)
   if (autoCapacity === null) {
-    throw new Error(
-      `Некоректна місткість автомобіля: "${autoFormValues.capacity}"`
-    )
+    throw new Error(`Invalid auto capacity: "${autoFormValues.capacity}"`)
   }
   return {
     mark: autoFormValues.mark.trim(),

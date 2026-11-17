@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState, type PointerEvent, type ReactNode } from "react"
+import { useTranslations } from "next-intl"
 import { ChevronDown, ChevronUp, GripVertical, Pin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useBrowserStorageValue } from "@/hooks/use-browser-storage-value"
@@ -26,6 +27,7 @@ export function FloatingPanel({
   storageKey,
   children,
 }: FloatingPanelProps) {
+  const listControlTranslations = useTranslations("listControls")
   const { browserStorageValue, setBrowserStorageValue } =
     useBrowserStorageValue(storageKey)
   const storedFloatingPanelState = parseFloatingPanelState(browserStorageValue)
@@ -37,6 +39,9 @@ export function FloatingPanel({
   const panelPosition =
     draggedPanelPosition ?? storedFloatingPanelState.position
   const { isCollapsed } = storedFloatingPanelState
+  const panelToggleLabel = isCollapsed
+    ? listControlTranslations("expandPanel")
+    : listControlTranslations("collapsePanel")
 
   const saveFloatingPanelState = (
     floatingPanelStateChanges: Partial<FloatingPanelState>
@@ -108,7 +113,7 @@ export function FloatingPanel({
     >
       <div className="flex items-center gap-2 px-4 py-3">
         <div
-          title="Перетягніть, щоб перемістити панель"
+          title={listControlTranslations("panelDragHint")}
           onPointerDown={handleDragHandlePointerDown}
           onPointerMove={handleDragHandlePointerMove}
           onPointerUp={handleDragHandlePointerRelease}
@@ -137,7 +142,7 @@ export function FloatingPanel({
             onClick={() => saveFloatingPanelState({ position: null })}
           >
             <Pin />
-            Закріпити
+            {listControlTranslations("pinPanel")}
           </Button>
         )}
         <Button
@@ -145,8 +150,8 @@ export function FloatingPanel({
           variant="ghost"
           size="icon-sm"
           aria-expanded={!isCollapsed}
-          aria-label={isCollapsed ? "Розгорнути панель" : "Згорнути панель"}
-          title={isCollapsed ? "Розгорнути панель" : "Згорнути панель"}
+          aria-label={panelToggleLabel}
+          title={panelToggleLabel}
           onClick={() => saveFloatingPanelState({ isCollapsed: !isCollapsed })}
         >
           {isCollapsed ? <ChevronDown /> : <ChevronUp />}

@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import {
   apiEndpoints,
-  bffErrorMessages,
   bffRoutes,
   cookieNames,
   httpContentTypes,
@@ -29,6 +28,7 @@ import {
   SingleSignOnSettings,
   SingleSignOnTransaction,
 } from "@/lib/types"
+import { createRequestMessageTranslator } from "@/lib/server/request-message-translator"
 
 function readSingleSignOnTransaction(
   request: NextRequest
@@ -111,7 +111,9 @@ export async function GET(request: NextRequest) {
   if (singleSignOnSettings === null) {
     return createProblemResponse(
       httpStatusCodes.notFound,
-      bffErrorMessages.singleSignOnNotConfigured
+      createRequestMessageTranslator(request)(
+        "bffErrors.singleSignOnNotConfigured"
+      )
     )
   }
 
@@ -122,16 +124,21 @@ export async function GET(request: NextRequest) {
   )
   const isAuthorizationResponseForThisTransaction =
     singleSignOnTransaction !== null &&
-    authorizationResponseParams.get(openIdConnectAuthorizationResponseParamNames.state) ===
-      singleSignOnTransaction.state
+    authorizationResponseParams.get(
+      openIdConnectAuthorizationResponseParamNames.state
+    ) === singleSignOnTransaction.state
   if (
     !isAuthorizationResponseForThisTransaction ||
     authorizationCode === null ||
-    authorizationResponseParams.has(openIdConnectAuthorizationResponseParamNames.error)
+    authorizationResponseParams.has(
+      openIdConnectAuthorizationResponseParamNames.error
+    )
   ) {
     console.error(
       "Відповідь постачальника ідентичності не відповідає транзакції входу або містить помилку:",
-      authorizationResponseParams.get(openIdConnectAuthorizationResponseParamNames.error)
+      authorizationResponseParams.get(
+        openIdConnectAuthorizationResponseParamNames.error
+      )
     )
     return createLoginRedirectResponse(
       singleSignOnSettings,
@@ -152,7 +159,10 @@ export async function GET(request: NextRequest) {
       { idToken, nonce: singleSignOnTransaction.nonce }
     )
   } catch (error) {
-    console.error("Не вдалося завершити вхід через корпоративний обліковий запис:", error)
+    console.error(
+      "Не вдалося завершити вхід через корпоративний обліковий запис:",
+      error
+    )
     return createLoginRedirectResponse(
       singleSignOnSettings,
       LoginRedirectReason.SingleSignOnFailed

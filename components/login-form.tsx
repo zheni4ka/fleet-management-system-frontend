@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useEffect, useId, useState, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff } from "lucide-react"
@@ -12,11 +13,9 @@ import { getApiErrorMessage, getApiProblemType } from "@/lib/api-error-message"
 import {
   apiProblemTypes,
   bffRoutes,
-  commonUiTexts,
   httpContentTypes,
   httpHeaderNames,
   httpStatusCodes,
-  loginRedirectReasonMessages,
   loginSearchParamNames,
 } from "@/lib/constants"
 import { createLoginPath } from "@/lib/login-redirect"
@@ -26,9 +25,6 @@ import {
   LoginRedirectReason,
   TemporaryPasswordLogin,
 } from "@/lib/types"
-
-const invalidCredentialsErrorMessage =
-  "Неправильне ім'я користувача або пароль."
 
 interface LoginFormProps {
   returnPath: string
@@ -51,6 +47,11 @@ export function LoginForm({
   loginRedirectReason,
   isSingleSignOnConfigured,
 }: LoginFormProps) {
+  const loginRedirectReasonTranslations = useTranslations(
+    "loginRedirectReasons"
+  )
+  const loginTranslations = useTranslations("login")
+  const commonTranslations = useTranslations("common")
   const router = useRouter()
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
@@ -72,17 +73,23 @@ export function LoginForm({
         try {
           await fetch(bffRoutes.sessionLogout, { method: HttpMethod.Post })
         } catch (error) {
-          console.error("Не вдалося очистити завершену сесію:", error)
+          console.error(commonTranslations("sessionExpiredMessage"), error)
         }
       }
-      toast.error(loginRedirectReasonMessages[loginRedirectReason], {
+      toast.error(loginRedirectReasonTranslations(loginRedirectReason), {
         id: loginRedirectReason,
       })
       router.replace(createLoginPath(returnPath, null))
       router.refresh()
     }
     void clearSessionAndShowLoginRedirectReason()
-  }, [loginRedirectReason, returnPath, router])
+  }, [
+    commonTranslations,
+    loginRedirectReason,
+    loginRedirectReasonTranslations,
+    returnPath,
+    router,
+  ])
 
   const openReturnPath = () => {
     router.push(returnPath)
@@ -115,11 +122,14 @@ export function LoginForm({
         return
       }
       setLoginErrorMessage(
-        await getApiErrorMessage(response, invalidCredentialsErrorMessage)
+        await getApiErrorMessage(
+          response,
+          loginTranslations("invalidCredentials")
+        )
       )
     } catch (error) {
-      console.error("Помилка при вході:", error)
-      setLoginErrorMessage(commonUiTexts.serverUnavailableMessage)
+      console.error(commonTranslations("serverUnavailableMessage"), error)
+      setLoginErrorMessage(commonTranslations("serverUnavailableMessage"))
     } finally {
       setIsLoginRequestRunning(false)
     }
@@ -131,10 +141,12 @@ export function LoginForm({
         <div className="text-center">
           <h1 className="mt-6 text-3xl font-bold tracking-tight text-slate-900">
             {temporaryPasswordLogin === null
-              ? "Вхід у систему"
-              : "Зміна тимчасового пароля"}
+              ? loginTranslations("title")
+              : loginTranslations("passwordChangeTitle")}
           </h1>
-          <p className="mt-2 text-sm text-slate-600">Fleet Management System</p>
+          <p className="mt-2 text-sm text-slate-600">
+            {loginTranslations("productName")}
+          </p>
         </div>
 
         {temporaryPasswordLogin !== null ? (
@@ -154,7 +166,7 @@ export function LoginForm({
               </div>
             )}
             <div className="space-y-4">
-              <FormField label="Ім'я користувача або Email">
+              <FormField label={loginTranslations("usernameLabel")}>
                 <Input
                   type="text"
                   required
@@ -162,7 +174,7 @@ export function LoginForm({
                   autoComplete="username"
                   value={username}
                   onChange={(event) => setUsername(event.target.value)}
-                  placeholder="Введіть ім'я користувача або email"
+                  placeholder={loginTranslations("usernamePlaceholder")}
                 />
               </FormField>
               <div className="flex flex-col gap-1">
@@ -170,7 +182,7 @@ export function LoginForm({
                   htmlFor={passwordInputId}
                   className="text-sm font-medium text-slate-700"
                 >
-                  Пароль
+                  {loginTranslations("passwordLabel")}
                 </label>
                 <div className="relative">
                   <Input
@@ -186,7 +198,9 @@ export function LoginForm({
                   <button
                     type="button"
                     aria-label={
-                      isPasswordVisible ? "Сховати пароль" : "Показати пароль"
+                      isPasswordVisible
+                        ? loginTranslations("hidePassword")
+                        : loginTranslations("showPassword")
                     }
                     aria-pressed={isPasswordVisible}
                     aria-controls={passwordInputId}
@@ -213,17 +227,16 @@ export function LoginForm({
               variant="accent"
               className="w-full motion-safe:active:scale-95"
             >
-              {isLoginRequestRunning ? "Вхід..." : "Увійти"}
+              {isLoginRequestRunning
+                ? loginTranslations("submitting")
+                : loginTranslations("submit")}
             </Button>
             {isSingleSignOnConfigured && (
               <a
                 href={`${bffRoutes.singleSignOnStart}?${new URLSearchParams({ [loginSearchParamNames.returnUrl]: returnPath })}`}
-                className={cn(
-                  buttonVariants({ variant: "outline" }),
-                  "w-full"
-                )}
+                className={cn(buttonVariants({ variant: "outline" }), "w-full")}
               >
-                Увійти через Microsoft
+                {loginTranslations("singleSignOn")}
               </a>
             )}
           </form>

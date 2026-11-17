@@ -1,25 +1,23 @@
-import {
-  accountPasswordConstraints,
-  passwordPolicyMessages,
-} from "@/lib/constants"
+import { accountPasswordConstraints } from "@/lib/constants"
+import { PasswordPolicyViolation } from "@/lib/types"
 
-export function getPasswordPolicyViolationMessage(
+export function getPasswordPolicyViolation(
   password: string
-): string | null {
+): PasswordPolicyViolation | null {
   if (password.length < accountPasswordConstraints.minLength) {
-    return passwordPolicyMessages.tooShort
+    return PasswordPolicyViolation.TooShort
   }
   if (password.length > accountPasswordConstraints.maxLength) {
-    return passwordPolicyMessages.tooLong
+    return PasswordPolicyViolation.TooLong
   }
   if (!accountPasswordConstraints.digitPattern.test(password)) {
-    return passwordPolicyMessages.digitMissing
+    return PasswordPolicyViolation.DigitMissing
   }
   if (!accountPasswordConstraints.uppercaseLetterPattern.test(password)) {
-    return passwordPolicyMessages.uppercaseLetterMissing
+    return PasswordPolicyViolation.UppercaseLetterMissing
   }
   if (!accountPasswordConstraints.lowercaseLetterPattern.test(password)) {
-    return passwordPolicyMessages.lowercaseLetterMissing
+    return PasswordPolicyViolation.LowercaseLetterMissing
   }
   return null
 }

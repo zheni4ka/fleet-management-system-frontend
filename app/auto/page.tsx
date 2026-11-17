@@ -5,6 +5,7 @@ import { ListPagination } from "@/components/list-pagination"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
 import { apiEndpoints, appRoutes } from "@/lib/constants"
+import { getTranslations } from "next-intl/server"
 import { createAutosListFilterFields } from "@/lib/forms/list-filter-fields"
 import {
   createListApiPath,
@@ -22,14 +23,12 @@ interface AutosPageProps {
   searchParams: Promise<PageSearchParams>
 }
 
-const autosPageTitle = "Автомобілі"
-
-const autosPageDescription =
-  "Управління автомобілями вашого автопарку та перегляд їхніх характеристик."
-
 export default async function AutosPage({ searchParams }: AutosPageProps) {
   const authToken = await getAdminAuthTokenOrRedirect()
   const pageSearchParams = await searchParams
+  const translateMessage = await getTranslations()
+  const autosPageTitle = translateMessage("pages.autosTitle")
+  const autosPageDescription = translateMessage("pages.autosDescription")
   const depotsResult = await fetchFromApi(
     apiEndpoints.depots,
     authToken,
@@ -44,7 +43,10 @@ export default async function AutosPage({ searchParams }: AutosPageProps) {
     )
   }
 
-  const autosListFilterFields = createAutosListFilterFields(depotsResult.data)
+  const autosListFilterFields = createAutosListFilterFields(
+    depotsResult.data,
+    translateMessage
+  )
   const autosListPageState: ListPageState<AutoSortField> = {
     path: appRoutes.autos,
     listQuery: getListQueryFromPageSearchParams(
@@ -73,7 +75,7 @@ export default async function AutosPage({ searchParams }: AutosPageProps) {
       </PageHeader>
 
       <ListFilterPanel
-        title="Пошук автомобілів"
+        title={translateMessage("pages.autosFilterTitle")}
         listPageState={autosListPageState}
         listFilterFields={autosListFilterFields}
       />

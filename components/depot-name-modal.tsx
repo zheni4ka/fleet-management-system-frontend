@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
 import { Pencil } from "lucide-react"
@@ -11,18 +12,18 @@ import { SubmitButton } from "@/components/ui/submit-button"
 import { IconActionButton } from "@/components/icon-action-button"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import {
-  apiEndpoints,
-  depotNameConstraints,
-  iconActionLabels,
-} from "@/lib/constants"
-import { Depot, HttpMethod } from "@/lib/types"
+import { apiEndpoints, depotNameConstraints } from "@/lib/constants"
+import { Depot, FormValidationError, HttpMethod } from "@/lib/types"
 
 interface DepotNameModalProps {
   editedDepot: Depot | null
 }
 
 export function DepotNameModal({ editedDepot }: DepotNameModalProps) {
+  const iconActionTranslations = useTranslations("iconActions")
+  const depotTranslations = useTranslations("depots")
+  const formValidationTranslations = useTranslations("formValidation")
+  const commonTranslations = useTranslations("common")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [depotName, setDepotName] = useState("")
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
@@ -36,7 +37,9 @@ export function DepotNameModal({ editedDepot }: DepotNameModalProps) {
     event.preventDefault()
     const trimmedDepotName = depotName.trim()
     if (trimmedDepotName === "") {
-      toast.error(depotNameConstraints.nameRequiredMessage)
+      toast.error(
+        formValidationTranslations(FormValidationError.DepotNameMissing)
+      )
       return
     }
 
@@ -51,10 +54,12 @@ export function DepotNameModal({ editedDepot }: DepotNameModalProps) {
               name: trimmedDepotName,
             }),
       {
-        loading: "Збереження депо...",
+        loading: depotTranslations("saveLoading"),
         success:
-          editedDepot === null ? "Депо створено!" : "Депо перейменовано!",
-        error: "Не вдалося зберегти депо",
+          editedDepot === null
+            ? depotTranslations("createSuccess")
+            : depotTranslations("renameSuccess"),
+        error: depotTranslations("saveError"),
       }
     )
     if (isDepotSaved) {
@@ -66,12 +71,12 @@ export function DepotNameModal({ editedDepot }: DepotNameModalProps) {
     <>
       {editedDepot === null ? (
         <Button variant="accent" onClick={handleOpen}>
-          + Додати депо
+          {depotTranslations("addButtonLabel")}
         </Button>
       ) : (
         <IconActionButton
           icon={Pencil}
-          label={iconActionLabels.edit}
+          label={iconActionTranslations("edit")}
           variant="outline"
           onClick={handleOpen}
         />
@@ -79,10 +84,14 @@ export function DepotNameModal({ editedDepot }: DepotNameModalProps) {
       <ModalWindow
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editedDepot === null ? "Нове депо" : "Перейменування депо"}
+        title={
+          editedDepot === null
+            ? depotTranslations("createTitle")
+            : depotTranslations("renameTitle")
+        }
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <FormField label="Назва депо">
+          <FormField label={depotTranslations("nameLabel")}>
             <Input
               required
               maxLength={depotNameConstraints.maxLength}
@@ -91,7 +100,7 @@ export function DepotNameModal({ editedDepot }: DepotNameModalProps) {
             />
           </FormField>
           <SubmitButton isSubmitting={isApiMutationRunning}>
-            Зберегти
+            {commonTranslations("saveButtonLabel")}
           </SubmitButton>
         </form>
       </ModalWindow>

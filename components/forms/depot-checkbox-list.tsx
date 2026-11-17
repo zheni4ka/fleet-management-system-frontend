@@ -1,4 +1,4 @@
-import { listFilterTexts } from "@/lib/constants"
+import { useTranslations } from "next-intl"
 import { Depot } from "@/lib/types"
 
 interface DepotCheckboxListProps {
@@ -12,6 +12,7 @@ export function DepotCheckboxList({
   selectedDepotIds,
   onSelectedDepotIdsChange,
 }: DepotCheckboxListProps) {
+  const listFilterTranslations = useTranslations("listFilters")
   const toggleDepotSelection = (toggledDepotId: number) => {
     onSelectedDepotIdsChange(
       selectedDepotIds.includes(toggledDepotId)
@@ -24,7 +25,9 @@ export function DepotCheckboxList({
 
   return (
     <fieldset className="flex flex-col gap-2 text-sm text-slate-700">
-      <legend className="mb-1 font-medium">{listFilterTexts.depotLabel}</legend>
+      <legend className="mb-1 font-medium">
+        {listFilterTranslations("depotLabel")}
+      </legend>
       {depots.map((depot) => (
         <label
           key={depot.id}

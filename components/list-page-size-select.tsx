@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { NativeSelect } from "@/components/ui/native-select"
 import { listPaging } from "@/lib/constants"
 import { createListPageHref } from "@/lib/search-params"
@@ -14,10 +15,11 @@ export function ListPageSizeSelect<TSortField extends string>({
   listPageState,
 }: ListPageSizeSelectProps<TSortField>) {
   const router = useRouter()
+  const listControlTranslations = useTranslations("listControls")
 
   return (
     <label className="flex items-center gap-2 text-sm text-slate-500">
-      На сторінці
+      {listControlTranslations("pageSizeLabel")}
       <NativeSelect
         value={listPageState.listQuery.pageSize}
         onChange={(event) =>

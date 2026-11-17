@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { FormField } from "@/components/ui/form-field"
@@ -8,12 +9,10 @@ import { getApiErrorMessage } from "@/lib/api-error-message"
 import {
   accountPasswordConstraints,
   bffRoutes,
-  commonUiTexts,
   httpContentTypes,
   httpHeaderNames,
-  passwordPolicyMessages,
 } from "@/lib/constants"
-import { getPasswordPolicyViolationMessage } from "@/lib/forms/password-policy"
+import { getPasswordPolicyViolation } from "@/lib/forms/password-policy"
 import { HttpMethod, TemporaryPasswordLogin } from "@/lib/types"
 
 interface ChangeTemporaryPasswordFormProps {
@@ -27,6 +26,11 @@ export function ChangeTemporaryPasswordForm({
   onPasswordChanged,
   onCancel,
 }: ChangeTemporaryPasswordFormProps) {
+  const changeTemporaryPasswordTranslations = useTranslations(
+    "changeTemporaryPassword"
+  )
+  const passwordPolicyTranslations = useTranslations("passwordPolicy")
+  const commonTranslations = useTranslations("common")
   const [newPassword, setNewPassword] = useState("")
   const [newPasswordConfirmation, setNewPasswordConfirmation] = useState("")
   const [passwordChangeErrorMessage, setPasswordChangeErrorMessage] = useState<
@@ -36,14 +40,20 @@ export function ChangeTemporaryPasswordForm({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const passwordPolicyViolationMessage =
-      getPasswordPolicyViolationMessage(newPassword)
-    if (passwordPolicyViolationMessage !== null) {
-      setPasswordChangeErrorMessage(passwordPolicyViolationMessage)
+    const passwordPolicyViolation = getPasswordPolicyViolation(newPassword)
+    if (passwordPolicyViolation !== null) {
+      setPasswordChangeErrorMessage(
+        passwordPolicyTranslations(passwordPolicyViolation, {
+          minLength: accountPasswordConstraints.minLength,
+          maxLength: accountPasswordConstraints.maxLength,
+        })
+      )
       return
     }
     if (newPassword !== newPasswordConfirmation) {
-      setPasswordChangeErrorMessage(passwordPolicyMessages.confirmationMismatch)
+      setPasswordChangeErrorMessage(
+        passwordPolicyTranslations("ConfirmationMismatch")
+      )
       return
     }
 
@@ -60,13 +70,22 @@ export function ChangeTemporaryPasswordForm({
         }),
       })
       if (!response.ok) {
-        setPasswordChangeErrorMessage(await getApiErrorMessage(response))
+        setPasswordChangeErrorMessage(
+          await getApiErrorMessage(
+            response,
+            commonTranslations("serverErrorMessage", {
+              status: response.status,
+            })
+          )
+        )
         return
       }
       onPasswordChanged()
     } catch (error) {
-      console.error("Помилка під час зміни тимчасового пароля:", error)
-      setPasswordChangeErrorMessage(commonUiTexts.serverUnavailableMessage)
+      console.error(commonTranslations("serverUnavailableMessage"), error)
+      setPasswordChangeErrorMessage(
+        commonTranslations("serverUnavailableMessage")
+      )
     } finally {
       setIsPasswordChangeRunning(false)
     }
@@ -75,7 +94,7 @@ export function ChangeTemporaryPasswordForm({
   return (
     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
       <p className="text-sm text-slate-600">
-        Адміністратор скинув ваш пароль. Задайте новий пароль, щоб продовжити.
+        {changeTemporaryPasswordTranslations("explanation")}
       </p>
       {passwordChangeErrorMessage !== null && (
         <div
@@ -86,7 +105,9 @@ export function ChangeTemporaryPasswordForm({
         </div>
       )}
       <div className="space-y-4">
-        <FormField label="Новий пароль">
+        <FormField
+          label={changeTemporaryPasswordTranslations("newPasswordLabel")}
+        >
           <Input
             type="password"
             required
@@ -96,10 +117,14 @@ export function ChangeTemporaryPasswordForm({
             maxLength={accountPasswordConstraints.maxLength}
             value={newPassword}
             onChange={(event) => setNewPassword(event.target.value)}
-            placeholder={passwordPolicyMessages.hint}
+            placeholder={passwordPolicyTranslations("Hint", {
+              minLength: accountPasswordConstraints.minLength,
+            })}
           />
         </FormField>
-        <FormField label="Підтвердіть новий пароль">
+        <FormField
+          label={changeTemporaryPasswordTranslations("confirmationLabel")}
+        >
           <Input
             type="password"
             required
@@ -117,7 +142,7 @@ export function ChangeTemporaryPasswordForm({
           onClick={onCancel}
           className="flex-1"
         >
-          Назад
+          {changeTemporaryPasswordTranslations("back")}
         </Button>
         <Button
           type="submit"
@@ -125,7 +150,9 @@ export function ChangeTemporaryPasswordForm({
           variant="accent"
           className="flex-1"
         >
-          {isPasswordChangeRunning ? "Збереження..." : "Змінити пароль"}
+          {isPasswordChangeRunning
+            ? changeTemporaryPasswordTranslations("submitting")
+            : changeTemporaryPasswordTranslations("submit")}
         </Button>
       </div>
     </form>

@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl"
 import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
 import { FormField } from "@/components/ui/form-field"
@@ -16,6 +17,7 @@ export function AutoFormFields({
   autoFormValues,
   onAutoFormValuesChange,
 }: AutoFormFieldsProps) {
+  const autoTranslations = useTranslations("autos")
   const updateAutoFormValues = (changedValues: Partial<AutoFormValues>) => {
     onAutoFormValuesChange({ ...autoFormValues, ...changedValues })
   }
@@ -26,7 +28,7 @@ export function AutoFormFields({
 
   return (
     <>
-      <FormField label="Марка">
+      <FormField label={autoTranslations("markLabel")}>
         <Input
           value={autoFormValues.mark}
           onChange={(event) =>
@@ -34,7 +36,7 @@ export function AutoFormFields({
           }
         />
       </FormField>
-      <FormField label="Модель">
+      <FormField label={autoTranslations("modelLabel")}>
         <Input
           value={autoFormValues.model}
           onChange={(event) =>
@@ -42,7 +44,7 @@ export function AutoFormFields({
           }
         />
       </FormField>
-      <FormField label="Колір">
+      <FormField label={autoTranslations("colorLabel")}>
         <NativeSelect
           value={autoFormValues.color}
           onChange={(event) =>
@@ -50,7 +52,7 @@ export function AutoFormFields({
           }
         >
           <option value="" disabled>
-            Виберіть колір
+            {autoTranslations("colorPlaceholder")}
           </option>
           {isCurrentColorMissingFromOptions && (
             <option value={autoFormValues.color}>{autoFormValues.color}</option>
@@ -62,7 +64,7 @@ export function AutoFormFields({
           ))}
         </NativeSelect>
       </FormField>
-      <FormField label="Номерний знак">
+      <FormField label={autoTranslations("numberLabel")}>
         <Input
           value={autoFormValues.number}
           onChange={(event) =>
@@ -70,7 +72,7 @@ export function AutoFormFields({
           }
         />
       </FormField>
-      <FormField label="Місткість (кг)">
+      <FormField label={autoTranslations("capacityLabel")}>
         <Input
           type="number"
           min={0}

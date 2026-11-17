@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useState } from "react"
 import { KeyRound } from "lucide-react"
 import { ConfirmationDialog } from "@/components/confirmation-dialog"
@@ -7,7 +8,7 @@ import { IconActionButton } from "@/components/icon-action-button"
 import ModalWindow from "@/components/ui/modal-window"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequestForData } from "@/lib/api-client"
-import { apiEndpoints, iconActionLabels } from "@/lib/constants"
+import { apiEndpoints } from "@/lib/constants"
 import { resetUserPasswordResponseSchema } from "@/lib/schemas/reset-user-password-response-schema"
 import { HttpMethod } from "@/lib/types"
 
@@ -20,6 +21,8 @@ export function ResetUserPasswordTableRowAction({
   userId,
   username,
 }: ResetUserPasswordTableRowActionProps) {
+  const iconActionTranslations = useTranslations("iconActions")
+  const dispatcherTranslations = useTranslations("dispatchers")
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
   const [isResetConfirmationOpen, setIsResetConfirmationOpen] = useState(false)
   const [temporaryPassword, setTemporaryPassword] = useState<string | null>(
@@ -38,9 +41,9 @@ export function ResetUserPasswordTableRowAction({
         setTemporaryPassword(resetUserPasswordResponse.temporaryPassword)
       },
       {
-        loading: "Скидання пароля...",
-        success: "Пароль скинуто.",
-        error: "Не вдалося скинути пароль",
+        loading: dispatcherTranslations("resetPasswordLoading"),
+        success: dispatcherTranslations("resetPasswordSuccess"),
+        error: dispatcherTranslations("resetPasswordError"),
       }
     )
     if (isPasswordReset) {
@@ -52,17 +55,17 @@ export function ResetUserPasswordTableRowAction({
     <>
       <IconActionButton
         icon={KeyRound}
-        label={iconActionLabels.resetPassword}
+        label={iconActionTranslations("resetPassword")}
         variant="warning"
         onClick={() => setIsResetConfirmationOpen(true)}
         disabled={isApiMutationRunning}
       />
       <ConfirmationDialog
         isOpen={isResetConfirmationOpen}
-        title="Скидання пароля"
-        message={`Скинути пароль користувача ${username}? Усі його сесії буде завершено, а під час наступного входу потрібно буде змінити тимчасовий пароль.`}
-        confirmLabel="Скинути"
-        confirmingLabel="Скидання..."
+        title={dispatcherTranslations("resetPasswordTitle")}
+        message={dispatcherTranslations("resetPasswordQuestion", { username })}
+        confirmLabel={dispatcherTranslations("resetPasswordConfirmLabel")}
+        confirmingLabel={dispatcherTranslations("resetPasswordConfirmingLabel")}
         isConfirming={isApiMutationRunning}
         onConfirm={confirmPasswordReset}
         onCancel={() => setIsResetConfirmationOpen(false)}
@@ -70,12 +73,13 @@ export function ResetUserPasswordTableRowAction({
       <ModalWindow
         isOpen={temporaryPassword !== null}
         onClose={() => setTemporaryPassword(null)}
-        title="Тимчасовий пароль"
+        title={dispatcherTranslations("temporaryPasswordTitle")}
       >
         <div className="flex flex-col gap-3 text-sm text-slate-700">
           <p>
-            Передайте цей пароль користувачу {username} захищеним каналом.
-            Пароль показано лише один раз.
+            {dispatcherTranslations("temporaryPasswordInstruction", {
+              username,
+            })}
           </p>
           <code className="rounded-md bg-slate-100 px-3 py-2 font-mono text-base select-all">
             {temporaryPassword}

@@ -34,19 +34,25 @@ function getProblemDetailsMessage(
   )
 }
 
-export async function getApiErrorMessage(
-  response: Response,
-  fallbackErrorMessage = `Помилка сервера: ${response.status}`
-): Promise<string> {
+export async function getApiProblemMessage(
+  response: Response
+): Promise<string | null> {
   const responseText = await response.text()
   if (!responseText) {
-    return fallbackErrorMessage
+    return null
   }
 
   try {
     const problemDetails: ApiProblemDetails = JSON.parse(responseText)
-    return getProblemDetailsMessage(problemDetails) ?? fallbackErrorMessage
+    return getProblemDetailsMessage(problemDetails)
   } catch {
     return responseText
   }
+}
+
+export async function getApiErrorMessage(
+  response: Response,
+  fallbackErrorMessage: string
+): Promise<string> {
+  return (await getApiProblemMessage(response)) ?? fallbackErrorMessage
 }

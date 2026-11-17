@@ -1,4 +1,5 @@
-import { localeCodes } from "@/lib/constants"
+import { intlLocaleCodes } from "@/lib/constants"
+import { AppLocale } from "@/lib/types"
 
 const localDateTimeInputPattern = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/
 
@@ -74,9 +75,10 @@ export function convertZonedLocalDateTimeToUtcIsoString(
 
 export function formatUtcDateTimeInTimeZone(
   utcIsoDateTime: string,
-  timeZoneId: string
+  timeZoneId: string,
+  appLocale: AppLocale
 ): string {
-  return new Intl.DateTimeFormat(localeCodes.display, {
+  return new Intl.DateTimeFormat(intlLocaleCodes[appLocale], {
     timeZone: timeZoneId,
     dateStyle: "short",
     timeStyle: "short",
@@ -85,7 +87,8 @@ export function formatUtcDateTimeInTimeZone(
 
 export function formatUtcDateTimeWithTimeZone(
   utcIsoDateTime: string,
-  timeZoneId: string
+  timeZoneId: string,
+  appLocale: AppLocale
 ): string {
-  return `${formatUtcDateTimeInTimeZone(utcIsoDateTime, timeZoneId)} (${timeZoneId})`
+  return `${formatUtcDateTimeInTimeZone(utcIsoDateTime, timeZoneId, appLocale)} (${timeZoneId})`
 }

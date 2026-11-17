@@ -1,14 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server"
-import {
-  apiEndpoints,
-  bffErrorMessages,
-  cookieNames,
-  httpStatusCodes,
-} from "@/lib/constants"
+import { apiEndpoints, cookieNames, httpStatusCodes } from "@/lib/constants"
 import { postToBackend } from "@/lib/server/backend-api"
 import { createProblemResponse } from "@/lib/server/bff-response"
 import { isSameOriginRequest } from "@/lib/server/bff-request"
 import { deleteSessionResponseCookies } from "@/lib/server/session-cookies"
+import { createRequestMessageTranslator } from "@/lib/server/request-message-translator"
 
 async function revokeBackendRefreshToken(
   refreshToken: string,
@@ -29,7 +25,10 @@ async function revokeBackendRefreshToken(
       )
     }
   } catch (error) {
-    console.error("Не вдалося відкликати токен оновлення під час виходу:", error)
+    console.error(
+      "Не вдалося відкликати токен оновлення під час виходу:",
+      error
+    )
   }
 }
 
@@ -37,7 +36,9 @@ export async function POST(request: NextRequest) {
   if (!isSameOriginRequest(request)) {
     return createProblemResponse(
       httpStatusCodes.forbidden,
-      bffErrorMessages.crossOriginRequestRejected
+      createRequestMessageTranslator(request)(
+        "bffErrors.crossOriginRequestRejected"
+      )
     )
   }
 

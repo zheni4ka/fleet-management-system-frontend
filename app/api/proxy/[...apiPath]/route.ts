@@ -1,8 +1,6 @@
 import type { NextRequest } from "next/server"
 import {
   backendApiPathPrefixSegment,
-  bffErrorMessages,
-  commonUiTexts,
   cookieNames,
   httpHeaderNames,
   httpStatusCodes,
@@ -18,6 +16,7 @@ import {
 import { isSameOriginRequest } from "@/lib/server/bff-request"
 import { logBffError, logBffInformation } from "@/lib/server/bff-logger"
 import { HttpMethod } from "@/lib/types"
+import { createRequestMessageTranslator } from "@/lib/server/request-message-translator"
 
 interface ApiProxyRouteContext {
   params: Promise<{ apiPath: string[] }>
@@ -33,7 +32,9 @@ async function forwardRequestToBackend(
   if (isMutationRequest && !isSameOriginRequest(request)) {
     return createProblemResponse(
       httpStatusCodes.forbidden,
-      bffErrorMessages.crossOriginRequestRejected
+      createRequestMessageTranslator(request)(
+        "bffErrors.crossOriginRequestRejected"
+      )
     )
   }
 
@@ -46,7 +47,7 @@ async function forwardRequestToBackend(
   if (!isSupportedApiPath) {
     return createProblemResponse(
       httpStatusCodes.notFound,
-      bffErrorMessages.unsupportedApiPath
+      createRequestMessageTranslator(request)("bffErrors.unsupportedApiPath")
     )
   }
 
@@ -54,7 +55,7 @@ async function forwardRequestToBackend(
   if (accessToken === undefined) {
     return createProblemResponse(
       httpStatusCodes.unauthorized,
-      commonUiTexts.sessionExpiredMessage
+      createRequestMessageTranslator(request)("common.sessionExpiredMessage")
     )
   }
 
@@ -84,7 +85,7 @@ async function forwardRequestToBackend(
     )
     return createProblemResponse(
       httpStatusCodes.serviceUnavailable,
-      commonUiTexts.serverUnavailableMessage
+      createRequestMessageTranslator(request)("common.serverUnavailableMessage")
     )
   }
   logBffInformation({

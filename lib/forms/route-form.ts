@@ -1,8 +1,8 @@
-import { routeFormValidationMessages } from "@/lib/constants"
 import { convertZonedLocalDateTimeToUtcIsoString } from "@/lib/zoned-date-time"
 import {
   AddRouteFormValues,
   CreateRouteRequestModel,
+  FormValidationError,
   LocationLookupOption,
   RouteAssignmentFormValues,
   RouteStatus,
@@ -22,7 +22,7 @@ export function createEmptyAddRouteFormValues(): AddRouteFormValues {
 
 export function getRouteAssignmentFormValidationError(
   routeAssignmentFormValues: RouteAssignmentFormValues
-): string | null {
+): FormValidationError | null {
   const hasEmptyRequiredField = [
     routeAssignmentFormValues.startLocationId,
     routeAssignmentFormValues.destinationLocationId,
@@ -30,13 +30,13 @@ export function getRouteAssignmentFormValidationError(
     routeAssignmentFormValues.driverId,
   ].some((requiredFieldValue) => requiredFieldValue === "")
   if (hasEmptyRequiredField) {
-    return routeFormValidationMessages.requiredFieldsMissing
+    return FormValidationError.RouteRequiredFieldsMissing
   }
   if (
     routeAssignmentFormValues.startLocationId ===
     routeAssignmentFormValues.destinationLocationId
   ) {
-    return routeFormValidationMessages.sameStartAndDestinationLocation
+    return FormValidationError.SameStartAndDestinationLocation
   }
   return null
 }
@@ -62,7 +62,7 @@ function getRequiredLocationTimeZoneId(
     locationLookupOptions
   )
   if (locationTimeZoneId === null) {
-    throw new Error(`Локацію з ідентифікатором ${locationId} не знайдено.`)
+    throw new Error(`Location with id ${locationId} was not found.`)
   }
   return locationTimeZoneId
 }
@@ -97,12 +97,12 @@ export function createCreateRouteRequestModel(
 export function getAddRouteFormValidationError(
   addRouteFormValues: AddRouteFormValues,
   locationLookupOptions: ReadonlyArray<LocationLookupOption>
-): string | null {
+): FormValidationError | null {
   if (
     addRouteFormValues.departureLocalDateTime === "" ||
     addRouteFormValues.arrivalLocalDateTime === ""
   ) {
-    return routeFormValidationMessages.requiredFieldsMissing
+    return FormValidationError.RouteRequiredFieldsMissing
   }
   const routeAssignmentFormValidationError =
     getRouteAssignmentFormValidationError(addRouteFormValues)
@@ -117,7 +117,7 @@ export function getAddRouteFormValidationError(
     new Date(createRouteRequestModel.arrivalTimeUtc) <=
     new Date(createRouteRequestModel.departureTimeUtc)
   ) {
-    return routeFormValidationMessages.arrivalNotAfterDeparture
+    return FormValidationError.ArrivalNotAfterDeparture
   }
   return null
 }

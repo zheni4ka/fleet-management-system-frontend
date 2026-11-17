@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { ArchivableTableRowActions } from "@/components/tables/archivable-table-row-actions"
@@ -5,12 +6,7 @@ import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
 import { formatLocationName } from "@/lib/formatters"
 import { hasActiveListFilters } from "@/lib/search-params"
-import {
-  apiEndpoints,
-  commonUiTexts,
-  locationsTableColumns,
-  listFilterTexts,
-} from "@/lib/constants"
+import { apiEndpoints, locationsTableColumns } from "@/lib/constants"
 import {
   BadgeTone,
   ListPageState,
@@ -27,6 +23,9 @@ export function LocationsTable({
   locations,
   listPageState,
 }: LocationsTableProps) {
+  const listFilterTranslations = useTranslations("listFilters")
+  const locationTranslations = useTranslations("locations")
+  const commonTranslations = useTranslations("common")
   return (
     <div className="overflow-hidden rounded-md border bg-white">
       <Table>
@@ -40,8 +39,8 @@ export function LocationsTable({
               columnCount={locationsTableColumns.length}
               message={
                 hasActiveListFilters(listPageState)
-                  ? commonUiTexts.nothingFoundMessage
-                  : "Локацій поки немає в системі."
+                  ? commonTranslations("nothingFoundMessage")
+                  : locationTranslations("emptyList")
               }
             />
           )}
@@ -53,7 +52,7 @@ export function LocationsTable({
                 {location.isArchived && (
                   <span className="ml-2">
                     <Badge tone={BadgeTone.Neutral}>
-                      {listFilterTexts.archivedBadgeLabel}
+                      {listFilterTranslations("archivedBadgeLabel")}
                     </Badge>
                   </span>
                 )}
@@ -64,17 +63,21 @@ export function LocationsTable({
                   isArchived={location.isArchived}
                   deleteApiPath={`${apiEndpoints.deleteLocation}/${location.id}`}
                   restoreApiPath={`${apiEndpoints.restoreLocation}/${location.id}`}
-                  deletionQuestion={`Видалити локацію ${formatLocationName(location)}? Якщо вона використовується в маршрутах, її буде перенесено до архіву.`}
+                  deletionQuestion={locationTranslations("deletionQuestion", {
+                    locationName: formatLocationName(location),
+                  })}
                   deletionToastMessages={{
-                    loading: "Видалення локації...",
-                    success: "Локацію успішно видалено!",
-                    error: "Не вдалося видалити локацію",
+                    loading: locationTranslations("deleteLoading"),
+                    success: locationTranslations("deleteSuccess"),
+                    error: locationTranslations("deleteError"),
                   }}
-                  archivedInsteadOfDeletedMessage="Локація використовується в маршрутах, тому її перенесено до архіву."
+                  archivedInsteadOfDeletedMessage={locationTranslations(
+                    "archivedInsteadOfDeleted"
+                  )}
                   restoreToastMessages={{
-                    loading: "Відновлення локації...",
-                    success: "Локацію відновлено з архіву!",
-                    error: "Не вдалося відновити локацію",
+                    loading: locationTranslations("restoreLoading"),
+                    success: locationTranslations("restoreSuccess"),
+                    error: locationTranslations("restoreError"),
                   }}
                 />
               </TableCell>

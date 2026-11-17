@@ -4,7 +4,8 @@ import { ListPagination } from "@/components/list-pagination"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
 import { apiEndpoints, appRoutes } from "@/lib/constants"
-import { auditLogsListFilterFields } from "@/lib/forms/list-filter-fields"
+import { getTranslations } from "next-intl/server"
+import { createAuditLogsListFilterFields } from "@/lib/forms/list-filter-fields"
 import {
   createListApiPath,
   getListFilterValuesFromPageSearchParams,
@@ -25,6 +26,9 @@ export default async function AuditLogsPage({
 }: AuditLogsPageProps) {
   const authToken = await getAdminAuthTokenOrRedirect()
   const pageSearchParams = await searchParams
+  const translateMessage = await getTranslations()
+  const auditLogsListFilterFields =
+    createAuditLogsListFilterFields(translateMessage)
   const auditLogsListPageState: ListPageState<AuditLogSortField> = {
     path: appRoutes.auditLogs,
     listQuery: getListQueryFromPageSearchParams(
@@ -49,12 +53,12 @@ export default async function AuditLogsPage({
   return (
     <PageContainer>
       <PageHeader
-        title="Журнал дій"
-        description="Історія змін у системі: хто, коли і що створив, змінив або видалив."
+        title={translateMessage("pages.auditLogsTitle")}
+        description={translateMessage("pages.auditLogsDescription")}
       />
 
       <ListFilterPanel
-        title="Пошук у журналі дій"
+        title={translateMessage("pages.auditLogsFilterTitle")}
         listPageState={auditLogsListPageState}
         listFilterFields={auditLogsListFilterFields}
       />

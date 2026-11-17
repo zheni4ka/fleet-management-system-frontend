@@ -1,5 +1,5 @@
 export interface NavigationLink {
   href: string
-  label: string
+  labelMessageKey: string
   isAdminOnly: boolean
 }

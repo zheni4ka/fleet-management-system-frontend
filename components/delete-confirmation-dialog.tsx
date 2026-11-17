@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { ConfirmationDialog } from "@/components/confirmation-dialog"
 
 interface DeleteConfirmationDialogProps {
@@ -15,13 +16,16 @@ export function DeleteConfirmationDialog({
   onConfirm,
   onCancel,
 }: DeleteConfirmationDialogProps) {
+  const deleteConfirmationTranslations = useTranslations("deleteConfirmation")
   return (
     <ConfirmationDialog
       isOpen={deletionQuestion !== null}
-      title="Підтвердження видалення"
-      message={`${deletionQuestion ?? ""} Цю дію неможливо скасувати.`}
-      confirmLabel="Видалити"
-      confirmingLabel="Видалення..."
+      title={deleteConfirmationTranslations("title")}
+      message={deleteConfirmationTranslations("message", {
+        deletionQuestion: deletionQuestion ?? "",
+      })}
+      confirmLabel={deleteConfirmationTranslations("confirmLabel")}
+      confirmingLabel={deleteConfirmationTranslations("confirmingLabel")}
       isConfirming={isDeleting}
       onConfirm={onConfirm}
       onCancel={onCancel}

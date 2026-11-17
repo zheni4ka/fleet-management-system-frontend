@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
 import { Pencil } from "lucide-react"
@@ -9,7 +10,7 @@ import { IconActionButton } from "@/components/icon-action-button"
 import { AutoFormFields } from "@/components/forms/auto-form-fields"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints, iconActionLabels } from "@/lib/constants"
+import { apiEndpoints } from "@/lib/constants"
 import {
   createAutoFormValuesFromAuto,
   createUpdateAutoRequestModel,
@@ -22,10 +23,11 @@ interface EditAutoModalProps {
   depots: ReadonlyArray<Depot>
 }
 
-export default function EditAutoModal({
-  auto,
-  depots,
-}: EditAutoModalProps) {
+export default function EditAutoModal({ auto, depots }: EditAutoModalProps) {
+  const iconActionTranslations = useTranslations("iconActions")
+  const autoTranslations = useTranslations("autos")
+  const formValidationTranslations = useTranslations("formValidation")
+  const commonTranslations = useTranslations("common")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [autoFormValues, setAutoFormValues] = useState(() =>
     createAutoFormValuesFromAuto(auto)
@@ -41,7 +43,7 @@ export default function EditAutoModal({
     event.preventDefault()
     const autoFormValidationError = getAutoFormValidationError(autoFormValues)
     if (autoFormValidationError !== null) {
-      toast.error(autoFormValidationError)
+      toast.error(formValidationTranslations(autoFormValidationError))
       return
     }
 
@@ -53,9 +55,9 @@ export default function EditAutoModal({
           createUpdateAutoRequestModel(auto, autoFormValues)
         ),
       {
-        loading: "Збереження змін...",
-        success: "Автомобіль успішно оновлено!",
-        error: "Не вдалося оновити автомобіль",
+        loading: autoTranslations("updateLoading"),
+        success: autoTranslations("updateSuccess"),
+        error: autoTranslations("updateError"),
       },
       () => setIsModalOpen(false)
     )
@@ -68,12 +70,12 @@ export default function EditAutoModal({
     <>
       <IconActionButton
         icon={Pencil}
-        label={iconActionLabels.edit}
+        label={iconActionTranslations("edit")}
         variant="outline"
         onClick={handleOpen}
       />
       <ModalWindow
-        title="Редагувати автомобіль"
+        title={autoTranslations("editTitle")}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       >
@@ -84,7 +86,7 @@ export default function EditAutoModal({
             onAutoFormValuesChange={setAutoFormValues}
           />
           <SubmitButton isSubmitting={isApiMutationRunning}>
-            Зберегти
+            {commonTranslations("saveButtonLabel")}
           </SubmitButton>
         </form>
       </ModalWindow>

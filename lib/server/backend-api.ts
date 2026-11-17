@@ -19,6 +19,7 @@ export function createBackendRequestHeaders(
   for (const forwardedHeaderName of [
     httpHeaderNames.forwardedFor,
     httpHeaderNames.traceparent,
+    httpHeaderNames.acceptLanguage,
   ]) {
     const forwardedHeaderValue = incomingRequestHeaders.get(forwardedHeaderName)
     if (forwardedHeaderValue !== null) {

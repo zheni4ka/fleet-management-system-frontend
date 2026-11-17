@@ -5,15 +5,11 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { LogOut, Menu, Truck, X } from "lucide-react"
 import toast from "react-hot-toast"
-import {
-  appRoutes,
-  bffErrorMessages,
-  bffRoutes,
-  headerNavigationLinks,
-  userRoleLabels,
-} from "@/lib/constants"
+import { useTranslations } from "next-intl"
+import { LanguageSwitch } from "@/components/language-switch"
+import { appRoutes, bffRoutes, headerNavigationLinks } from "@/lib/constants"
 import { isNavigationLinkActive } from "@/lib/navigation"
-import { HttpMethod, UserRole } from "@/lib/types"
+import { HttpMethod, NavigationLink, UserRole } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
 interface HeaderProps {
@@ -40,6 +36,8 @@ export function Header({
   currentUserRoles,
 }: HeaderProps) {
   const router = useRouter()
+  const navigationTranslations = useTranslations("navigation")
+  const userRoleTranslations = useTranslations("userRoles")
   const currentPathname = usePathname()
   const [isMobileNavigationOpen, setIsMobileNavigationOpen] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
@@ -78,27 +76,27 @@ export function Header({
         method: HttpMethod.Post,
       })
       if (!logoutResponse.ok) {
-        toast.error(bffErrorMessages.logoutFailed)
+        toast.error(navigationTranslations("logoutFailed"))
         return
       }
     } catch (error) {
-      console.error(bffErrorMessages.logoutFailed, error)
-      toast.error(bffErrorMessages.logoutFailed)
+      console.error(navigationTranslations("logoutFailed"), error)
+      toast.error(navigationTranslations("logoutFailed"))
       return
     }
     router.push(appRoutes.login)
     router.refresh()
   }
 
-  const navigationLinks = [
-    { href: appRoutes.home, label: "Головна" },
+  const navigationLinks: ReadonlyArray<NavigationLink> = [
+    { href: appRoutes.home, labelMessageKey: "home", isAdminOnly: false },
     ...headerNavigationLinks.filter(
       (navigationLink) => isAdmin || !navigationLink.isAdminOnly
     ),
   ]
 
   const currentUserRolesLabel = currentUserRoles
-    .map((currentUserRole) => userRoleLabels[currentUserRole])
+    .map((currentUserRole) => userRoleTranslations(currentUserRole))
     .join(", ")
   const currentUserDescription = [currentUserName, currentUserRolesLabel]
     .filter(
@@ -128,10 +126,18 @@ export function Header({
           {navigationLink.href === appRoutes.home && (
             <Truck aria-hidden="true" size={20} />
           )}
-          {navigationLink.label}
+          {navigationTranslations(navigationLink.labelMessageKey)}
         </Link>
       )
     })
+
+  const activeNavigationLink = navigationLinks.find((navigationLink) =>
+    isNavigationLinkActive(currentPathname, navigationLink.href)
+  )
+  const activeNavigationLinkLabel =
+    activeNavigationLink === undefined
+      ? null
+      : navigationTranslations(activeNavigationLink.labelMessageKey)
 
   const renderCurrentUserDescription = (descriptionClassName: string) =>
     currentUserDescription === "" ? null : (
@@ -141,7 +147,7 @@ export function Header({
   return (
     <header ref={headerRef} className={className}>
       <nav
-        aria-label="Головна навігація"
+        aria-label={navigationTranslations("mainNavigation")}
         className="relative flex h-14 items-center justify-between gap-3 bg-slate-900 px-4 text-sm font-medium text-white shadow-md"
       >
         <div className="hidden items-center gap-1 md:flex">
@@ -155,7 +161,9 @@ export function Header({
             aria-expanded={isMobileNavigationOpen}
             aria-controls={mobileNavigationMenuId}
             aria-label={
-              isMobileNavigationOpen ? "Закрити меню" : "Відкрити меню"
+              isMobileNavigationOpen
+                ? navigationTranslations("closeMenu")
+                : navigationTranslations("openMenu")
             }
             onClick={() =>
               setIsMobileNavigationOpen(
@@ -170,16 +178,11 @@ export function Header({
               <Menu aria-hidden="true" size={22} />
             )}
           </button>
-          <span className="font-semibold">
-            {
-              navigationLinks.find((navigationLink) =>
-                isNavigationLinkActive(currentPathname, navigationLink.href)
-              )?.label
-            }
-          </span>
+          <span className="font-semibold">{activeNavigationLinkLabel}</span>
         </div>
 
         <div className="flex min-w-0 items-center gap-3">
+          <LanguageSwitch />
           {renderCurrentUserDescription(
             "hidden truncate text-slate-300 lg:inline"
           )}
@@ -189,7 +192,7 @@ export function Header({
             className={logoutButtonClassName}
           >
             <LogOut aria-hidden="true" size={18} />
-            Вийти
+            {navigationTranslations("logout")}
           </button>
         </div>
 

@@ -1,11 +1,9 @@
+import { useLocale, useTranslations } from "next-intl"
+import { resolveAppLocale } from "@/lib/app-locale"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
-import {
-  auditActionLabels,
-  auditLogsTableColumns,
-  commonUiTexts,
-} from "@/lib/constants"
+import { auditLogsTableColumns } from "@/lib/constants"
 import { formatDateTime } from "@/lib/formatters"
 import { hasActiveListFilters } from "@/lib/search-params"
 import { AuditLog, AuditLogSortField, ListPageState } from "@/lib/types"
@@ -19,6 +17,10 @@ export function AuditLogsTable({
   auditLogs,
   listPageState,
 }: AuditLogsTableProps) {
+  const appLocale = resolveAppLocale(useLocale())
+  const auditActionTranslations = useTranslations("auditAction")
+  const auditLogTranslations = useTranslations("auditLogs")
+  const commonTranslations = useTranslations("common")
   return (
     <div className="overflow-hidden rounded-md border bg-white">
       <Table>
@@ -32,23 +34,23 @@ export function AuditLogsTable({
               columnCount={auditLogsTableColumns.length}
               message={
                 hasActiveListFilters(listPageState)
-                  ? commonUiTexts.nothingFoundMessage
-                  : "Журнал дій поки порожній."
+                  ? commonTranslations("nothingFoundMessage")
+                  : auditLogTranslations("emptyList")
               }
             />
           )}
           {auditLogs.map((auditLog) => (
             <TableRow key={auditLog.id} className="hover:bg-slate-50/50">
               <TableCell className="text-xs">
-                {formatDateTime(auditLog.time)}
+                {formatDateTime(auditLog.time, appLocale)}
               </TableCell>
               <TableCell className="font-medium">
-                {auditActionLabels[auditLog.action]}
+                {auditActionTranslations(auditLog.action)}
               </TableCell>
               <TableCell>
                 {auditLog.dispatcherUsername ?? (
                   <span className="text-slate-500 italic">
-                    {commonUiTexts.deletedUserLabel}
+                    {commonTranslations("deletedUserLabel")}
                   </span>
                 )}
               </TableCell>

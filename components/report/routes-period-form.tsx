@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,13 +25,16 @@ interface RoutesPeriodFormProps {
 }
 
 const routesPeriodPresets = [
-  { label: "Сьогодні", createFormValues: createTodayRoutesPeriodFormValues },
   {
-    label: "Останні 7 днів",
+    labelMessageKey: "todayPreset",
+    createFormValues: createTodayRoutesPeriodFormValues,
+  },
+  {
+    labelMessageKey: "lastWeekPreset",
     createFormValues: createLastWeekRoutesPeriodFormValues,
   },
   {
-    label: "Поточний місяць",
+    labelMessageKey: "currentMonthPreset",
     createFormValues: createCurrentMonthRoutesPeriodFormValues,
   },
 ]
@@ -39,6 +43,8 @@ export function RoutesPeriodForm({
   initialRoutesPeriodFormValues,
 }: RoutesPeriodFormProps) {
   const router = useRouter()
+  const reportTranslations = useTranslations("reports")
+  const formValidationTranslations = useTranslations("formValidation")
   const [routesPeriodFormValues, setRoutesPeriodFormValues] = useState(
     initialRoutesPeriodFormValues
   )
@@ -56,7 +62,7 @@ export function RoutesPeriodForm({
       requestedRoutesPeriodFormValues
     )
     if (routesPeriodFormValidationError !== null) {
-      toast.error(routesPeriodFormValidationError)
+      toast.error(formValidationTranslations(routesPeriodFormValidationError))
       return
     }
     router.push(
@@ -85,7 +91,7 @@ export function RoutesPeriodForm({
       <div className="flex flex-wrap gap-2">
         {routesPeriodPresets.map((routesPeriodPreset) => (
           <Button
-            key={routesPeriodPreset.label}
+            key={routesPeriodPreset.labelMessageKey}
             type="button"
             variant="outline"
             size="sm"
@@ -93,12 +99,12 @@ export function RoutesPeriodForm({
               handlePresetClick(routesPeriodPreset.createFormValues())
             }
           >
-            {routesPeriodPreset.label}
+            {reportTranslations(routesPeriodPreset.labelMessageKey)}
           </Button>
         ))}
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
-        <FormField label="Початок періоду">
+        <FormField label={reportTranslations("periodStartLabel")}>
           <Input
             type="date"
             value={routesPeriodFormValues.periodStartDate}
@@ -109,7 +115,7 @@ export function RoutesPeriodForm({
             }
           />
         </FormField>
-        <FormField label="Кінець періоду">
+        <FormField label={reportTranslations("periodEndLabel")}>
           <Input
             type="date"
             value={routesPeriodFormValues.periodEndDate}
@@ -122,14 +128,14 @@ export function RoutesPeriodForm({
         </FormField>
         <div className="flex items-end gap-2">
           <Button type="submit" className="flex-1">
-            Сформувати звіт
+            {reportTranslations("generateButtonLabel")}
           </Button>
           <Button
             type="button"
             variant="outline"
             onClick={() => window.print()}
           >
-            Друк
+            {reportTranslations("printButtonLabel")}
           </Button>
         </div>
       </div>

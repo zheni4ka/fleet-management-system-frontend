@@ -1,8 +1,9 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useRouter } from "next/navigation"
 import { NativeSelect } from "@/components/ui/native-select"
-import { listPaging, sortDirectionLabels } from "@/lib/constants"
+import { listPaging } from "@/lib/constants"
 import { createListPageHref } from "@/lib/search-params"
 import { ListPageState, SortDirection, SortOption } from "@/lib/types"
 import { findEnumValue, parseEnumValue } from "@/lib/utils"
@@ -18,6 +19,9 @@ export function ListSortSelect<TSortField extends string>({
   sortOptions,
   sortFieldEnum,
 }: ListSortSelectProps<TSortField>) {
+  const sortDirectionTranslations = useTranslations("sortDirection")
+  const listControlTranslations = useTranslations("listControls")
+  const tableColumnsTranslations = useTranslations("tableColumns")
   const router = useRouter()
   const { sort: selectedSortField, sortDirection: selectedSortDirection } =
     listPageState.listQuery
@@ -37,7 +41,7 @@ export function ListSortSelect<TSortField extends string>({
 
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
-      Сортування
+      {listControlTranslations("sortLabel")}
       <NativeSelect
         value={selectedSortField ?? ""}
         onChange={(event) =>
@@ -48,10 +52,12 @@ export function ListSortSelect<TSortField extends string>({
         }
         className="w-48"
       >
-        <option value="">За замовчуванням</option>
+        <option value="">
+          {listControlTranslations("defaultSortOptionLabel")}
+        </option>
         {sortOptions.map((sortOption) => (
           <option key={sortOption.sortField} value={sortOption.sortField}>
-            {sortOption.label}
+            {tableColumnsTranslations(sortOption.labelMessageKey)}
           </option>
         ))}
       </NativeSelect>
@@ -68,7 +74,7 @@ export function ListSortSelect<TSortField extends string>({
       >
         {Object.values(SortDirection).map((sortDirection) => (
           <option key={sortDirection} value={sortDirection}>
-            {sortDirectionLabels[sortDirection]}
+            {sortDirectionTranslations(sortDirection)}
           </option>
         ))}
       </NativeSelect>

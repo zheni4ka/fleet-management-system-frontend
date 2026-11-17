@@ -1,10 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { z } from "zod"
-import {
-  bffErrorMessages,
-  commonUiTexts,
-  httpStatusCodes,
-} from "@/lib/constants"
+import { httpStatusCodes } from "@/lib/constants"
 import { parseApiResponseBody } from "@/lib/api-response-body"
 import { postToBackend } from "@/lib/server/backend-api"
 import {
@@ -17,6 +13,7 @@ import {
 } from "@/lib/server/bff-request"
 import { setSessionResponseCookies } from "@/lib/server/session-cookies"
 import { sessionResponseSchema } from "@/lib/schemas/session-response-schema"
+import { createRequestMessageTranslator } from "@/lib/server/request-message-translator"
 
 export async function establishBackendSession<
   TRequestSchema extends z.ZodType<object>,
@@ -28,7 +25,9 @@ export async function establishBackendSession<
   if (!isSameOriginRequest(request)) {
     return createProblemResponse(
       httpStatusCodes.forbidden,
-      bffErrorMessages.crossOriginRequestRejected
+      createRequestMessageTranslator(request)(
+        "bffErrors.crossOriginRequestRejected"
+      )
     )
   }
 
@@ -36,7 +35,7 @@ export async function establishBackendSession<
   if (sessionRequestBody === null) {
     return createProblemResponse(
       httpStatusCodes.badRequest,
-      bffErrorMessages.invalidRequestBody
+      createRequestMessageTranslator(request)("bffErrors.invalidRequestBody")
     )
   }
 
@@ -51,7 +50,7 @@ export async function establishBackendSession<
     console.error(`Не вдалося виконати запит до ${sessionApiPath}:`, error)
     return createProblemResponse(
       httpStatusCodes.serviceUnavailable,
-      commonUiTexts.serverUnavailableMessage
+      createRequestMessageTranslator(request)("common.serverUnavailableMessage")
     )
   }
 

@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
@@ -16,6 +17,7 @@ export function TableColumnsHeader<TSortField extends string>({
   tableColumns,
   listPageState,
 }: TableColumnsHeaderProps<TSortField>) {
+  const tableColumnsTranslations = useTranslations("tableColumns")
   const renderSortDirectionIcon = (sortField: TSortField) => {
     if (listPageState?.listQuery.sort !== sortField) {
       return (
@@ -37,10 +39,13 @@ export function TableColumnsHeader<TSortField extends string>({
     <TableHeader>
       <TableRow>
         {tableColumns.map((tableColumn) => (
-          <TableHead key={tableColumn.label} className={tableColumn.className}>
+          <TableHead
+            key={tableColumn.labelMessageKey}
+            className={tableColumn.className}
+          >
             {tableColumn.sortField === undefined ||
             listPageState === undefined ? (
-              tableColumn.label
+              tableColumnsTranslations(tableColumn.labelMessageKey)
             ) : (
               <Link
                 href={createListPageHref(
@@ -53,7 +58,7 @@ export function TableColumnsHeader<TSortField extends string>({
                 scroll={false}
                 className="inline-flex cursor-pointer items-center gap-1 rounded-sm hover:text-slate-900"
               >
-                {tableColumn.label}
+                {tableColumnsTranslations(tableColumn.labelMessageKey)}
                 {renderSortDirectionIcon(tableColumn.sortField)}
               </Link>
             )}

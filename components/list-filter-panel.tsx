@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl"
 import { FloatingPanel } from "@/components/floating-panel"
 import { ListFilterForm } from "@/components/list-filter-form"
 import { browserStorageKeys } from "@/lib/constants"
@@ -18,6 +19,7 @@ export function ListFilterPanel<TSortField extends string>({
   listPageState,
   listFilterFields,
 }: ListFilterPanelProps<TSortField>) {
+  const listControlTranslations = useTranslations("listControls")
   const activeListFiltersCount = getActiveListFiltersCount(listPageState)
 
   return (
@@ -26,7 +28,9 @@ export function ListFilterPanel<TSortField extends string>({
       badgeText={
         activeListFiltersCount === 0
           ? null
-          : `Активних фільтрів: ${activeListFiltersCount}`
+          : listControlTranslations("activeFiltersCount", {
+              activeFiltersCount: activeListFiltersCount,
+            })
       }
       storageKey={browserStorageKeys.listFilterPanelState}
     >

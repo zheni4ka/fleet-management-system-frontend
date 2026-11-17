@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server"
 import RoutesPeriodForm from "@/components/report/routes-period-form"
 import RoutesPeriodReportView from "@/components/report/routes-period-report-view"
 import { LoadErrorMessage } from "@/components/load-error-message"
@@ -52,6 +53,8 @@ async function RoutesPeriodReportSection({
 }
 
 export default async function ReportsPage({ searchParams }: ReportsPageProps) {
+  const pageTranslations = await getTranslations("pages")
+  const reportTranslations = await getTranslations("reports")
   const authToken = await getAuthTokenOrRedirect()
   const routesPeriodFormValues =
     createRoutesPeriodFormValuesFromPageSearchParams(await searchParams)
@@ -59,8 +62,8 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
   return (
     <PageContainer>
       <PageHeader
-        title="Звіти"
-        description="Статистика рейсів за обраний період: день, тиждень або місяць."
+        title={pageTranslations("reportsTitle")}
+        description={pageTranslations("reportsDescription")}
       />
 
       <RoutesPeriodForm
@@ -75,7 +78,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
         />
       ) : (
         <p className="rounded-xl border border-dashed bg-white py-12 text-center text-slate-500">
-          Оберіть період, щоб сформувати звіт.
+          {reportTranslations("selectPeriodPrompt")}
         </p>
       )}
     </PageContainer>

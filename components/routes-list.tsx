@@ -1,13 +1,14 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { useTranslations } from "next-intl"
 import RouteCard from "@/components/route-card"
 import GoogleMapRoute from "@/components/google-map-route"
 import EditRouteModal from "@/components/edit/edit-route-modal"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints, commonUiTexts } from "@/lib/constants"
+import { apiEndpoints } from "@/lib/constants"
 import {
   createEditRouteFormValuesFromRoute,
   createUpdateRouteRequestModel,
@@ -42,6 +43,8 @@ export function RoutesList({
   locationLookupOptions,
   isRoutesListFiltered,
 }: RoutesListProps) {
+  const routeTranslations = useTranslations("routes")
+  const commonTranslations = useTranslations("common")
   const [routeStatusOverrides, setRouteStatusOverrides] = useState<
     ReadonlyMap<number, RouteStatus>
   >(() => new Map())
@@ -107,9 +110,9 @@ export function RoutesList({
           })
         ),
       {
-        loading: "Оновлення статусу на сервері...",
-        success: "Статус маршруту збережено!",
-        error: "Не вдалося зберегти зміни",
+        loading: routeTranslations("statusUpdateLoading"),
+        success: routeTranslations("statusUpdateSuccess"),
+        error: routeTranslations("statusUpdateError"),
       }
     )
     if (!isRouteStatusUpdated) {
@@ -132,9 +135,9 @@ export function RoutesList({
           HttpMethod.Delete
         ),
       {
-        loading: "Видалення на сервері...",
-        success: "Маршрут успішно видалено!",
-        error: "Не вдалося видалити маршрут",
+        loading: routeTranslations("deleteLoading"),
+        success: routeTranslations("deleteSuccess"),
+        error: routeTranslations("deleteError"),
       }
     )
     if (isRouteDeleted) {
@@ -180,8 +183,8 @@ export function RoutesList({
         {displayedRoutes.length === 0 && (
           <div className="col-span-full rounded-xl border border-dashed bg-white py-12 text-center text-slate-500">
             {isRoutesListFiltered
-              ? commonUiTexts.nothingFoundMessage
-              : "Маршрутів поки немає."}
+              ? commonTranslations("nothingFoundMessage")
+              : routeTranslations("emptyList")}
           </div>
         )}
       </div>
@@ -198,7 +201,13 @@ export function RoutesList({
         deletionQuestion={
           routePendingDeletion === null
             ? null
-            : `Видалити маршрут #${routePendingDeletion.id} ${formatRouteStartLocationName(routePendingDeletion)} → ${formatRouteDestinationLocationName(routePendingDeletion)}?`
+            : routeTranslations("deletionQuestion", {
+                routeId: routePendingDeletion.id,
+                startLocationName:
+                  formatRouteStartLocationName(routePendingDeletion),
+                destinationLocationName:
+                  formatRouteDestinationLocationName(routePendingDeletion),
+              })
         }
         isDeleting={updatingRouteId === routePendingDeletion?.id}
         onConfirm={handleDeleteRouteConfirm}

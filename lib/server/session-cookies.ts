@@ -1,10 +1,12 @@
 import type { NextRequest, NextResponse } from "next/server"
 import { cookieNames } from "@/lib/constants"
-import { SessionResponse } from "@/lib/types"
+import { AppLocale, SessionResponse } from "@/lib/types"
 
 type SessionResponseCookies = NextResponse["cookies"]
 
 type SessionRequestCookies = NextRequest["cookies"]
+
+const localeCookieMaxAgeSeconds = 365 * 24 * 60 * 60
 
 function createSessionCookieOptions(refreshTokenExpiresAtUtc: string) {
   return {
@@ -33,6 +35,20 @@ export function setSessionResponseCookies(
     session.refreshToken,
     sessionCookieOptions
   )
+  setLocaleResponseCookie(responseCookies, session.preferredLanguage)
+}
+
+export function setLocaleResponseCookie(
+  responseCookies: SessionResponseCookies,
+  appLocale: AppLocale
+): void {
+  responseCookies.set(cookieNames.locale, appLocale, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: localeCookieMaxAgeSeconds,
+  })
 }
 
 export function setSessionRequestCookies(
@@ -41,6 +57,7 @@ export function setSessionRequestCookies(
 ): void {
   requestCookies.set(cookieNames.accessToken, session.accessToken)
   requestCookies.set(cookieNames.refreshToken, session.refreshToken)
+  requestCookies.set(cookieNames.locale, session.preferredLanguage)
 }
 
 export function deleteSessionResponseCookies(

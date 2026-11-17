@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server"
 import {
-  bffErrorMessages,
   bffRoutes,
   cookieNames,
   httpStatusCodes,
@@ -17,13 +16,16 @@ import {
 } from "@/lib/server/open-id-connect"
 import { getSingleSignOnSettings } from "@/lib/server/single-sign-on-settings"
 import { SingleSignOnTransaction } from "@/lib/types"
+import { createRequestMessageTranslator } from "@/lib/server/request-message-translator"
 
 export async function GET(request: NextRequest) {
   const singleSignOnSettings = getSingleSignOnSettings()
   if (singleSignOnSettings === null) {
     return createProblemResponse(
       httpStatusCodes.notFound,
-      bffErrorMessages.singleSignOnNotConfigured
+      createRequestMessageTranslator(request)(
+        "bffErrors.singleSignOnNotConfigured"
+      )
     )
   }
 
@@ -44,7 +46,9 @@ export async function GET(request: NextRequest) {
     client_id: singleSignOnSettings.clientId,
     response_type: openIdConnectProtocolValues.responseTypeCode,
     response_mode: openIdConnectProtocolValues.responseModeQuery,
-    redirect_uri: createSingleSignOnCallbackUrl(singleSignOnSettings.appBaseUrl),
+    redirect_uri: createSingleSignOnCallbackUrl(
+      singleSignOnSettings.appBaseUrl
+    ),
     scope: openIdConnectProtocolValues.scope,
     state: singleSignOnTransaction.state,
     nonce: singleSignOnTransaction.nonce,

@@ -1,8 +1,6 @@
-import { commonUiTexts } from "@/lib/constants"
-
 export class SessionExpiredError extends Error {
   constructor() {
-    super(commonUiTexts.sessionExpiredMessage)
+    super("The session has expired.")
     this.name = "SessionExpiredError"
   }
 }

@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
@@ -11,7 +12,7 @@ import { SubmitButton } from "@/components/ui/submit-button"
 import { RouteFormFields } from "@/components/forms/route-form-fields"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints, routeStatusLabels } from "@/lib/constants"
+import { apiEndpoints } from "@/lib/constants"
 import {
   createCreateRouteRequestModel,
   createEmptyAddRouteFormValues,
@@ -28,15 +29,6 @@ import {
 } from "@/lib/types"
 import { parseEnumValue } from "@/lib/utils"
 
-function createRouteTimeLabel(
-  routeTimeLabel: string,
-  locationTimeZoneId: string | null
-): string {
-  return locationTimeZoneId === null
-    ? `${routeTimeLabel} (оберіть локацію)`
-    : `${routeTimeLabel}, ${locationTimeZoneId}`
-}
-
 interface AddRouteModalProps {
   autoLookupOptions: AutoLookupOption[]
   driverLookupOptions: DriverLookupOption[]
@@ -48,6 +40,10 @@ export default function AddRouteModal({
   driverLookupOptions,
   locationLookupOptions,
 }: AddRouteModalProps) {
+  const routeStatusTranslations = useTranslations("routeStatus")
+  const routeTranslations = useTranslations("routes")
+  const formValidationTranslations = useTranslations("formValidation")
+  const commonTranslations = useTranslations("common")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [addRouteFormValues, setAddRouteFormValues] = useState(
     createEmptyAddRouteFormValues
@@ -60,6 +56,19 @@ export default function AddRouteModal({
     setAddRouteFormValues({ ...addRouteFormValues, ...changedValues })
   }
 
+  const createRouteTimeLabel = (
+    routeTimeLabel: string,
+    locationTimeZoneId: string | null
+  ): string =>
+    locationTimeZoneId === null
+      ? routeTranslations("timeLabelWithoutLocation", {
+          timeLabel: routeTimeLabel,
+        })
+      : routeTranslations("timeLabelWithTimeZone", {
+          timeLabel: routeTimeLabel,
+          timeZoneId: locationTimeZoneId,
+        })
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const addRouteFormValidationError = getAddRouteFormValidationError(
@@ -67,7 +76,7 @@ export default function AddRouteModal({
       locationLookupOptions
     )
     if (addRouteFormValidationError !== null) {
-      toast.error(addRouteFormValidationError)
+      toast.error(formValidationTranslations(addRouteFormValidationError))
       return
     }
 
@@ -82,9 +91,9 @@ export default function AddRouteModal({
           )
         ),
       {
-        loading: "Збереження маршруту...",
-        success: "Маршрут успішно додано!",
-        error: "Помилка при додаванні маршруту. Спробуйте ще раз.",
+        loading: routeTranslations("createLoading"),
+        success: routeTranslations("createSuccess"),
+        error: routeTranslations("createError"),
       }
     )
     if (isRouteCreated) {
@@ -96,12 +105,12 @@ export default function AddRouteModal({
   return (
     <>
       <Button hoverEffect="grow" onClick={() => setIsModalOpen(true)}>
-        Додати маршрут
+        {routeTranslations("addButtonLabel")}
       </Button>
       <ModalWindow
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Додати маршрут"
+        title={routeTranslations("addTitle")}
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <RouteFormFields
@@ -116,7 +125,7 @@ export default function AddRouteModal({
           <div className="grid gap-3 sm:grid-cols-2">
             <FormField
               label={createRouteTimeLabel(
-                "Час відправлення",
+                routeTranslations("departureTimeLabel"),
                 findLocationTimeZoneId(
                   addRouteFormValues.startLocationId,
                   locationLookupOptions
@@ -135,7 +144,7 @@ export default function AddRouteModal({
             </FormField>
             <FormField
               label={createRouteTimeLabel(
-                "Час прибуття",
+                routeTranslations("arrivalTimeLabel"),
                 findLocationTimeZoneId(
                   addRouteFormValues.destinationLocationId,
                   locationLookupOptions
@@ -154,7 +163,7 @@ export default function AddRouteModal({
             </FormField>
           </div>
 
-          <FormField label="Статус маршруту">
+          <FormField label={routeTranslations("statusLabel")}>
             <NativeSelect
               value={addRouteFormValues.status}
               onChange={(event) =>
@@ -165,14 +174,14 @@ export default function AddRouteModal({
             >
               {Object.values(RouteStatus).map((routeStatus) => (
                 <option key={routeStatus} value={routeStatus}>
-                  {routeStatusLabels[routeStatus]}
+                  {routeStatusTranslations(routeStatus)}
                 </option>
               ))}
             </NativeSelect>
           </FormField>
 
           <SubmitButton isSubmitting={isApiMutationRunning}>
-            Зберегти
+            {commonTranslations("saveButtonLabel")}
           </SubmitButton>
         </form>
       </ModalWindow>

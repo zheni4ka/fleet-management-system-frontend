@@ -5,7 +5,6 @@ import { useEffect } from "react"
 import { TriangleAlert } from "lucide-react"
 import { StatusMessagePage } from "@/components/status-message-page"
 import { Button } from "@/components/ui/button"
-import { commonUiTexts } from "@/lib/constants"
 
 interface GlobalErrorPageProps {
   error: Error & { digest?: string }
@@ -17,7 +16,7 @@ export default function GlobalErrorPage({
   reset,
 }: GlobalErrorPageProps) {
   useEffect(() => {
-    console.error("Критична помилка застосунку:", error)
+    console.error("Application failed outside the root layout:", error)
   }, [error])
 
   return (
@@ -25,11 +24,11 @@ export default function GlobalErrorPage({
       <body className="antialiased">
         <StatusMessagePage
           icon={TriangleAlert}
-          title={commonUiTexts.errorPageTitle}
+          title="Щось пішло не так"
           description="Застосунок зіткнувся з помилкою. Спробуйте оновити сторінку."
         >
           <Button type="button" onClick={reset}>
-            {commonUiTexts.retryButtonLabel}
+            Спробувати ще
           </Button>
         </StatusMessagePage>
       </body>

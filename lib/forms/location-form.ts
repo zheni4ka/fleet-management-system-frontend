@@ -1,4 +1,4 @@
-import { LocationFormValues } from "@/lib/types"
+import { FormValidationError, LocationFormValues } from "@/lib/types"
 
 export function createEmptyLocationFormValues(): LocationFormValues {
   return { city: "", country: "", timeZoneId: "" }
@@ -6,14 +6,14 @@ export function createEmptyLocationFormValues(): LocationFormValues {
 
 export function getLocationFormValidationError(
   locationFormValues: LocationFormValues
-): string | null {
+): FormValidationError | null {
   const hasEmptyRequiredField = [
     locationFormValues.city,
     locationFormValues.country,
     locationFormValues.timeZoneId,
   ].some((requiredFieldValue) => requiredFieldValue.trim() === "")
   if (hasEmptyRequiredField) {
-    return "Будь ласка, вкажіть місто, країну та часовий пояс."
+    return FormValidationError.LocationRequiredFieldsMissing
   }
   return null
 }

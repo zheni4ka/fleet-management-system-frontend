@@ -3,12 +3,14 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
+import { useApiErrorMessageResolver } from "@/hooks/use-api-error-message-resolver"
 import { ConcurrencyConflictError } from "@/lib/concurrency-conflict-error"
 import { SessionExpiredError } from "@/lib/session-expired-error"
 import { ApiMutationToastMessages } from "@/lib/types"
 
 export function useApiMutationWithRefresh() {
   const router = useRouter()
+  const resolveApiErrorMessage = useApiErrorMessageResolver()
   const [isApiMutationRunning, setIsApiMutationRunning] = useState(false)
 
   const runApiMutation = async (
@@ -34,18 +36,17 @@ export function useApiMutationWithRefresh() {
         return false
       }
       if (error instanceof ConcurrencyConflictError) {
-        toast.error(error.message, { id: mutationToastId })
+        toast.error(resolveApiErrorMessage(error, toastMessages.error), {
+          id: mutationToastId,
+        })
         handleConcurrencyConflict?.()
         router.refresh()
         return false
       }
       console.error(toastMessages.error, error)
-      toast.error(
-        error instanceof Error && error.message
-          ? error.message
-          : toastMessages.error,
-        { id: mutationToastId }
-      )
+      toast.error(resolveApiErrorMessage(error, toastMessages.error), {
+        id: mutationToastId,
+      })
       return false
     } finally {
       setIsApiMutationRunning(false)

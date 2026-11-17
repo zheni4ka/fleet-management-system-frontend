@@ -1,5 +1,5 @@
 export interface TableColumn<TSortField extends string = never> {
-  label: string
+  labelMessageKey: string
   className: string
   sortField?: TSortField
 }

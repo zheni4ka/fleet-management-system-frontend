@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
 import { Building2 } from "lucide-react"
@@ -9,12 +10,8 @@ import { IconActionButton } from "@/components/icon-action-button"
 import { DepotCheckboxList } from "@/components/forms/depot-checkbox-list"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import {
-  apiEndpoints,
-  iconActionLabels,
-  userDepotsFormMessages,
-} from "@/lib/constants"
-import { Depot, Dispatcher, HttpMethod } from "@/lib/types"
+import { apiEndpoints } from "@/lib/constants"
+import { Depot, Dispatcher, FormValidationError, HttpMethod } from "@/lib/types"
 
 interface EditUserDepotsModalProps {
   dispatcher: Dispatcher
@@ -25,6 +22,10 @@ export function EditUserDepotsModal({
   dispatcher,
   depots,
 }: EditUserDepotsModalProps) {
+  const iconActionTranslations = useTranslations("iconActions")
+  const dispatcherTranslations = useTranslations("dispatchers")
+  const formValidationTranslations = useTranslations("formValidation")
+  const commonTranslations = useTranslations("common")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedDepotIds, setSelectedDepotIds] = useState<
     ReadonlyArray<number>
@@ -39,7 +40,9 @@ export function EditUserDepotsModal({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (selectedDepotIds.length === 0) {
-      toast.error(userDepotsFormMessages.depotsRequired)
+      toast.error(
+        formValidationTranslations(FormValidationError.DispatcherDepotsMissing)
+      )
       return
     }
 
@@ -50,9 +53,9 @@ export function EditUserDepotsModal({
           depotIds: selectedDepotIds,
         }),
       {
-        loading: "Збереження депо...",
-        success: userDepotsFormMessages.depotsUpdated,
-        error: "Не вдалося змінити депо диспетчера",
+        loading: dispatcherTranslations("depotsUpdateLoading"),
+        success: dispatcherTranslations("depotsUpdateSuccess"),
+        error: dispatcherTranslations("depotsUpdateError"),
       }
     )
     if (isUserDepotsUpdated) {
@@ -64,14 +67,16 @@ export function EditUserDepotsModal({
     <>
       <IconActionButton
         icon={Building2}
-        label={iconActionLabels.editDepots}
+        label={iconActionTranslations("editDepots")}
         variant="outline"
         onClick={handleOpen}
       />
       <ModalWindow
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={`Депо диспетчера ${dispatcher.username}`}
+        title={dispatcherTranslations("depotsTitle", {
+          username: dispatcher.username,
+        })}
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <DepotCheckboxList
@@ -80,7 +85,7 @@ export function EditUserDepotsModal({
             onSelectedDepotIdsChange={setSelectedDepotIds}
           />
           <SubmitButton isSubmitting={isApiMutationRunning}>
-            Зберегти
+            {commonTranslations("saveButtonLabel")}
           </SubmitButton>
         </form>
       </ModalWindow>

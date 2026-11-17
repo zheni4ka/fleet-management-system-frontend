@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl"
 import ModalWindow from "@/components/ui/modal-window"
 
 interface GoogleMapRouteProps {
@@ -24,14 +25,15 @@ export function GoogleMapRoute({
   destination,
   onClose,
 }: GoogleMapRouteProps) {
+  const routeTranslations = useTranslations("routes")
   const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
   return (
-    <ModalWindow isOpen onClose={onClose} title="Маршрут на карті Google">
+    <ModalWindow isOpen onClose={onClose} title={routeTranslations("mapTitle")}>
       {googleMapsApiKey ? (
         <div className="w-full overflow-hidden rounded-lg border border-white/5 shadow-sm">
           <iframe
-            title={`Маршрут ${origin} → ${destination}`}
+            title={routeTranslations("mapFrameTitle", { origin, destination })}
             className="h-[500px] w-full border-0"
             src={createGoogleMapsDirectionsEmbedUrl(
               googleMapsApiKey,
@@ -42,7 +44,7 @@ export function GoogleMapRoute({
         </div>
       ) : (
         <p className="text-sm text-red-600">
-          Ключ Google Maps не налаштовано (NEXT_PUBLIC_GOOGLE_MAPS_API_KEY).
+          {routeTranslations("mapKeyMissing")}
         </p>
       )}
     </ModalWindow>

@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest"
-import { passwordPolicyMessages } from "@/lib/constants"
 import {
   createCreateAutoRequestModel,
   createEmptyAutoFormValues,
@@ -15,7 +14,8 @@ import {
   createLocationRequestBody,
   getLocationFormValidationError,
 } from "@/lib/forms/location-form"
-import { getPasswordPolicyViolationMessage } from "@/lib/forms/password-policy"
+import { getPasswordPolicyViolation } from "@/lib/forms/password-policy"
+import { FormValidationError, PasswordPolicyViolation } from "@/lib/types"
 
 describe("auto form", () => {
   const filledAutoFormValues = {
@@ -37,7 +37,7 @@ describe("auto form", () => {
   it("rejects a non-positive capacity", () => {
     expect(
       getAutoFormValidationError({ ...filledAutoFormValues, capacity: "0" })
-    ).toBe("Місткість має бути числом, більшим за 0.")
+    ).toBe(FormValidationError.AutoCapacityNotPositive)
   })
 
   it("trims text and converts numbers for the request", () => {
@@ -102,17 +102,17 @@ describe("location form", () => {
 
 describe("password policy", () => {
   it.each([
-    ["Short1A", passwordPolicyMessages.tooShort],
-    ["longpassword1", passwordPolicyMessages.uppercaseLetterMissing],
-    ["LONGPASSWORD1", passwordPolicyMessages.lowercaseLetterMissing],
-    ["LongPasswordNoDigit", passwordPolicyMessages.digitMissing],
-  ])("rejects %s", (password, expectedViolationMessage) => {
-    expect(getPasswordPolicyViolationMessage(password)).toBe(
-      expectedViolationMessage
+    ["Short1A", PasswordPolicyViolation.TooShort],
+    ["longpassword1", PasswordPolicyViolation.UppercaseLetterMissing],
+    ["LONGPASSWORD1", PasswordPolicyViolation.LowercaseLetterMissing],
+    ["LongPasswordNoDigit", PasswordPolicyViolation.DigitMissing],
+  ])("rejects %s", (password, expectedPasswordPolicyViolation) => {
+    expect(getPasswordPolicyViolation(password)).toBe(
+      expectedPasswordPolicyViolation
     )
   })
 
   it("accepts a password that satisfies the backend policy", () => {
-    expect(getPasswordPolicyViolationMessage("Valid1Password")).toBeNull()
+    expect(getPasswordPolicyViolation("Valid1Password")).toBeNull()
   })
 })

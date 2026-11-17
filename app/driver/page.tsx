@@ -5,6 +5,7 @@ import { ListPagination } from "@/components/list-pagination"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
 import { apiEndpoints, appRoutes } from "@/lib/constants"
+import { getTranslations } from "next-intl/server"
 import { createDriversListFilterFields } from "@/lib/forms/list-filter-fields"
 import {
   createListApiPath,
@@ -22,14 +23,12 @@ interface DriversPageProps {
   searchParams: Promise<PageSearchParams>
 }
 
-const driversPageTitle = "Водії"
-
-const driversPageDescription =
-  "Управління водіями вашого автопарку та перегляд їхніх ліцензій."
-
 export default async function DriversPage({ searchParams }: DriversPageProps) {
   const authToken = await getAdminAuthTokenOrRedirect()
   const pageSearchParams = await searchParams
+  const translateMessage = await getTranslations()
+  const driversPageTitle = translateMessage("pages.driversTitle")
+  const driversPageDescription = translateMessage("pages.driversDescription")
   const depotsResult = await fetchFromApi(
     apiEndpoints.depots,
     authToken,
@@ -48,7 +47,8 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
   }
 
   const driversListFilterFields = createDriversListFilterFields(
-    depotsResult.data
+    depotsResult.data,
+    translateMessage
   )
   const driversListPageState: ListPageState<DriverSortField> = {
     path: appRoutes.drivers,
@@ -78,7 +78,7 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
       </PageHeader>
 
       <ListFilterPanel
-        title="Пошук водіїв"
+        title={translateMessage("pages.driversFilterTitle")}
         listPageState={driversListPageState}
         listFilterFields={driversListFilterFields}
       />

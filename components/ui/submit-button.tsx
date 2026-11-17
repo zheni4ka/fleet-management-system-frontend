@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 
 interface SubmitButtonProps {
@@ -7,6 +8,7 @@ interface SubmitButtonProps {
 }
 
 export function SubmitButton({ isSubmitting, children }: SubmitButtonProps) {
+  const commonTranslations = useTranslations("common")
   return (
     <Button
       type="submit"
@@ -16,7 +18,7 @@ export function SubmitButton({ isSubmitting, children }: SubmitButtonProps) {
       hoverEffect="grow-subtle"
       className="mt-2"
     >
-      {isSubmitting ? "Збереження..." : children}
+      {isSubmitting ? commonTranslations("savingLabel") : children}
     </Button>
   )
 }

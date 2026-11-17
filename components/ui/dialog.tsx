@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Dialog as DialogPrimitive } from "radix-ui"
 
-import { commonUiTexts } from "@/lib/constants"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
@@ -56,6 +56,7 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  const commonTranslations = useTranslations("common")
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -76,7 +77,9 @@ function DialogContent({
               size="icon-sm"
             >
               <XIcon />
-              <span className="sr-only">{commonUiTexts.closeButtonLabel}</span>
+              <span className="sr-only">
+                {commonTranslations("closeButtonLabel")}
+              </span>
             </Button>
           </DialogPrimitive.Close>
         )}

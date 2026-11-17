@@ -5,7 +5,8 @@ import { ListPagination } from "@/components/list-pagination"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
 import { apiEndpoints, appRoutes } from "@/lib/constants"
-import { dispatchersListFilterFields } from "@/lib/forms/list-filter-fields"
+import { getTranslations } from "next-intl/server"
+import { createDispatchersListFilterFields } from "@/lib/forms/list-filter-fields"
 import {
   createListApiPath,
   getListFilterValuesFromPageSearchParams,
@@ -35,6 +36,9 @@ export default async function DispatchersPage({
 }: DispatchersPageProps) {
   const authToken = await getAdminAuthTokenOrRedirect()
   const pageSearchParams = await searchParams
+  const translateMessage = await getTranslations()
+  const dispatchersListFilterFields =
+    createDispatchersListFilterFields(translateMessage)
   const dispatchersListPageState: ListPageState<DispatcherSortField> = {
     path: appRoutes.dispatchers,
     listQuery: getListQueryFromPageSearchParams(
@@ -62,8 +66,8 @@ export default async function DispatchersPage({
   return (
     <PageContainer>
       <PageHeader
-        title="Диспетчери"
-        description="Управління обліковими записами персоналу."
+        title={translateMessage("pages.dispatchersTitle")}
+        description={translateMessage("pages.dispatchersDescription")}
       >
         {depotsResult.isSucceeded && (
           <AddDispatcherModal depots={depotsResult.data} />
@@ -71,7 +75,7 @@ export default async function DispatchersPage({
       </PageHeader>
 
       <ListFilterPanel
-        title="Пошук диспетчерів"
+        title={translateMessage("pages.dispatchersFilterTitle")}
         listPageState={dispatchersListPageState}
         listFilterFields={dispatchersListFilterFields}
       />

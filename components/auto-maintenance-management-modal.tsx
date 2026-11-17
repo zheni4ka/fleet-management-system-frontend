@@ -1,5 +1,7 @@
 "use client"
 
+import { useLocale, useTranslations } from "next-intl"
+import { resolveAppLocale } from "@/lib/app-locale"
 import { useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
 import { History, Wrench } from "lucide-react"
@@ -13,8 +15,9 @@ import { SubmitButton } from "@/components/ui/submit-button"
 import { IconActionButton } from "@/components/icon-action-button"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { fetchApiData, sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints, iconActionLabels } from "@/lib/constants"
+import { apiEndpoints } from "@/lib/constants"
 import { formatDate } from "@/lib/formatters"
+import { useApiErrorMessageResolver } from "@/hooks/use-api-error-message-resolver"
 import {
   createCompleteAutoMaintenanceRequestModel,
   createCreateAutoMaintenanceRequestModel,
@@ -33,6 +36,12 @@ export default function AutoMaintenanceManagementModal({
   autoId,
   autoTitle,
 }: AutoMaintenanceManagementModalProps) {
+  const appLocale = resolveAppLocale(useLocale())
+  const iconActionTranslations = useTranslations("iconActions")
+  const maintenanceTranslations = useTranslations("maintenance")
+  const formValidationTranslations = useTranslations("formValidation")
+  const commonTranslations = useTranslations("common")
+  const resolveApiErrorMessage = useApiErrorMessageResolver()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [maintenanceHistory, setMaintenanceHistory] = useState<
     AutoMaintenance[]
@@ -63,11 +72,12 @@ export default function AutoMaintenanceManagementModal({
         )
       )
     } catch (error) {
-      console.error("Не вдалося завантажити історію ТО:", error)
+      console.error(maintenanceTranslations("historyLoadFailed"), error)
       setMaintenanceHistoryErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Не вдалося завантажити історію ТО"
+        resolveApiErrorMessage(
+          error,
+          maintenanceTranslations("historyLoadFailed")
+        )
       )
     } finally {
       setIsMaintenanceHistoryLoading(false)
@@ -88,9 +98,9 @@ export default function AutoMaintenanceManagementModal({
           createCompleteAutoMaintenanceRequestModel(maintenanceRecord)
         ),
       {
-        loading: "Завершення ТО...",
-        success: "ТО успішно завершено! Авто знову доступне.",
-        error: "Помилка при завершенні ТО.",
+        loading: maintenanceTranslations("completeLoading"),
+        success: maintenanceTranslations("completeSuccess"),
+        error: maintenanceTranslations("completeError"),
       },
       () => setIsModalOpen(false)
     )
@@ -105,7 +115,7 @@ export default function AutoMaintenanceManagementModal({
       maintenanceFormValues
     )
     if (maintenanceFormValidationError !== null) {
-      toast.error(maintenanceFormValidationError)
+      toast.error(formValidationTranslations(maintenanceFormValidationError))
       return
     }
 
@@ -117,9 +127,9 @@ export default function AutoMaintenanceManagementModal({
           createCreateAutoMaintenanceRequestModel(autoId, maintenanceFormValues)
         ),
       {
-        loading: "Збереження запису...",
-        success: "Автомобіль відправлено на ТО!",
-        error: "Помилка при створенні запису.",
+        loading: maintenanceTranslations("createLoading"),
+        success: maintenanceTranslations("createSuccess"),
+        error: maintenanceTranslations("createError"),
       }
     )
     if (isMaintenanceCreated) {
@@ -132,7 +142,7 @@ export default function AutoMaintenanceManagementModal({
     if (isMaintenanceHistoryLoading) {
       return (
         <p className="animate-pulse py-4 text-center text-sm text-slate-500">
-          Завантаження...
+          {commonTranslations("loadingLabel")}
         </p>
       )
     }
@@ -146,7 +156,7 @@ export default function AutoMaintenanceManagementModal({
     if (maintenanceHistory.length === 0) {
       return (
         <p className="rounded-md border border-dashed border-slate-300 bg-slate-50 py-4 text-center text-sm text-slate-500">
-          Записів ще немає. Автомобіль справний.
+          {maintenanceTranslations("historyEmpty")}
         </p>
       )
     }
@@ -160,10 +170,12 @@ export default function AutoMaintenanceManagementModal({
             <div className="mb-1 flex items-start justify-between">
               <span className="text-sm font-medium text-slate-800">
                 {maintenanceRecord.name}{" "}
-                {maintenanceRecord.isCompleted ? "(Завершено)" : "(В процесі)"}
+                {maintenanceRecord.isCompleted
+                  ? maintenanceTranslations("completedSuffix")
+                  : maintenanceTranslations("inProgressSuffix")}
               </span>
               <span className="rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-500">
-                {formatDate(maintenanceRecord.serviceDate)}
+                {formatDate(maintenanceRecord.serviceDate, appLocale)}
               </span>
             </div>
             <p className="mb-2 text-xs text-slate-600">
@@ -178,7 +190,7 @@ export default function AutoMaintenanceManagementModal({
                 variant="success"
                 className="w-full text-xs"
               >
-                Завершити ремонт
+                {maintenanceTranslations("completeButtonLabel")}
               </Button>
             )}
           </div>
@@ -191,7 +203,7 @@ export default function AutoMaintenanceManagementModal({
     <>
       <IconActionButton
         icon={Wrench}
-        label={iconActionLabels.maintenance}
+        label={iconActionTranslations("maintenance")}
         variant="warning"
         onClick={handleOpen}
       />
@@ -199,14 +211,14 @@ export default function AutoMaintenanceManagementModal({
       <ModalWindow
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={`Технічне обслуговування: ${autoTitle}`}
+        title={maintenanceTranslations("title", { autoTitle })}
       >
         <div className="space-y-5 px-2">
           <section>
             <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-2">
               <History className="size-4 text-slate-500" />
               <h3 className="text-sm font-semibold text-slate-700">
-                Історія обслуговування
+                {maintenanceTranslations("historyTitle")}
               </h3>
             </div>
             {renderMaintenanceHistory()}
@@ -216,23 +228,27 @@ export default function AutoMaintenanceManagementModal({
             <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-2">
               <Wrench className="size-4 text-blue-500" />
               <h3 className="text-sm font-semibold text-slate-700">
-                Відправити на ремонт
+                {maintenanceTranslations("sendToRepairTitle")}
               </h3>
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-              <FormField label="Тип робіт">
+              <FormField label={maintenanceTranslations("workTypeLabel")}>
                 <Input
-                  placeholder="Напр., Заміна мастила"
+                  placeholder={maintenanceTranslations("workTypePlaceholder")}
                   value={maintenanceFormValues.name}
                   onChange={(event) =>
                     updateMaintenanceFormValues({ name: event.target.value })
                   }
                 />
               </FormField>
-              <FormField label="Опис проблеми">
+              <FormField
+                label={maintenanceTranslations("problemDescriptionLabel")}
+              >
                 <Textarea
-                  placeholder="Детальний опис проблеми..."
+                  placeholder={maintenanceTranslations(
+                    "problemDescriptionPlaceholder"
+                  )}
                   value={maintenanceFormValues.description}
                   onChange={(event) =>
                     updateMaintenanceFormValues({
@@ -242,7 +258,7 @@ export default function AutoMaintenanceManagementModal({
                   rows={2}
                 />
               </FormField>
-              <FormField label="Дата початку робіт">
+              <FormField label={maintenanceTranslations("serviceDateLabel")}>
                 <Input
                   type="datetime-local"
                   value={maintenanceFormValues.serviceDate}
@@ -254,7 +270,7 @@ export default function AutoMaintenanceManagementModal({
                 />
               </FormField>
               <SubmitButton isSubmitting={isApiMutationRunning}>
-                Зареєструвати ТО
+                {maintenanceTranslations("registerButtonLabel")}
               </SubmitButton>
             </form>
           </section>

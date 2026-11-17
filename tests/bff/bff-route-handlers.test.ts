@@ -21,6 +21,7 @@ const backendSessionResponseBody = {
   username: "admin",
   email: null,
   roles: ["Admin"],
+  preferredLanguage: "en",
 }
 
 function createJsonResponse(
@@ -94,6 +95,7 @@ describe("POST /api/session/login", () => {
           origin: frontendOrigin,
           traceparent: testTraceparent,
           "x-forwarded-for": "203.0.113.7",
+          "accept-language": "en",
         },
         { username: "admin", password: "Valid1Password" }
       )
@@ -102,7 +104,12 @@ describe("POST /api/session/login", () => {
     expect(loginResponse.status).toBe(204)
     expect(await loginResponse.text()).toBe("")
     const setCookieHeaders = loginResponse.headers.getSetCookie()
-    expect(setCookieHeaders).toHaveLength(2)
+    expect(setCookieHeaders).toHaveLength(3)
+    expect(
+      setCookieHeaders.some((setCookieHeader) =>
+        setCookieHeader.startsWith("NEXT_LOCALE=en;")
+      )
+    ).toBe(true)
     for (const setCookieHeader of setCookieHeaders) {
       expect(setCookieHeader).toMatch(/HttpOnly/i)
       expect(setCookieHeader).toMatch(/Secure/i)
@@ -113,6 +120,7 @@ describe("POST /api/session/login", () => {
     expect(backendRequestUrl).toBe(`${testApiBaseUrl}/api/v1/Account/login`)
     const backendRequestHeaders = new Headers(backendRequestInit?.headers)
     expect(backendRequestHeaders.get("traceparent")).toBe(testTraceparent)
+    expect(backendRequestHeaders.get("accept-language")).toBe("en")
     expect(backendRequestHeaders.get("x-forwarded-for")).toBe("203.0.113.7")
   })
 
@@ -212,6 +220,7 @@ describe("/api/proxy/[...apiPath]", () => {
       createBffRequest("/api/proxy/api/v1/Depot/getDepots?page=1", "GET", {
         cookie: "accessToken=access-token-value",
         traceparent: testTraceparent,
+        "accept-language": "en",
       }),
       createApiProxyRouteContext(["api", "v1", "Depot", "getDepots"])
     )
@@ -230,6 +239,7 @@ describe("/api/proxy/[...apiPath]", () => {
       "Bearer access-token-value"
     )
     expect(backendRequestHeaders.get("traceparent")).toBe(testTraceparent)
+    expect(backendRequestHeaders.get("accept-language")).toBe("en")
   })
 
   it("rejects a mutation that does not come from the same origin", async () => {

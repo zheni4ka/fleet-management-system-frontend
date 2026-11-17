@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl"
 import { Input } from "@/components/ui/input"
 import { FormField } from "@/components/ui/form-field"
 import { driverFormFields } from "@/lib/constants"
@@ -15,10 +16,14 @@ export function DriverFormFields({
   driverFormValues,
   onDriverFormValuesChange,
 }: DriverFormFieldsProps) {
+  const driverTranslations = useTranslations("drivers")
   return (
     <>
       {driverFormFields.map((driverFormField) => (
-        <FormField key={driverFormField.name} label={driverFormField.label}>
+        <FormField
+          key={driverFormField.name}
+          label={driverTranslations(driverFormField.labelMessageKey)}
+        >
           <Input
             value={driverFormValues[driverFormField.name]}
             onChange={(event) =>

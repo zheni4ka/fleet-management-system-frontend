@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -40,6 +41,7 @@ export function ListFilterForm<TSortField extends string>({
   listFilterFields,
 }: ListFilterFormProps<TSortField>) {
   const router = useRouter()
+  const listControlTranslations = useTranslations("listControls")
   const [listFilterFormValues, setListFilterFormValues] = useState(() =>
     createInitialListFilterFormValues(listPageState, listFilterFields)
   )
@@ -78,7 +80,9 @@ export function ListFilterForm<TSortField extends string>({
     const reversedDateRangeFieldLabel = getReversedDateRangeFieldLabel()
     if (reversedDateRangeFieldLabel !== null) {
       toast.error(
-        `Поле «${reversedDateRangeFieldLabel}» не може бути раніше за початкову дату.`
+        listControlTranslations("reversedDateRange", {
+          fieldLabel: reversedDateRangeFieldLabel,
+        })
       )
       return
     }
@@ -171,7 +175,7 @@ export function ListFilterForm<TSortField extends string>({
         ))}
         <div className="flex items-end gap-2">
           <Button type="submit" className="flex-1">
-            Знайти
+            {listControlTranslations("findButtonLabel")}
           </Button>
           <Button
             type="button"
@@ -179,7 +183,7 @@ export function ListFilterForm<TSortField extends string>({
             className="flex-1"
             onClick={handleReset}
           >
-            Скинути
+            {listControlTranslations("resetButtonLabel")}
           </Button>
         </div>
       </div>

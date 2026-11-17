@@ -1,3 +1,5 @@
+import { getLocale, getTranslations } from "next-intl/server"
+import { resolveAppLocale } from "@/lib/app-locale"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { formatUtcDateTimeWithTimeZone } from "@/lib/zoned-date-time"
 import { LoadErrorMessage } from "@/components/load-error-message"
@@ -7,7 +9,6 @@ import {
   listPaging,
   recentRoutesBlockSettings,
   recentRoutesTableColumns,
-  routeStatusLabels,
 } from "@/lib/constants"
 import {
   formatRouteDestinationLocationName,
@@ -25,6 +26,10 @@ interface RecentRoutesBlockProps {
 }
 
 export async function RecentRoutesBlock({ authToken }: RecentRoutesBlockProps) {
+  const appLocale = resolveAppLocale(await getLocale())
+  const routeStatusTranslations = await getTranslations("routeStatus")
+  const homeTranslations = await getTranslations("home")
+  const routeTranslations = await getTranslations("routes")
   const recentRoutesResult = await fetchFromApi(
     createListApiPath(apiEndpoints.routesPagedList, {
       page: listPaging.firstPage,
@@ -40,7 +45,9 @@ export async function RecentRoutesBlock({ authToken }: RecentRoutesBlockProps) {
   if (!recentRoutesResult.isSucceeded) {
     return (
       <LoadErrorMessage
-        errorMessage={`Не вдалося завантажити маршрути. ${recentRoutesResult.errorMessage}`}
+        errorMessage={homeTranslations("recentRoutesLoadFailed", {
+          errorMessage: recentRoutesResult.errorMessage,
+        })}
       />
     )
   }
@@ -49,7 +56,9 @@ export async function RecentRoutesBlock({ authToken }: RecentRoutesBlockProps) {
 
   if (recentRoutes.length === 0) {
     return (
-      <p className="p-4 text-sm text-muted-foreground">Маршрутів поки немає.</p>
+      <p className="p-4 text-sm text-muted-foreground">
+        {routeTranslations("emptyList")}
+      </p>
     )
   }
 
@@ -70,13 +79,15 @@ export async function RecentRoutesBlock({ authToken }: RecentRoutesBlockProps) {
                 <TableCell className="text-xs">
                   {formatUtcDateTimeWithTimeZone(
                     route.departureTimeUtc,
-                    route.startLocationTimeZoneId
+                    route.startLocationTimeZoneId,
+                    appLocale
                   )}
                 </TableCell>
                 <TableCell className="text-xs">
                   {formatUtcDateTimeWithTimeZone(
                     route.arrivalTimeUtc,
-                    route.destinationLocationTimeZoneId
+                    route.destinationLocationTimeZoneId,
+                    appLocale
                   )}
                 </TableCell>
                 <TableCell className="text-right">
@@ -90,7 +101,7 @@ export async function RecentRoutesBlock({ authToken }: RecentRoutesBlockProps) {
                     <span
                       className={`h-1.5 w-1.5 rounded-full ${isRouteActive ? "bg-emerald-400" : "bg-zinc-400"}`}
                     />
-                    {routeStatusLabels[route.status]}
+                    {routeStatusTranslations(route.status)}
                   </span>
                 </TableCell>
               </TableRow>

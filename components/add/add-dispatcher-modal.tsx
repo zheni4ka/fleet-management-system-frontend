@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
@@ -10,14 +11,9 @@ import { DepotCheckboxList } from "@/components/forms/depot-checkbox-list"
 import { SubmitButton } from "@/components/ui/submit-button"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
-import {
-  accountPasswordConstraints,
-  apiEndpoints,
-  passwordPolicyMessages,
-  userDepotsFormMessages,
-} from "@/lib/constants"
-import { getPasswordPolicyViolationMessage } from "@/lib/forms/password-policy"
-import { Depot, HttpMethod, UserRole } from "@/lib/types"
+import { accountPasswordConstraints, apiEndpoints } from "@/lib/constants"
+import { getPasswordPolicyViolation } from "@/lib/forms/password-policy"
+import { Depot, FormValidationError, HttpMethod, UserRole } from "@/lib/types"
 
 interface AddDispatcherModalProps {
   depots: ReadonlyArray<Depot>
@@ -26,6 +22,10 @@ interface AddDispatcherModalProps {
 export default function AddDispatcherModal({
   depots,
 }: AddDispatcherModalProps) {
+  const dispatcherTranslations = useTranslations("dispatchers")
+  const passwordPolicyTranslations = useTranslations("passwordPolicy")
+  const formValidationTranslations = useTranslations("formValidation")
+  const commonTranslations = useTranslations("common")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
@@ -38,14 +38,20 @@ export default function AddDispatcherModal({
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    const passwordPolicyViolationMessage =
-      getPasswordPolicyViolationMessage(password)
-    if (passwordPolicyViolationMessage !== null) {
-      toast.error(passwordPolicyViolationMessage)
+    const passwordPolicyViolation = getPasswordPolicyViolation(password)
+    if (passwordPolicyViolation !== null) {
+      toast.error(
+        passwordPolicyTranslations(passwordPolicyViolation, {
+          minLength: accountPasswordConstraints.minLength,
+          maxLength: accountPasswordConstraints.maxLength,
+        })
+      )
       return
     }
     if (selectedDepotIds.length === 0) {
-      toast.error(userDepotsFormMessages.depotsRequired)
+      toast.error(
+        formValidationTranslations(FormValidationError.DispatcherDepotsMissing)
+      )
       return
     }
 
@@ -59,9 +65,9 @@ export default function AddDispatcherModal({
           depotIds: selectedDepotIds,
         }),
       {
-        loading: "Створення облікового запису...",
-        success: "Диспетчера успішно зареєстровано!",
-        error: "Не вдалося зареєструвати диспетчера",
+        loading: dispatcherTranslations("createLoading"),
+        success: dispatcherTranslations("createSuccess"),
+        error: dispatcherTranslations("createError"),
       }
     )
     if (isDispatcherRegistered) {
@@ -76,15 +82,15 @@ export default function AddDispatcherModal({
   return (
     <>
       <Button variant="accent" onClick={() => setIsModalOpen(true)}>
-        + Додати диспетчера
+        {dispatcherTranslations("addButtonLabel")}
       </Button>
       <ModalWindow
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Реєстрація нового диспетчера"
+        title={dispatcherTranslations("addTitle")}
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <FormField label="Логін (Username)">
+          <FormField label={dispatcherTranslations("usernameLabel")}>
             <Input
               required
               value={username}
@@ -92,7 +98,7 @@ export default function AddDispatcherModal({
               placeholder="dispatcher_1"
             />
           </FormField>
-          <FormField label="Електронна пошта">
+          <FormField label={dispatcherTranslations("emailLabel")}>
             <Input
               required
               type="email"
@@ -101,7 +107,7 @@ export default function AddDispatcherModal({
               placeholder="disp@fleet.com"
             />
           </FormField>
-          <FormField label="Пароль">
+          <FormField label={dispatcherTranslations("passwordLabel")}>
             <Input
               required
               type="password"
@@ -110,7 +116,9 @@ export default function AddDispatcherModal({
               maxLength={accountPasswordConstraints.maxLength}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder={passwordPolicyMessages.hint}
+              placeholder={passwordPolicyTranslations("Hint", {
+                minLength: accountPasswordConstraints.minLength,
+              })}
             />
           </FormField>
           <DepotCheckboxList
@@ -119,7 +127,7 @@ export default function AddDispatcherModal({
             onSelectedDepotIdsChange={setSelectedDepotIds}
           />
           <SubmitButton isSubmitting={isApiMutationRunning}>
-            Зберегти
+            {commonTranslations("saveButtonLabel")}
           </SubmitButton>
         </form>
       </ModalWindow>
