@@ -28,6 +28,10 @@ import { autoLookupOptionSchema } from "@/lib/schemas/auto-lookup-option-schema"
 import { driverLookupOptionSchema } from "@/lib/schemas/driver-lookup-option-schema"
 import { locationLookupOptionSchema } from "@/lib/schemas/location-lookup-option-schema"
 import { PageContainer } from "@/components/page-container"
+import {
+  redirectToCanonicalListPageHref,
+  redirectToLastListPageWhenPageOutOfRange,
+} from "@/lib/server/list-page-redirects"
 
 interface RoutesPageProps {
   searchParams: Promise<PageSearchParams>
@@ -105,6 +109,7 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
       routesListFilterFields
     ),
   }
+  redirectToCanonicalListPageHref(routesListPageState, pageSearchParams)
   const routesPageResult = await fetchFromApi(
     createListApiPath(
       apiEndpoints.routesPagedList,
@@ -114,6 +119,12 @@ export default async function RoutesPage({ searchParams }: RoutesPageProps) {
     authToken,
     createPagedListSchema(routeSchema)
   )
+  if (routesPageResult.isSucceeded) {
+    redirectToLastListPageWhenPageOutOfRange(
+      routesListPageState,
+      routesPageResult.data.totalCount
+    )
+  }
 
   return (
     <PageContainer>

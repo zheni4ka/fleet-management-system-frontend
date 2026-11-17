@@ -15,6 +15,7 @@ import {
   getLocationFormValidationError,
 } from "@/lib/forms/location-form"
 import { getPasswordPolicyViolation } from "@/lib/forms/password-policy"
+import { createRoutesPeriodFormValuesFromPageSearchParams } from "@/lib/forms/routes-period-form"
 import { FormValidationError, PasswordPolicyViolation } from "@/lib/types"
 
 describe("auto form", () => {
@@ -114,5 +115,16 @@ describe("password policy", () => {
 
   it("accepts a password that satisfies the backend policy", () => {
     expect(getPasswordPolicyViolation("Valid1Password")).toBeNull()
+  })
+})
+
+describe("routes period form", () => {
+  it("drops dates that are not real calendar dates", () => {
+    expect(
+      createRoutesPeriodFormValuesFromPageSearchParams({
+        periodStartDate: "2026-11-01",
+        periodEndDate: "2026-11-31",
+      })
+    ).toEqual({ periodStartDate: "2026-11-01", periodEndDate: "" })
   })
 })

@@ -16,6 +16,10 @@ import { AuditLogSortField, ListPageState, PageSearchParams } from "@/lib/types"
 import { createPagedListSchema } from "@/lib/schemas/paged-list-schema"
 import { auditLogSchema } from "@/lib/schemas/audit-log-schema"
 import { PageContainer } from "@/components/page-container"
+import {
+  redirectToCanonicalListPageHref,
+  redirectToLastListPageWhenPageOutOfRange,
+} from "@/lib/server/list-page-redirects"
 
 interface AuditLogsPageProps {
   searchParams: Promise<PageSearchParams>
@@ -40,6 +44,7 @@ export default async function AuditLogsPage({
       auditLogsListFilterFields
     ),
   }
+  redirectToCanonicalListPageHref(auditLogsListPageState, pageSearchParams)
   const auditLogsPageResult = await fetchFromApi(
     createListApiPath(
       apiEndpoints.auditLogsPagedList,
@@ -49,6 +54,12 @@ export default async function AuditLogsPage({
     authToken,
     createPagedListSchema(auditLogSchema)
   )
+  if (auditLogsPageResult.isSucceeded) {
+    redirectToLastListPageWhenPageOutOfRange(
+      auditLogsListPageState,
+      auditLogsPageResult.data.totalCount
+    )
+  }
 
   return (
     <PageContainer>

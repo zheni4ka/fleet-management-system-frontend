@@ -26,6 +26,10 @@ import { createPagedListSchema } from "@/lib/schemas/paged-list-schema"
 import { dispatcherSchema } from "@/lib/schemas/dispatcher-schema"
 import { depotsSchema } from "@/lib/schemas/depot-schema"
 import { PageContainer } from "@/components/page-container"
+import {
+  redirectToCanonicalListPageHref,
+  redirectToLastListPageWhenPageOutOfRange,
+} from "@/lib/server/list-page-redirects"
 
 interface DispatchersPageProps {
   searchParams: Promise<PageSearchParams>
@@ -50,6 +54,7 @@ export default async function DispatchersPage({
       dispatchersListFilterFields
     ),
   }
+  redirectToCanonicalListPageHref(dispatchersListPageState, pageSearchParams)
   const [dispatchersPageResult, depotsResult] = await Promise.all([
     fetchFromApi(
       createListApiPath(
@@ -62,6 +67,12 @@ export default async function DispatchersPage({
     ),
     fetchFromApi(apiEndpoints.depots, authToken, depotsSchema),
   ])
+  if (dispatchersPageResult.isSucceeded) {
+    redirectToLastListPageWhenPageOutOfRange(
+      dispatchersListPageState,
+      dispatchersPageResult.data.totalCount
+    )
+  }
 
   return (
     <PageContainer>

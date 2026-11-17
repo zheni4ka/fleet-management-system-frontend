@@ -17,6 +17,10 @@ import { ListPageState, LocationSortField, PageSearchParams } from "@/lib/types"
 import { createPagedListSchema } from "@/lib/schemas/paged-list-schema"
 import { locationSchema } from "@/lib/schemas/location-schema"
 import { PageContainer } from "@/components/page-container"
+import {
+  redirectToCanonicalListPageHref,
+  redirectToLastListPageWhenPageOutOfRange,
+} from "@/lib/server/list-page-redirects"
 
 interface LocationsPageProps {
   searchParams: Promise<PageSearchParams>
@@ -41,6 +45,7 @@ export default async function LocationsPage({
       locationsListFilterFields
     ),
   }
+  redirectToCanonicalListPageHref(locationsListPageState, pageSearchParams)
   const locationsPageResult = await fetchFromApi(
     createListApiPath(
       apiEndpoints.locationsPagedList,
@@ -50,6 +55,12 @@ export default async function LocationsPage({
     authToken,
     createPagedListSchema(locationSchema)
   )
+  if (locationsPageResult.isSucceeded) {
+    redirectToLastListPageWhenPageOutOfRange(
+      locationsListPageState,
+      locationsPageResult.data.totalCount
+    )
+  }
 
   return (
     <PageContainer>

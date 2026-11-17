@@ -18,6 +18,10 @@ import { createPagedListSchema } from "@/lib/schemas/paged-list-schema"
 import { driverSchema } from "@/lib/schemas/driver-schema"
 import { depotsSchema } from "@/lib/schemas/depot-schema"
 import { PageContainer } from "@/components/page-container"
+import {
+  redirectToCanonicalListPageHref,
+  redirectToLastListPageWhenPageOutOfRange,
+} from "@/lib/server/list-page-redirects"
 
 interface DriversPageProps {
   searchParams: Promise<PageSearchParams>
@@ -61,6 +65,7 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
       driversListFilterFields
     ),
   }
+  redirectToCanonicalListPageHref(driversListPageState, pageSearchParams)
   const driversPageResult = await fetchFromApi(
     createListApiPath(
       apiEndpoints.driversPagedList,
@@ -70,6 +75,12 @@ export default async function DriversPage({ searchParams }: DriversPageProps) {
     authToken,
     createPagedListSchema(driverSchema)
   )
+  if (driversPageResult.isSucceeded) {
+    redirectToLastListPageWhenPageOutOfRange(
+      driversListPageState,
+      driversPageResult.data.totalCount
+    )
+  }
 
   return (
     <PageContainer>

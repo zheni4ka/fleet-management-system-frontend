@@ -1,16 +1,19 @@
+import { redirect } from "next/navigation"
 import { getTranslations } from "next-intl/server"
 import RoutesPeriodForm from "@/components/report/routes-period-form"
 import RoutesPeriodReportView from "@/components/report/routes-period-report-view"
 import { LoadErrorMessage } from "@/components/load-error-message"
 import { PageHeader } from "@/components/page-header"
-import { apiEndpoints } from "@/lib/constants"
+import { apiEndpoints, appRoutes } from "@/lib/constants"
 import {
   createRoutesPeriodFormValuesFromPageSearchParams,
   getIsRoutesPeriodFormFilled,
+  getRoutesPeriodFormValidationError,
 } from "@/lib/forms/routes-period-form"
 import {
   createPathWithSearchParams,
   createSearchParamsFromFormValues,
+  isPageSearchParamsMatchingHref,
 } from "@/lib/search-params"
 import { fetchFromApi, getAuthTokenOrRedirect } from "@/lib/server/api"
 import { PageSearchParams, RoutesPeriodFormValues } from "@/lib/types"
@@ -56,8 +59,19 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
   const pageTranslations = await getTranslations("pages")
   const reportTranslations = await getTranslations("reports")
   const authToken = await getAuthTokenOrRedirect()
+  const pageSearchParams = await searchParams
   const routesPeriodFormValues =
-    createRoutesPeriodFormValuesFromPageSearchParams(await searchParams)
+    createRoutesPeriodFormValuesFromPageSearchParams(pageSearchParams)
+  const canonicalReportsHref =
+    getRoutesPeriodFormValidationError(routesPeriodFormValues) === null
+      ? createPathWithSearchParams(
+          appRoutes.reports,
+          createSearchParamsFromFormValues(routesPeriodFormValues)
+        )
+      : appRoutes.reports
+  if (!isPageSearchParamsMatchingHref(pageSearchParams, canonicalReportsHref)) {
+    redirect(canonicalReportsHref)
+  }
 
   return (
     <PageContainer>

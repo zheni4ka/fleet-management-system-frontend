@@ -7,6 +7,8 @@ import {
   getListPagesCount,
   getListQueryFromPageSearchParams,
   getSortedListQueryChanges,
+  isIsoDateOnlyText,
+  isPageSearchParamsMatchingHref,
 } from "@/lib/search-params"
 import {
   ListFilterField,
@@ -139,5 +141,81 @@ describe("getListPagesCount", () => {
   it("returns at least one page", () => {
     expect(getListPagesCount(0, 20)).toBe(1)
     expect(getListPagesCount(41, 20)).toBe(3)
+  })
+})
+
+describe("canonical list page URL", () => {
+  function createCanonicalRouteListPageHref(
+    pageSearchParams: Record<string, string | string[]>
+  ): string {
+    return createListPageHref(
+      {
+        path: "/route",
+        listQuery: getListQueryFromPageSearchParams(
+          pageSearchParams,
+          RouteSortField
+        ),
+        filterValues: getListFilterValuesFromPageSearchParams(
+          pageSearchParams,
+          routeListFilterFields
+        ),
+      },
+      {}
+    )
+  }
+
+  it("accepts a URL that only contains supported values", () => {
+    const pageSearchParams = {
+      sort: RouteSortField.Status,
+      sortDirection: SortDirection.Descending,
+      pageSize: "50",
+      depotId: "1",
+    }
+
+    expect(
+      isPageSearchParamsMatchingHref(
+        pageSearchParams,
+        createCanonicalRouteListPageHref(pageSearchParams)
+      )
+    ).toBe(true)
+  })
+
+  it.each([
+    [{ pageSize: "1000000000" }, "/route"],
+    [{ sort: "Unknown", sortDirection: "Descending" }, "/route"],
+    [{ sortDirection: "Descending" }, "/route"],
+    [{ depotId: "999" }, "/route"],
+    [{ departureFromDate: "2026-02-30" }, "/route"],
+    [{ startCity: " Lviv " }, "/route?startCity=Lviv"],
+    [{ page: ["2", "3"] }, "/route?page=2"],
+    [{ unknownParam: "1" }, "/route"],
+  ])("rewrites %j to %s", (pageSearchParams, expectedCanonicalHref) => {
+    const canonicalHref = createCanonicalRouteListPageHref(pageSearchParams)
+
+    expect(canonicalHref).toBe(expectedCanonicalHref)
+    expect(
+      isPageSearchParamsMatchingHref(pageSearchParams, canonicalHref)
+    ).toBe(false)
+  })
+
+  it("ignores the order of search params", () => {
+    expect(
+      isPageSearchParamsMatchingHref(
+        { sortDirection: "Descending", sort: "Status" },
+        "/route?sort=Status&sortDirection=Descending"
+      )
+    ).toBe(true)
+  })
+})
+
+describe("isIsoDateOnlyText", () => {
+  it.each([
+    ["2026-11-17", true],
+    ["2024-02-29", true],
+    ["2026-02-29", false],
+    ["2026-13-01", false],
+    ["17.11.2026", false],
+  ])("treats %s as %s", (dateText, isExpectedValid) => {
+    expect(isIsoDateOnlyText(dateText)).toBe(isExpectedValid)
   })
 })

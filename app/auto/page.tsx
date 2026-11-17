@@ -18,6 +18,10 @@ import { createPagedListSchema } from "@/lib/schemas/paged-list-schema"
 import { autoSchema } from "@/lib/schemas/auto-schema"
 import { depotsSchema } from "@/lib/schemas/depot-schema"
 import { PageContainer } from "@/components/page-container"
+import {
+  redirectToCanonicalListPageHref,
+  redirectToLastListPageWhenPageOutOfRange,
+} from "@/lib/server/list-page-redirects"
 
 interface AutosPageProps {
   searchParams: Promise<PageSearchParams>
@@ -58,6 +62,7 @@ export default async function AutosPage({ searchParams }: AutosPageProps) {
       autosListFilterFields
     ),
   }
+  redirectToCanonicalListPageHref(autosListPageState, pageSearchParams)
   const autosPageResult = await fetchFromApi(
     createListApiPath(
       apiEndpoints.autosPagedList,
@@ -67,6 +72,12 @@ export default async function AutosPage({ searchParams }: AutosPageProps) {
     authToken,
     createPagedListSchema(autoSchema)
   )
+  if (autosPageResult.isSucceeded) {
+    redirectToLastListPageWhenPageOutOfRange(
+      autosListPageState,
+      autosPageResult.data.totalCount
+    )
+  }
 
   return (
     <PageContainer>

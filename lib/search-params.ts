@@ -12,6 +12,21 @@ import { findEnumValue } from "@/lib/utils"
 
 const isoDateOnlyPattern = /^\d{4}-\d{2}-\d{2}$/
 
+export function isIsoDateOnlyText(dateText: string): boolean {
+  if (!isoDateOnlyPattern.test(dateText)) {
+    return false
+  }
+  const [yearNumber, monthNumber, dayNumber] = dateText.split("-").map(Number)
+  const calendarDate = new Date(
+    Date.UTC(yearNumber, monthNumber - 1, dayNumber)
+  )
+  return (
+    calendarDate.getUTCFullYear() === yearNumber &&
+    calendarDate.getUTCMonth() === monthNumber - 1 &&
+    calendarDate.getUTCDate() === dayNumber
+  )
+}
+
 function getSanitizedListFilterValue(
   listFilterField: ListFilterField,
   rawFilterValue: string
@@ -21,9 +36,7 @@ function getSanitizedListFilterValue(
     case ListFilterFieldKind.Text:
       return trimmedFilterValue
     case ListFilterFieldKind.Date:
-      return isoDateOnlyPattern.test(trimmedFilterValue)
-        ? trimmedFilterValue
-        : ""
+      return isIsoDateOnlyText(trimmedFilterValue) ? trimmedFilterValue : ""
     case ListFilterFieldKind.Select:
       return listFilterField.options.some(
         (listFilterOption) => listFilterOption.value === trimmedFilterValue
@@ -124,6 +137,11 @@ export function getListQueryFromPageSearchParams<TSortField extends string>(
     requestedPageSize !== null &&
     listPaging.pageSizeOptions.includes(requestedPageSize)
 
+  const requestedSortField = findEnumValue(
+    sortFieldEnum,
+    getPageSearchParamValue(pageSearchParams, listSearchParamNames.sort)
+  )
+
   return {
     page:
       parsePositiveIntegerSearchParamValue(
@@ -132,17 +150,17 @@ export function getListQueryFromPageSearchParams<TSortField extends string>(
     pageSize: isRequestedPageSizeOffered
       ? requestedPageSize
       : listPaging.defaultPageSize,
-    sort: findEnumValue(
-      sortFieldEnum,
-      getPageSearchParamValue(pageSearchParams, listSearchParamNames.sort)
-    ),
-    sortDirection: findEnumValue(
-      SortDirection,
-      getPageSearchParamValue(
-        pageSearchParams,
-        listSearchParamNames.sortDirection
-      )
-    ),
+    sort: requestedSortField,
+    sortDirection:
+      requestedSortField === null
+        ? null
+        : findEnumValue(
+            SortDirection,
+            getPageSearchParamValue(
+              pageSearchParams,
+              listSearchParamNames.sortDirection
+            )
+          ),
     search: getPageSearchParamValue(
       pageSearchParams,
       listSearchParamNames.search
@@ -223,6 +241,36 @@ export function getSortedListQueryChanges<TSortField extends string>(
       : SortDirection.Ascending,
     page: listPaging.firstPage,
   }
+}
+
+function createSortedSearchParamsText(searchParams: URLSearchParams): string {
+  searchParams.sort()
+  return searchParams.toString()
+}
+
+export function isPageSearchParamsMatchingHref(
+  pageSearchParams: PageSearchParams,
+  href: string
+): boolean {
+  const pageSearchParamsList = new URLSearchParams()
+  for (const [searchParamName, searchParamValue] of Object.entries(
+    pageSearchParams
+  )) {
+    const searchParamValues =
+      searchParamValue === undefined
+        ? []
+        : Array.isArray(searchParamValue)
+          ? searchParamValue
+          : [searchParamValue]
+    for (const singleSearchParamValue of searchParamValues) {
+      pageSearchParamsList.append(searchParamName, singleSearchParamValue)
+    }
+  }
+  const [, hrefSearchParamsText = ""] = href.split("?")
+  return (
+    createSortedSearchParamsText(pageSearchParamsList) ===
+    createSortedSearchParamsText(new URLSearchParams(hrefSearchParamsText))
+  )
 }
 
 export function getListPagesCount(

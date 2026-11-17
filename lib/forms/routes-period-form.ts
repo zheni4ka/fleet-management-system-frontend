@@ -3,7 +3,7 @@ import {
   routesPeriodSearchParamNames,
 } from "@/lib/constants"
 import { formatLocalIsoDate } from "@/lib/formatters"
-import { getPageSearchParamValue } from "@/lib/search-params"
+import { getPageSearchParamValue, isIsoDateOnlyText } from "@/lib/search-params"
 import {
   FormValidationError,
   PageSearchParams,
@@ -13,15 +13,17 @@ import {
 export function createRoutesPeriodFormValuesFromPageSearchParams(
   pageSearchParams: PageSearchParams
 ): RoutesPeriodFormValues {
+  const periodStartDate = getPageSearchParamValue(
+    pageSearchParams,
+    routesPeriodSearchParamNames.periodStartDate
+  )
+  const periodEndDate = getPageSearchParamValue(
+    pageSearchParams,
+    routesPeriodSearchParamNames.periodEndDate
+  )
   return {
-    periodStartDate: getPageSearchParamValue(
-      pageSearchParams,
-      routesPeriodSearchParamNames.periodStartDate
-    ),
-    periodEndDate: getPageSearchParamValue(
-      pageSearchParams,
-      routesPeriodSearchParamNames.periodEndDate
-    ),
+    periodStartDate: isIsoDateOnlyText(periodStartDate) ? periodStartDate : "",
+    periodEndDate: isIsoDateOnlyText(periodEndDate) ? periodEndDate : "",
   }
 }
 
