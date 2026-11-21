@@ -121,7 +121,7 @@
     "deactivate": "Деактивувати",
     "reactivate": "Активувати",
     "editDepots": "Змінити депо",
-    "viewOnMap": "Показати маршрут на карті"
+    "viewDetails": "Подробиці маршруту"
   },
   "listFilters": {
     "statusLabel": "Статус",
@@ -412,7 +412,6 @@
     "cardActualArrivalLabel": "Фактичне прибуття",
     "cardAutoLabel": "Авто",
     "cardDriverLabel": "Водій",
-    "mapTitle": "Маршрут на карті Google",
     "mapFrameTitle": "Маршрут {origin} → {destination}",
     "mapKeyMissing": "Ключ Google Maps не налаштовано (NEXT_PUBLIC_GOOGLE_MAPS_API_KEY).",
     "citySearchPlaceholder": "Почніть вводити назву, наприклад Львів",
@@ -422,7 +421,14 @@
     "citySearchError": "Не вдалося знайти міста. Спробуйте ще раз.",
     "citySearchResultsLabel": "Знайдені міста",
     "citySearchAttribution": "Дані про міста: <geoNames>GeoNames</geoNames> через <openMeteo>Open-Meteo</openMeteo>, ліцензія <license>CC BY 4.0</license>.",
-    "changeCityLabel": "Змінити місто {cityName}"
+    "changeCityLabel": "Змінити місто {cityName}",
+    "detailsTitle": "Маршрут #{routeId}",
+    "detailsScheduleSection": "Розклад",
+    "detailsAssignmentSection": "Маршрут і призначення",
+    "plannedDurationLabel": "Тривалість за планом",
+    "actualDurationLabel": "Фактична тривалість",
+    "notRecordedValue": "Не зафіксовано",
+    "depotLabel": "Депо"
   },
   "routeStatusActions": {
     "InProgress": "Розпочати",

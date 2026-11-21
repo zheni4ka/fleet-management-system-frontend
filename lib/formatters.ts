@@ -160,3 +160,15 @@ export function formatDepotNames(
     })
     .join(", ")
 }
+
+export function formatUtcIntervalHours(
+  startUtcIsoDateTime: string,
+  endUtcIsoDateTime: string,
+  appLocale: AppLocale
+): string {
+  const intervalHoursCount =
+    (new Date(endUtcIsoDateTime).getTime() -
+      new Date(startUtcIsoDateTime).getTime()) /
+    (60 * 60 * 1000)
+  return formatHours(Math.round(intervalHoursCount * 10) / 10, appLocale)
+}

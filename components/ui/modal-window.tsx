@@ -3,15 +3,19 @@
 import { useEffect, useId, useRef } from "react"
 import { useTranslations } from "next-intl"
 import { AppToaster } from "@/components/app-toaster"
+import { modalWindowSizeClassNames } from "@/lib/constants"
 import {
   pushOpenModalWindowId,
   removeOpenModalWindowId,
 } from "@/lib/open-modal-window-stack"
+import { ModalWindowSize } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
 interface ModalProps {
   isOpen: boolean
   onClose: () => void
   title: string
+  size?: ModalWindowSize
   children: React.ReactNode
 }
 
@@ -19,6 +23,7 @@ export default function ModalWindow({
   isOpen,
   onClose,
   title,
+  size = ModalWindowSize.Default,
   children,
 }: ModalProps) {
   const commonTranslations = useTranslations("common")
@@ -67,7 +72,10 @@ export default function ModalWindow({
       ref={dialogRef}
       onClose={handleDialogClose}
       onClick={handleBackdropClick}
-      className="fixed top-1/2 left-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-lg border border-gray-200 p-6 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm"
+      className={cn(
+        "fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-lg border border-gray-200 p-6 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm",
+        modalWindowSizeClassNames[size]
+      )}
     >
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold">{title}</h2>

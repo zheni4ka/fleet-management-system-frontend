@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react"
 import { useTranslations } from "next-intl"
 import RouteCard from "@/components/route-card"
-import GoogleMapRoute from "@/components/google-map-route"
+import { RouteDetailsModal } from "@/components/route-details-modal"
 import EditRouteModal from "@/components/edit/edit-route-modal"
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
@@ -15,9 +15,6 @@ import {
   createUpdateRouteRequestModel,
 } from "@/lib/forms/edit-route-form"
 import {
-  formatRouteAutoTitleWithNumber,
-  createRouteDestinationMapPoint,
-  createRouteStartMapPoint,
   formatRouteDestinationLocationName,
   formatRouteDriverFullName,
   formatRouteStartLocationName,
@@ -164,7 +161,6 @@ export function RoutesList({
             route={route}
             startLocationName={formatRouteStartLocationName(route)}
             destinationLocationName={formatRouteDestinationLocationName(route)}
-            autoTitle={formatRouteAutoTitleWithNumber(route)}
             driverFullName={formatRouteDriverFullName(route)}
             isRouteUpdating={updatingRouteId === route.id}
             editRouteAction={
@@ -193,11 +189,8 @@ export function RoutesList({
       </div>
 
       {selectedRoute !== undefined && (
-        <GoogleMapRoute
-          originName={formatRouteStartLocationName(selectedRoute)}
-          destinationName={formatRouteDestinationLocationName(selectedRoute)}
-          origin={createRouteStartMapPoint(selectedRoute)}
-          destination={createRouteDestinationMapPoint(selectedRoute)}
+        <RouteDetailsModal
+          route={selectedRoute}
           onClose={() => setSelectedRouteId(null)}
         />
       )}

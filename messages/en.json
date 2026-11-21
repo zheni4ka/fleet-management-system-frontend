@@ -121,7 +121,7 @@
     "deactivate": "Deactivate",
     "reactivate": "Reactivate",
     "editDepots": "Change depots",
-    "viewOnMap": "Show route on map"
+    "viewDetails": "Route details"
   },
   "listFilters": {
     "statusLabel": "Status",
@@ -412,7 +412,6 @@
     "cardActualArrivalLabel": "Actual arrival",
     "cardAutoLabel": "Vehicle",
     "cardDriverLabel": "Driver",
-    "mapTitle": "Route on Google Maps",
     "mapFrameTitle": "Route {origin} → {destination}",
     "mapKeyMissing": "The Google Maps key is not configured (NEXT_PUBLIC_GOOGLE_MAPS_API_KEY).",
     "citySearchPlaceholder": "Start typing a name, e.g. Lviv",
@@ -422,7 +421,14 @@
     "citySearchError": "Could not search for cities. Please try again.",
     "citySearchResultsLabel": "Matching cities",
     "citySearchAttribution": "City data: <geoNames>GeoNames</geoNames> via <openMeteo>Open-Meteo</openMeteo>, licensed under <license>CC BY 4.0</license>.",
-    "changeCityLabel": "Change city {cityName}"
+    "changeCityLabel": "Change city {cityName}",
+    "detailsTitle": "Route #{routeId}",
+    "detailsScheduleSection": "Schedule",
+    "detailsAssignmentSection": "Route and assignment",
+    "plannedDurationLabel": "Planned duration",
+    "actualDurationLabel": "Actual duration",
+    "notRecordedValue": "Not recorded",
+    "depotLabel": "Depot"
   },
   "routeStatusActions": {
     "InProgress": "Start",

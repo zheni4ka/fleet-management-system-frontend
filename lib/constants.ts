@@ -7,6 +7,7 @@ import { BadgeTone } from "@/lib/types/badge-tone"
 import { DispatcherSortField } from "@/lib/types/dispatcher-sort-field"
 import { DriverFormField } from "@/lib/types/driver-form-field"
 import { DriverSortField } from "@/lib/types/driver-sort-field"
+import { ModalWindowSize } from "@/lib/types/modal-window-size"
 import { NavigationLink } from "@/lib/types/navigation-link"
 import { RouteSortField } from "@/lib/types/route-sort-field"
 import { RouteStatus } from "@/lib/types/route-status"
@@ -545,4 +546,11 @@ export const backendRequestSettings: Readonly<{
   timeoutInMilliseconds: number
 }> = Object.freeze({
   timeoutInMilliseconds: 20_000,
+})
+
+export const modalWindowSizeClassNames: Readonly<
+  Record<ModalWindowSize, string>
+> = Object.freeze({
+  [ModalWindowSize.Default]: "max-w-md",
+  [ModalWindowSize.Wide]: "max-w-3xl",
 })

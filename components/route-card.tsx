@@ -1,11 +1,10 @@
-import { useLocale, useTranslations } from "next-intl"
-import { resolveAppLocale } from "@/lib/app-locale"
+import { useTranslations } from "next-intl"
 import * as React from "react"
-import { MapIcon, Trash2 } from "lucide-react"
+import { Info, Trash2 } from "lucide-react"
 import { IconActionButton } from "@/components/icon-action-button"
+import { RouteStatusBadge } from "@/components/route-status-badge"
 import { Button } from "@/components/ui/button"
-import { routeStatusActions, routeStatusBadgeClassNames } from "@/lib/constants"
-import { formatUtcDateTimeWithTimeZone } from "@/lib/zoned-date-time"
+import { routeStatusActions } from "@/lib/constants"
 import { canRouteStatusChangeTo } from "@/lib/route-status"
 import { Route, RouteStatus } from "@/lib/types"
 
@@ -13,7 +12,6 @@ interface RouteCardProps {
   route: Route
   startLocationName: string
   destinationLocationName: string
-  autoTitle: string
   driverFullName: string
   isRouteUpdating: boolean
   editRouteAction: React.ReactNode
@@ -26,7 +24,6 @@ export function RouteCard({
   route,
   startLocationName,
   destinationLocationName,
-  autoTitle,
   driverFullName,
   isRouteUpdating,
   editRouteAction,
@@ -34,8 +31,6 @@ export function RouteCard({
   onStatusChange,
   onDelete,
 }: RouteCardProps) {
-  const appLocale = resolveAppLocale(useLocale())
-  const routeStatusTranslations = useTranslations("routeStatus")
   const iconActionTranslations = useTranslations("iconActions")
   const routeTranslations = useTranslations("routes")
   const routeStatusActionTranslations = useTranslations("routeStatusActions")
@@ -44,51 +39,6 @@ export function RouteCard({
       canRouteStatusChangeTo(route.status, routeStatusAction.targetRouteStatus)
   )
 
-  const routeDetailRows = [
-    {
-      label: routeTranslations("cardDepartureLabel"),
-      value: formatUtcDateTimeWithTimeZone(
-        route.departureTimeUtc,
-        route.startLocationTimeZoneId,
-        appLocale
-      ),
-    },
-    {
-      label: routeTranslations("cardArrivalLabel"),
-      value: formatUtcDateTimeWithTimeZone(
-        route.arrivalTimeUtc,
-        route.destinationLocationTimeZoneId,
-        appLocale
-      ),
-    },
-    ...(route.actualDepartureTimeUtc === null
-      ? []
-      : [
-          {
-            label: routeTranslations("cardActualDepartureLabel"),
-            value: formatUtcDateTimeWithTimeZone(
-              route.actualDepartureTimeUtc,
-              route.startLocationTimeZoneId,
-              appLocale
-            ),
-          },
-        ]),
-    ...(route.actualArrivalTimeUtc === null
-      ? []
-      : [
-          {
-            label: routeTranslations("cardActualArrivalLabel"),
-            value: formatUtcDateTimeWithTimeZone(
-              route.actualArrivalTimeUtc,
-              route.destinationLocationTimeZoneId,
-              appLocale
-            ),
-          },
-        ]),
-    { label: routeTranslations("cardAutoLabel"), value: autoTitle },
-    { label: routeTranslations("cardDriverLabel"), value: driverFullName },
-  ]
-
   return (
     <article className="flex h-full flex-col gap-3 rounded-xl border bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between gap-2">
@@ -96,16 +46,12 @@ export function RouteCard({
           <span className="font-mono text-xs font-medium text-slate-500">
             #{route.id}
           </span>
-          <span
-            className={`rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${routeStatusBadgeClassNames[route.status]}`}
-          >
-            {routeStatusTranslations(route.status)}
-          </span>
+          <RouteStatusBadge routeStatus={route.status} />
         </div>
         <div className="flex items-center gap-1">
           <IconActionButton
-            icon={MapIcon}
-            label={iconActionTranslations("viewOnMap")}
+            icon={Info}
+            label={iconActionTranslations("viewDetails")}
             variant="outline"
             onClick={onSelect}
           />
@@ -120,18 +66,20 @@ export function RouteCard({
         </div>
       </div>
 
-      <h3 className="leading-snug font-semibold text-slate-900">
+      <button
+        type="button"
+        onClick={onSelect}
+        className="cursor-pointer text-left leading-snug font-semibold text-slate-900 hover:text-indigo-700"
+      >
         {startLocationName} → {destinationLocationName}
-      </h3>
+      </button>
 
-      <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-sm">
-        {routeDetailRows.map((routeDetailRow) => (
-          <React.Fragment key={routeDetailRow.label}>
-            <dt className="text-slate-500">{routeDetailRow.label}</dt>
-            <dd className="truncate text-slate-800">{routeDetailRow.value}</dd>
-          </React.Fragment>
-        ))}
-      </dl>
+      <p className="text-sm">
+        <span className="text-slate-500">
+          {routeTranslations("cardDriverLabel")}:{" "}
+        </span>
+        <span className="text-slate-800">{driverFullName}</span>
+      </p>
 
       {availableRouteStatusActions.length > 0 && (
         <div className="mt-auto flex gap-2 border-t border-slate-100 pt-3">
