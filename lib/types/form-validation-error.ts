@@ -2,7 +2,6 @@ export enum FormValidationError {
   AutoRequiredFieldsMissing = "AutoRequiredFieldsMissing",
   AutoCapacityNotPositive = "AutoCapacityNotPositive",
   DriverRequiredFieldsMissing = "DriverRequiredFieldsMissing",
-  LocationRequiredFieldsMissing = "LocationRequiredFieldsMissing",
   MaintenanceRequiredFieldsMissing = "MaintenanceRequiredFieldsMissing",
   RouteRequiredFieldsMissing = "RouteRequiredFieldsMissing",
   SameStartAndDestinationLocation = "SameStartAndDestinationLocation",

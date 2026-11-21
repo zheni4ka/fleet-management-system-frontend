@@ -8,8 +8,6 @@ import {
   driversTableColumns,
   fastAccessNavigationLinks,
   headerNavigationLinks,
-  locationTimeZoneIds,
-  locationsTableColumns,
   recentRoutesTableColumns,
   reportDriverSummariesTableColumns,
   reportRoutesTableColumns,
@@ -77,7 +75,6 @@ const requiredMessageKeys: ReadonlyArray<string> = [
     ...dispatchersTableColumns,
     ...depotsTableColumns,
     ...recentRoutesTableColumns,
-    ...locationsTableColumns,
     ...auditLogsTableColumns,
     ...reportDriverSummariesTableColumns,
     ...reportRoutesTableColumns,
@@ -92,9 +89,6 @@ const requiredMessageKeys: ReadonlyArray<string> = [
   ...routeStatusActions.map(
     (routeStatusAction) =>
       `routeStatusActions.${routeStatusAction.targetRouteStatus}`
-  ),
-  ...locationTimeZoneIds.map(
-    (locationTimeZoneId) => `timeZones.${locationTimeZoneId}`
   ),
 ]
 

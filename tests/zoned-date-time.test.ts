@@ -12,6 +12,8 @@ describe("convertZonedLocalDateTimeToUtcIsoString", () => {
     ["2026-12-01T08:00", "Europe/Warsaw", "2026-12-01T07:00:00.000Z"],
     ["2026-07-01T08:00", "Europe/Warsaw", "2026-07-01T06:00:00.000Z"],
     ["2026-03-29T12:00", "Europe/Kyiv", "2026-03-29T09:00:00.000Z"],
+    ["2026-11-18T14:34:45", "Europe/Kyiv", "2026-11-18T12:34:45.000Z"],
+    ["2026-11-18T14:34:45.5", "Europe/Kyiv", "2026-11-18T12:34:45.500Z"],
   ])(
     "converts %s in %s to %s",
     (localDateTime, timeZoneId, expectedUtcIsoString) => {

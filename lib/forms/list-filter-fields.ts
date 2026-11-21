@@ -133,21 +133,6 @@ export function createDispatchersListFilterFields(
   ]
 }
 
-export function createLocationsListFilterFields(
-  translateMessage: MessageTranslator
-): ReadonlyArray<ListFilterField> {
-  return [
-    createListSearchFilterField(translateMessage, "locationSearchPlaceholder"),
-    {
-      kind: ListFilterFieldKind.Text,
-      name: listFilterSearchParamNames.country,
-      label: translateMessage("listFilters.countryLabel"),
-      placeholder: translateMessage("listFilters.countryPlaceholder"),
-    },
-    createArchiveStateListFilterField(translateMessage),
-  ]
-}
-
 export function createAuditLogsListFilterFields(
   translateMessage: MessageTranslator
 ): ReadonlyArray<ListFilterField> {

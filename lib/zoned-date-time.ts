@@ -1,7 +1,9 @@
 import { intlLocaleCodes } from "@/lib/constants"
 import { AppLocale } from "@/lib/types"
 
-const localDateTimeInputPattern = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/
+// A datetime-local input may report seconds and milliseconds (for example after the picker's "Now" button).
+const localDateTimeInputPattern =
+  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?$/
 
 function getTimeZoneOffsetMilliseconds(
   utcMilliseconds: number,
@@ -51,14 +53,24 @@ export function convertZonedLocalDateTimeToUtcIsoString(
       `Некоректний локальний час "${localDateTime}": очікується формат РРРР-ММ-ДДTгг:хх.`
     )
   }
-  const [, yearText, monthText, dayText, hourText, minuteText] =
-    localDateTimeMatch
+  const [
+    ,
+    yearText,
+    monthText,
+    dayText,
+    hourText,
+    minuteText,
+    secondText = "0",
+    millisecondText = "0",
+  ] = localDateTimeMatch
   const wallClockAsUtcMilliseconds = Date.UTC(
     Number(yearText),
     Number(monthText) - 1,
     Number(dayText),
     Number(hourText),
-    Number(minuteText)
+    Number(minuteText),
+    Number(secondText),
+    Number(millisecondText.padEnd(3, "0"))
   )
   const firstOffsetMilliseconds = getTimeZoneOffsetMilliseconds(
     wallClockAsUtcMilliseconds,

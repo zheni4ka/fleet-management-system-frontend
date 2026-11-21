@@ -31,4 +31,5 @@ export enum AuditAction {
   DriverRestored = "DriverRestored",
   LocationArchived = "LocationArchived",
   LocationRestored = "LocationRestored",
+  LocationCoordinatesFilled = "LocationCoordinatesFilled",
 }

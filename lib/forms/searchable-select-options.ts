@@ -1,26 +1,13 @@
 import {
   formatAutoTitleWithNumber,
   formatDriverFullName,
-  formatLocationName,
 } from "@/lib/formatters"
 import {
   AutoLookupOption,
   AutoStatus,
   DriverLookupOption,
-  LocationLookupOption,
   SearchableSelectOption,
 } from "@/lib/types"
-
-export function createLocationSearchableSelectOptions(
-  locationLookupOptions: ReadonlyArray<LocationLookupOption>
-): ReadonlyArray<SearchableSelectOption> {
-  return locationLookupOptions.map((locationLookupOption) => ({
-    value: String(locationLookupOption.id),
-    label: formatLocationName(locationLookupOption),
-    isDisabled: false,
-    disabledReason: null,
-  }))
-}
 
 export function createDriverSearchableSelectOptions(
   driverLookupOptions: ReadonlyArray<DriverLookupOption>

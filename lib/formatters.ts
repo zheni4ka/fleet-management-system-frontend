@@ -1,5 +1,13 @@
-import { intlLocaleCodes } from "@/lib/constants"
-import { AppLocale, Auto, Depot, Driver, Location, Route } from "@/lib/types"
+import { intlLocaleCodes, mapCoordinatesFractionDigits } from "@/lib/constants"
+import {
+  AppLocale,
+  Auto,
+  Depot,
+  Driver,
+  Location,
+  MapCoordinates,
+  Route,
+} from "@/lib/types"
 
 export function formatLocationName(
   location: Pick<Location, "city" | "country">
@@ -35,6 +43,45 @@ export function formatRouteDestinationLocationName(route: Route): string {
     city: route.destinationLocationCity,
     country: route.destinationLocationCountry,
   })
+}
+
+export function formatMapCoordinates(
+  mapCoordinates: MapCoordinates
+): string | null {
+  if (mapCoordinates.latitude === null || mapCoordinates.longitude === null) {
+    return null
+  }
+  return `${mapCoordinates.latitude.toFixed(mapCoordinatesFractionDigits)}, ${mapCoordinates.longitude.toFixed(mapCoordinatesFractionDigits)}`
+}
+
+function createMapPoint(
+  mapCoordinates: MapCoordinates,
+  locationName: string
+): string {
+  if (mapCoordinates.latitude === null || mapCoordinates.longitude === null) {
+    return locationName
+  }
+  return `${mapCoordinates.latitude},${mapCoordinates.longitude}`
+}
+
+export function createRouteStartMapPoint(route: Route): string {
+  return createMapPoint(
+    {
+      latitude: route.startLocationLatitude,
+      longitude: route.startLocationLongitude,
+    },
+    formatRouteStartLocationName(route)
+  )
+}
+
+export function createRouteDestinationMapPoint(route: Route): string {
+  return createMapPoint(
+    {
+      latitude: route.destinationLocationLatitude,
+      longitude: route.destinationLocationLongitude,
+    },
+    formatRouteDestinationLocationName(route)
+  )
 }
 
 export function formatRouteAutoTitleWithNumber(route: Route): string {

@@ -1,17 +1,32 @@
 import { useTranslations } from "next-intl"
 import { FormField } from "@/components/ui/form-field"
 import { SearchableSelect } from "@/components/ui/searchable-select"
+import { RouteCityPicker } from "@/components/forms/route-city-picker"
 import {
   createAutoSearchableSelectOptions,
   createDriverSearchableSelectOptions,
-  createLocationSearchableSelectOptions,
 } from "@/lib/forms/searchable-select-options"
+import { cityGeocodingAttributionLinks } from "@/lib/constants"
 import {
   AutoLookupOption,
   DriverLookupOption,
-  LocationLookupOption,
   RouteAssignmentFormValues,
 } from "@/lib/types"
+
+function renderAttributionLink(href: string) {
+  return function AttributionLink(linkText: React.ReactNode) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline hover:text-slate-600"
+      >
+        {linkText}
+      </a>
+    )
+  }
+}
 
 interface RouteFormFieldsProps<
   TRouteFormValues extends RouteAssignmentFormValues,
@@ -20,7 +35,6 @@ interface RouteFormFieldsProps<
   onRouteFormValuesChange: (routeFormValues: TRouteFormValues) => void
   autoLookupOptions: ReadonlyArray<AutoLookupOption>
   driverLookupOptions: ReadonlyArray<DriverLookupOption>
-  locationLookupOptions: ReadonlyArray<LocationLookupOption>
   alwaysSelectableAutoId: number | null
 }
 
@@ -31,14 +45,10 @@ export function RouteFormFields<
   onRouteFormValuesChange,
   autoLookupOptions,
   driverLookupOptions,
-  locationLookupOptions,
   alwaysSelectableAutoId,
 }: RouteFormFieldsProps<TRouteFormValues>) {
   const autoStatusTranslations = useTranslations("autoStatus")
   const routeTranslations = useTranslations("routes")
-  const locationOptions = createLocationSearchableSelectOptions(
-    locationLookupOptions
-  )
   const selectedAutoLookupOption = autoLookupOptions.find(
     (autoLookupOption) => String(autoLookupOption.id) === routeFormValues.autoId
   )
@@ -58,31 +68,38 @@ export function RouteFormFields<
 
   return (
     <>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <FormField label={routeTranslations("startLocationLabel")}>
-          <SearchableSelect
-            options={locationOptions}
-            selectedValue={routeFormValues.startLocationId}
-            onSelectedValueChange={(startLocationId) =>
-              updateRouteAssignmentFormValues({ startLocationId })
+      <div className="flex flex-col gap-1">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <RouteCityPicker
+            label={routeTranslations("startLocationLabel")}
+            placeholder={routeTranslations("citySearchPlaceholder")}
+            selectedCity={routeFormValues.startCity}
+            onSelectedCityChange={(startCity) =>
+              updateRouteAssignmentFormValues({ startCity })
             }
-            placeholder={routeTranslations("startLocationPlaceholder")}
-            searchPlaceholder={routeTranslations("locationSearchPlaceholder")}
-            emptyMessage={routeTranslations("locationEmptyMessage")}
           />
-        </FormField>
-        <FormField label={routeTranslations("destinationLocationLabel")}>
-          <SearchableSelect
-            options={locationOptions}
-            selectedValue={routeFormValues.destinationLocationId}
-            onSelectedValueChange={(destinationLocationId) =>
-              updateRouteAssignmentFormValues({ destinationLocationId })
+          <RouteCityPicker
+            label={routeTranslations("destinationLocationLabel")}
+            placeholder={routeTranslations("citySearchPlaceholder")}
+            selectedCity={routeFormValues.destinationCity}
+            onSelectedCityChange={(destinationCity) =>
+              updateRouteAssignmentFormValues({ destinationCity })
             }
-            placeholder={routeTranslations("destinationLocationPlaceholder")}
-            searchPlaceholder={routeTranslations("locationSearchPlaceholder")}
-            emptyMessage={routeTranslations("locationEmptyMessage")}
           />
-        </FormField>
+        </div>
+        <p className="text-xs text-slate-400">
+          {routeTranslations.rich("citySearchAttribution", {
+            openMeteo: renderAttributionLink(
+              cityGeocodingAttributionLinks.openMeteo
+            ),
+            geoNames: renderAttributionLink(
+              cityGeocodingAttributionLinks.geoNames
+            ),
+            license: renderAttributionLink(
+              cityGeocodingAttributionLinks.license
+            ),
+          })}
+        </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">

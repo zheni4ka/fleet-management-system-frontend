@@ -2,6 +2,8 @@ import { useTranslations } from "next-intl"
 import ModalWindow from "@/components/ui/modal-window"
 
 interface GoogleMapRouteProps {
+  originName: string
+  destinationName: string
   origin: string
   destination: string
   onClose: () => void
@@ -21,6 +23,8 @@ function createGoogleMapsDirectionsEmbedUrl(
 }
 
 export function GoogleMapRoute({
+  originName,
+  destinationName,
   origin,
   destination,
   onClose,
@@ -33,7 +37,10 @@ export function GoogleMapRoute({
       {googleMapsApiKey ? (
         <div className="w-full overflow-hidden rounded-lg border border-white/5 shadow-sm">
           <iframe
-            title={routeTranslations("mapFrameTitle", { origin, destination })}
+            title={routeTranslations("mapFrameTitle", {
+              origin: originName,
+              destination: destinationName,
+            })}
             className="h-[500px] w-full border-0"
             src={createGoogleMapsDirectionsEmbedUrl(
               googleMapsApiKey,

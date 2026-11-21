@@ -6,7 +6,6 @@ import { BadgeTone } from "@/lib/types/badge-tone"
 import { DispatcherSortField } from "@/lib/types/dispatcher-sort-field"
 import { DriverFormField } from "@/lib/types/driver-form-field"
 import { DriverSortField } from "@/lib/types/driver-sort-field"
-import { LocationSortField } from "@/lib/types/location-sort-field"
 import { NavigationLink } from "@/lib/types/navigation-link"
 import { RouteSortField } from "@/lib/types/route-sort-field"
 import { RouteStatus } from "@/lib/types/route-status"
@@ -140,7 +139,6 @@ export const appRoutes = Object.freeze({
   drivers: "/driver",
   dispatchers: "/dispatcher",
   routes: "/route",
-  locations: "/location",
   reports: "/report",
   auditLogs: "/audit-log",
   depots: "/depot",
@@ -175,11 +173,9 @@ export const apiEndpoints = Object.freeze({
   restoreDriver: "/api/v1/Driver/restoreDriver",
   driversPagedList: "/api/v1/Driver/getDriversPagedList",
   driverLookupOptions: "/api/v1/Driver/getDriverLookupOptions",
-  createLocation: "/api/v1/Location/createLocation",
-  deleteLocation: "/api/v1/Location/deleteLocation",
-  restoreLocation: "/api/v1/Location/restoreLocation",
-  locationsPagedList: "/api/v1/Location/getLocationsPagedList",
-  locationLookupOptions: "/api/v1/Location/getLocationLookupOptions",
+  searchCityGeocodingCandidates:
+    "/api/v1/Location/searchCityGeocodingCandidates",
+  ensureCityLocation: "/api/v1/Location/ensureCityLocation",
   createRoute: "/api/v1/Route/createRoute",
   updateRoute: "/api/v1/Route/updateRoute",
   deleteRoute: "/api/v1/Route/deleteRoute",
@@ -204,7 +200,6 @@ export const listSearchParamNames = Object.freeze({
 export const listFilterSearchParamNames = Object.freeze({
   status: "status",
   color: "color",
-  country: "country",
   action: "action",
   timeFromDate: "timeFromDate",
   timeToDate: "timeToDate",
@@ -300,11 +295,6 @@ export const headerNavigationLinks: ReadonlyArray<NavigationLink> =
       isAdminOnly: true,
     },
     { href: appRoutes.routes, labelMessageKey: "routes", isAdminOnly: false },
-    {
-      href: appRoutes.locations,
-      labelMessageKey: "locations",
-      isAdminOnly: true,
-    },
     { href: appRoutes.reports, labelMessageKey: "reports", isAdminOnly: false },
     {
       href: appRoutes.auditLogs,
@@ -464,27 +454,6 @@ export const routeStatusActions: ReadonlyArray<RouteStatusAction> =
     },
   ])
 
-export const locationsTableColumns: ReadonlyArray<
-  TableColumn<LocationSortField>
-> = Object.freeze([
-  {
-    labelMessageKey: "id",
-    className: "w-1/6",
-    sortField: LocationSortField.Id,
-  },
-  {
-    labelMessageKey: "city",
-    className: "w-1/3",
-    sortField: LocationSortField.City,
-  },
-  {
-    labelMessageKey: "country",
-    className: "w-1/3",
-    sortField: LocationSortField.Country,
-  },
-  { labelMessageKey: "operations", className: "w-1/6 text-center" },
-])
-
 export const auditLogsTableColumns: ReadonlyArray<
   TableColumn<AuditLogSortField>
 > = Object.freeze([
@@ -541,16 +510,19 @@ export const traceContextFormat = Object.freeze({
   traceparentPattern: /^00-([0-9a-f]{32})-([0-9a-f]{16})-[0-9a-f]{2}$/,
 })
 
-export const locationTimeZoneIds: ReadonlyArray<string> = Object.freeze([
-  "Europe/Kyiv",
-  "Europe/Warsaw",
-  "Europe/Chisinau",
-  "Europe/Bucharest",
-  "Europe/Budapest",
-  "Europe/Bratislava",
-  "Europe/Vilnius",
-  "Europe/Berlin",
-])
+export const cityGeocodingSearchConstraints = Object.freeze({
+  minLength: 2,
+  maxLength: 100,
+  debounceDelayInMilliseconds: 350,
+})
+
+export const mapCoordinatesFractionDigits = 4
+
+export const cityGeocodingAttributionLinks = Object.freeze({
+  openMeteo: "https://open-meteo.com/",
+  geoNames: "https://www.geonames.org/",
+  license: "https://creativecommons.org/licenses/by/4.0/",
+})
 
 export const defaultAppLocale = AppLocale.Ukrainian
 

@@ -12,6 +12,7 @@ import { SubmitButton } from "@/components/ui/submit-button"
 import { RouteFormFields } from "@/components/forms/route-form-fields"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
+import { resolveRouteLocationIds } from "@/lib/route-city-locations"
 import { allowedRouteStatusTransitions, apiEndpoints } from "@/lib/constants"
 import {
   createEditRouteFormValuesFromRoute,
@@ -22,8 +23,8 @@ import { isRouteStatusActive } from "@/lib/route-status"
 import {
   AutoLookupOption,
   DriverLookupOption,
+  FormValidationError,
   HttpMethod,
-  LocationLookupOption,
   Route,
   RouteStatus,
 } from "@/lib/types"
@@ -33,7 +34,6 @@ interface EditRouteModalProps {
   route: Route
   autoLookupOptions: AutoLookupOption[]
   driverLookupOptions: DriverLookupOption[]
-  locationLookupOptions: LocationLookupOption[]
   isRouteUpdating: boolean
 }
 
@@ -41,7 +41,6 @@ export default function EditRouteModal({
   route,
   autoLookupOptions,
   driverLookupOptions,
-  locationLookupOptions,
   isRouteUpdating,
 }: EditRouteModalProps) {
   const routeStatusTranslations = useTranslations("routeStatus")
@@ -69,19 +68,31 @@ export default function EditRouteModal({
     event.preventDefault()
     const routeAssignmentFormValidationError =
       getRouteAssignmentFormValidationError(editRouteFormValues)
-    if (routeAssignmentFormValidationError !== null) {
+    const { startCity, destinationCity } = editRouteFormValues
+    if (
+      routeAssignmentFormValidationError !== null ||
+      startCity === null ||
+      destinationCity === null
+    ) {
       toast.error(
-        formValidationTranslations(routeAssignmentFormValidationError)
+        formValidationTranslations(
+          routeAssignmentFormValidationError ??
+            FormValidationError.RouteRequiredFieldsMissing
+        )
       )
       return
     }
 
     const isRouteUpdated = await runApiMutation(
-      () =>
+      async () =>
         sendApiRequest(
           apiEndpoints.updateRoute,
           HttpMethod.Put,
-          createUpdateRouteRequestModel(route, editRouteFormValues)
+          createUpdateRouteRequestModel(
+            route,
+            editRouteFormValues,
+            await resolveRouteLocationIds(startCity, destinationCity)
+          )
         ),
       {
         loading: routeTranslations("updateLoading"),
@@ -119,7 +130,6 @@ export default function EditRouteModal({
             onRouteFormValuesChange={setEditRouteFormValues}
             autoLookupOptions={autoLookupOptions}
             driverLookupOptions={driverLookupOptions}
-            locationLookupOptions={locationLookupOptions}
             alwaysSelectableAutoId={route.autoId}
           />
 

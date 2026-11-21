@@ -12,19 +12,19 @@ import { SubmitButton } from "@/components/ui/submit-button"
 import { RouteFormFields } from "@/components/forms/route-form-fields"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
+import { resolveRouteLocationIds } from "@/lib/route-city-locations"
 import { apiEndpoints } from "@/lib/constants"
 import {
   createCreateRouteRequestModel,
   createEmptyAddRouteFormValues,
-  findLocationTimeZoneId,
   getAddRouteFormValidationError,
 } from "@/lib/forms/route-form"
 import {
   AddRouteFormValues,
   AutoLookupOption,
   DriverLookupOption,
+  FormValidationError,
   HttpMethod,
-  LocationLookupOption,
   RouteStatus,
 } from "@/lib/types"
 import { parseEnumValue } from "@/lib/utils"
@@ -32,13 +32,11 @@ import { parseEnumValue } from "@/lib/utils"
 interface AddRouteModalProps {
   autoLookupOptions: AutoLookupOption[]
   driverLookupOptions: DriverLookupOption[]
-  locationLookupOptions: LocationLookupOption[]
 }
 
 export default function AddRouteModal({
   autoLookupOptions,
   driverLookupOptions,
-  locationLookupOptions,
 }: AddRouteModalProps) {
   const routeStatusTranslations = useTranslations("routeStatus")
   const routeTranslations = useTranslations("routes")
@@ -71,23 +69,31 @@ export default function AddRouteModal({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const addRouteFormValidationError = getAddRouteFormValidationError(
-      addRouteFormValues,
-      locationLookupOptions
-    )
-    if (addRouteFormValidationError !== null) {
-      toast.error(formValidationTranslations(addRouteFormValidationError))
+    const addRouteFormValidationError =
+      getAddRouteFormValidationError(addRouteFormValues)
+    const { startCity, destinationCity } = addRouteFormValues
+    if (
+      addRouteFormValidationError !== null ||
+      startCity === null ||
+      destinationCity === null
+    ) {
+      toast.error(
+        formValidationTranslations(
+          addRouteFormValidationError ??
+            FormValidationError.RouteRequiredFieldsMissing
+        )
+      )
       return
     }
 
     const isRouteCreated = await runApiMutation(
-      () =>
+      async () =>
         sendApiRequest(
           apiEndpoints.createRoute,
           HttpMethod.Post,
           createCreateRouteRequestModel(
             addRouteFormValues,
-            locationLookupOptions
+            await resolveRouteLocationIds(startCity, destinationCity)
           )
         ),
       {
@@ -118,7 +124,6 @@ export default function AddRouteModal({
             onRouteFormValuesChange={setAddRouteFormValues}
             autoLookupOptions={autoLookupOptions}
             driverLookupOptions={driverLookupOptions}
-            locationLookupOptions={locationLookupOptions}
             alwaysSelectableAutoId={null}
           />
 
@@ -126,10 +131,7 @@ export default function AddRouteModal({
             <FormField
               label={createRouteTimeLabel(
                 routeTranslations("departureTimeLabel"),
-                findLocationTimeZoneId(
-                  addRouteFormValues.startLocationId,
-                  locationLookupOptions
-                )
+                addRouteFormValues.startCity?.timeZoneId ?? null
               )}
             >
               <Input
@@ -145,10 +147,7 @@ export default function AddRouteModal({
             <FormField
               label={createRouteTimeLabel(
                 routeTranslations("arrivalTimeLabel"),
-                findLocationTimeZoneId(
-                  addRouteFormValues.destinationLocationId,
-                  locationLookupOptions
-                )
+                addRouteFormValues.destinationCity?.timeZoneId ?? null
               )}
             >
               <Input

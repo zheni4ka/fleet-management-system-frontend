@@ -1,6 +1,8 @@
+import { RouteCitySelection } from "./route-city-selection"
+
 export interface RouteAssignmentFormValues {
-  startLocationId: string
-  destinationLocationId: string
+  startCity: RouteCitySelection | null
+  destinationCity: RouteCitySelection | null
   autoId: string
   driverId: string
 }

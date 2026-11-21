@@ -11,10 +11,13 @@ import { sendApiRequest } from "@/lib/api-client"
 import { apiEndpoints } from "@/lib/constants"
 import {
   createEditRouteFormValuesFromRoute,
+  createRouteLocationIdsFromRoute,
   createUpdateRouteRequestModel,
 } from "@/lib/forms/edit-route-form"
 import {
   formatRouteAutoTitleWithNumber,
+  createRouteDestinationMapPoint,
+  createRouteStartMapPoint,
   formatRouteDestinationLocationName,
   formatRouteDriverFullName,
   formatRouteStartLocationName,
@@ -23,7 +26,6 @@ import {
   AutoLookupOption,
   DriverLookupOption,
   HttpMethod,
-  LocationLookupOption,
   Route,
   RouteStatus,
 } from "@/lib/types"
@@ -32,7 +34,6 @@ interface RoutesListProps {
   routes: Route[]
   autoLookupOptions: AutoLookupOption[]
   driverLookupOptions: DriverLookupOption[]
-  locationLookupOptions: LocationLookupOption[]
   isRoutesListFiltered: boolean
 }
 
@@ -40,7 +41,6 @@ export function RoutesList({
   routes,
   autoLookupOptions,
   driverLookupOptions,
-  locationLookupOptions,
   isRoutesListFiltered,
 }: RoutesListProps) {
   const routeTranslations = useTranslations("routes")
@@ -104,10 +104,14 @@ export function RoutesList({
         sendApiRequest(
           apiEndpoints.updateRoute,
           HttpMethod.Put,
-          createUpdateRouteRequestModel(route, {
-            ...createEditRouteFormValuesFromRoute(route),
-            status: targetRouteStatus,
-          })
+          createUpdateRouteRequestModel(
+            route,
+            {
+              ...createEditRouteFormValuesFromRoute(route),
+              status: targetRouteStatus,
+            },
+            createRouteLocationIdsFromRoute(route)
+          )
         ),
       {
         loading: routeTranslations("statusUpdateLoading"),
@@ -168,7 +172,6 @@ export function RoutesList({
                 route={route}
                 autoLookupOptions={autoLookupOptions}
                 driverLookupOptions={driverLookupOptions}
-                locationLookupOptions={locationLookupOptions}
                 isRouteUpdating={updatingRouteId === route.id}
               />
             }
@@ -191,8 +194,10 @@ export function RoutesList({
 
       {selectedRoute !== undefined && (
         <GoogleMapRoute
-          origin={formatRouteStartLocationName(selectedRoute)}
-          destination={formatRouteDestinationLocationName(selectedRoute)}
+          originName={formatRouteStartLocationName(selectedRoute)}
+          destinationName={formatRouteDestinationLocationName(selectedRoute)}
+          origin={createRouteStartMapPoint(selectedRoute)}
+          destination={createRouteDestinationMapPoint(selectedRoute)}
           onClose={() => setSelectedRouteId(null)}
         />
       )}

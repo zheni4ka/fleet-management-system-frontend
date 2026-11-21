@@ -5,23 +5,40 @@ import {
   getAddRouteFormValidationError,
 } from "@/lib/forms/route-form"
 import {
+  formatRouteCitySelection,
+  getIsSameRouteCity,
+} from "@/lib/forms/route-city-selection"
+import {
   AddRouteFormValues,
   FormValidationError,
-  LocationLookupOption,
+  RouteCitySelection,
 } from "@/lib/types"
 
-const locationLookupOptions: ReadonlyArray<LocationLookupOption> = [
-  { id: 1, city: "Kyiv", country: "Ukraine", timeZoneId: "Europe/Kyiv" },
-  { id: 24, city: "Warsaw", country: "Poland", timeZoneId: "Europe/Warsaw" },
-]
+const kyivCity: RouteCitySelection = {
+  locationId: 1,
+  geoNamesId: null,
+  city: "Kyiv",
+  region: null,
+  country: "Ukraine",
+  timeZoneId: "Europe/Kyiv",
+}
+
+const warsawCity: RouteCitySelection = {
+  locationId: null,
+  geoNamesId: 756135,
+  city: "Warsaw",
+  region: "Masovian Voivodeship",
+  country: "Poland",
+  timeZoneId: "Europe/Warsaw",
+}
 
 function createKyivToWarsawFormValues(
   changedValues: Partial<AddRouteFormValues>
 ): AddRouteFormValues {
   return {
     ...createEmptyAddRouteFormValues(),
-    startLocationId: "1",
-    destinationLocationId: "24",
+    startCity: kyivCity,
+    destinationCity: warsawCity,
     autoId: "5",
     driverId: "7",
     departureLocalDateTime: "2026-12-01T08:00",
@@ -34,7 +51,7 @@ describe("createCreateRouteRequestModel", () => {
   it("converts departure from the start zone and arrival from the destination zone to UTC", () => {
     const createRouteRequestModel = createCreateRouteRequestModel(
       createKyivToWarsawFormValues({}),
-      locationLookupOptions
+      { startLocationId: 1, destinationLocationId: 24 }
     )
 
     expect(createRouteRequestModel).toMatchObject({
@@ -52,8 +69,15 @@ describe("getAddRouteFormValidationError", () => {
   it("requires both times", () => {
     expect(
       getAddRouteFormValidationError(
-        createKyivToWarsawFormValues({ arrivalLocalDateTime: "" }),
-        locationLookupOptions
+        createKyivToWarsawFormValues({ arrivalLocalDateTime: "" })
+      )
+    ).toBe(FormValidationError.RouteRequiredFieldsMissing)
+  })
+
+  it("requires both cities", () => {
+    expect(
+      getAddRouteFormValidationError(
+        createKyivToWarsawFormValues({ destinationCity: null })
       )
     ).toBe(FormValidationError.RouteRequiredFieldsMissing)
   })
@@ -61,8 +85,7 @@ describe("getAddRouteFormValidationError", () => {
   it("rejects the same start and destination", () => {
     expect(
       getAddRouteFormValidationError(
-        createKyivToWarsawFormValues({ destinationLocationId: "1" }),
-        locationLookupOptions
+        createKyivToWarsawFormValues({ destinationCity: kyivCity })
       )
     ).toBe(FormValidationError.SameStartAndDestinationLocation)
   })
@@ -71,22 +94,35 @@ describe("getAddRouteFormValidationError", () => {
     expect(
       getAddRouteFormValidationError(
         createKyivToWarsawFormValues({
-          startLocationId: "24",
-          destinationLocationId: "1",
+          startCity: warsawCity,
+          destinationCity: kyivCity,
           departureLocalDateTime: "2026-12-01T08:30",
           arrivalLocalDateTime: "2026-12-01T09:15",
-        }),
-        locationLookupOptions
+        })
       )
     ).toBe(FormValidationError.ArrivalNotAfterDeparture)
   })
 
   it("accepts a valid route", () => {
     expect(
-      getAddRouteFormValidationError(
-        createKyivToWarsawFormValues({}),
-        locationLookupOptions
-      )
+      getAddRouteFormValidationError(createKyivToWarsawFormValues({}))
     ).toBeNull()
+  })
+})
+
+describe("route city selection", () => {
+  it("treats two picks of the same GeoNames city as the same city", () => {
+    expect(getIsSameRouteCity(warsawCity, { ...warsawCity })).toBe(true)
+  })
+
+  it("cannot tell a saved location from an unsaved city apart, so leaves that check to the API", () => {
+    expect(getIsSameRouteCity(kyivCity, warsawCity)).toBe(false)
+  })
+
+  it("shows the region only when the city has one", () => {
+    expect(formatRouteCitySelection(kyivCity)).toBe("Kyiv, Ukraine")
+    expect(formatRouteCitySelection(warsawCity)).toBe(
+      "Warsaw, Masovian Voivodeship, Poland"
+    )
   })
 })

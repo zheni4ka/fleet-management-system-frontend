@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { auditLogSchema } from "@/lib/schemas/audit-log-schema"
+import { cityGeocodingCandidatesSchema } from "@/lib/schemas/city-geocoding-candidate-schema"
 import { dispatcherSchema } from "@/lib/schemas/dispatcher-schema"
 import { routeSchema } from "@/lib/schemas/route-schema"
 import { sessionResponseSchema } from "@/lib/schemas/session-response-schema"
@@ -11,10 +12,14 @@ const validRouteResponse = {
   startLocationCity: "Kyiv",
   startLocationCountry: "Ukraine",
   startLocationTimeZoneId: "Europe/Kyiv",
+  startLocationLatitude: 50.45466,
+  startLocationLongitude: 30.5238,
   destinationLocationId: 24,
   destinationLocationCity: "Warsaw",
   destinationLocationCountry: "Poland",
   destinationLocationTimeZoneId: "Europe/Warsaw",
+  destinationLocationLatitude: null,
+  destinationLocationLongitude: null,
   departureTimeUtc: "2026-12-01T06:00:00Z",
   arrivalTimeUtc: "2026-12-01T17:00:00Z",
   autoId: 5,
@@ -50,6 +55,26 @@ describe("routeSchema", () => {
         departureTimeUtc: "2026-12-01T08:00:00",
       }).success
     ).toBe(false)
+  })
+})
+
+describe("cityGeocodingCandidatesSchema", () => {
+  it("accepts a city without a region or population", () => {
+    expect(
+      cityGeocodingCandidatesSchema.safeParse([
+        {
+          geoNamesId: 702550,
+          city: "Lviv",
+          region: null,
+          country: "Ukraine",
+          countryCode: "UA",
+          latitude: 49.83826,
+          longitude: 24.02324,
+          timeZoneId: "Europe/Kyiv",
+          population: null,
+        },
+      ]).success
+    ).toBe(true)
   })
 })
 

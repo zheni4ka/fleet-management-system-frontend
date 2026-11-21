@@ -9,11 +9,6 @@ import {
   createEmptyDriverFormValues,
   getDriverFormValidationError,
 } from "@/lib/forms/driver-form"
-import {
-  createEmptyLocationFormValues,
-  createLocationRequestBody,
-  getLocationFormValidationError,
-} from "@/lib/forms/location-form"
 import { getPasswordPolicyViolation } from "@/lib/forms/password-policy"
 import { createRoutesPeriodFormValuesFromPageSearchParams } from "@/lib/forms/routes-period-form"
 import { FormValidationError, PasswordPolicyViolation } from "@/lib/types"
@@ -76,28 +71,6 @@ describe("driver form", () => {
       licenseNumber: "ABC 111111",
       depotId: 2,
     })
-  })
-})
-
-describe("location form", () => {
-  it("requires a time zone", () => {
-    expect(
-      getLocationFormValidationError({
-        ...createEmptyLocationFormValues(),
-        city: "Lviv",
-        country: "Ukraine",
-      })
-    ).not.toBeNull()
-  })
-
-  it("keeps the selected time zone", () => {
-    expect(
-      createLocationRequestBody({
-        city: " Lviv ",
-        country: " Ukraine ",
-        timeZoneId: "Europe/Kyiv",
-      })
-    ).toEqual({ city: "Lviv", country: "Ukraine", timeZoneId: "Europe/Kyiv" })
   })
 })
 
