@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   createEditRouteFormValuesFromRoute,
   createUpdateRouteRequestModel,
-  getEditRouteFormValidationError,
+  getEditRouteFormFieldErrors,
 } from "@/lib/forms/edit-route-form"
 import { FormValidationError, Route, RouteStatus } from "@/lib/types"
 
@@ -81,21 +81,23 @@ describe("edit route form", () => {
 
   it("rejects a planned route arriving before it departs", () => {
     expect(
-      getEditRouteFormValidationError(plannedRoute, {
+      getEditRouteFormFieldErrors(plannedRoute, {
         ...createEditRouteFormValuesFromRoute(plannedRoute),
         arrivalLocalDateTime: "2026-12-01T07:00",
       })
-    ).toBe(FormValidationError.ArrivalNotAfterDeparture)
+    ).toEqual({
+      arrivalLocalDateTime: FormValidationError.ArrivalNotAfterDeparture,
+    })
   })
 
   it("ignores times when validating a route that is not planned", () => {
     const inProgressRoute = { ...plannedRoute, status: RouteStatus.InProgress }
 
     expect(
-      getEditRouteFormValidationError(inProgressRoute, {
+      getEditRouteFormFieldErrors(inProgressRoute, {
         ...createEditRouteFormValuesFromRoute(inProgressRoute),
         arrivalLocalDateTime: "",
       })
-    ).toBe(null)
+    ).toEqual({})
   })
 })

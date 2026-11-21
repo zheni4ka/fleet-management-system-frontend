@@ -1,5 +1,5 @@
 import { apiProblemTypeSchema } from "@/lib/schemas/api-problem-type-schema"
-import { ApiProblemDetails } from "@/lib/types"
+import { ApiFieldErrorMessages, ApiProblemDetails } from "@/lib/types"
 
 export async function getApiProblemType(
   response: Response
@@ -34,20 +34,32 @@ function getProblemDetailsMessage(
   )
 }
 
-export async function getApiProblemMessage(
-  response: Response
-): Promise<string | null> {
+interface ApiProblem {
+  problemMessage: string | null
+  apiFieldErrorMessages: ApiFieldErrorMessages
+}
+
+export async function getApiProblem(response: Response): Promise<ApiProblem> {
   const responseText = await response.text()
   if (!responseText) {
-    return null
+    return { problemMessage: null, apiFieldErrorMessages: {} }
   }
 
   try {
     const problemDetails: ApiProblemDetails = JSON.parse(responseText)
-    return getProblemDetailsMessage(problemDetails)
+    return {
+      problemMessage: getProblemDetailsMessage(problemDetails),
+      apiFieldErrorMessages: problemDetails.errors ?? {},
+    }
   } catch {
-    return responseText
+    return { problemMessage: responseText, apiFieldErrorMessages: {} }
   }
+}
+
+export async function getApiProblemMessage(
+  response: Response
+): Promise<string | null> {
+  return (await getApiProblem(response)).problemMessage
 }
 
 export async function getApiErrorMessage(

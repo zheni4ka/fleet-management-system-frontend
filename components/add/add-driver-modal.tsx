@@ -2,20 +2,23 @@
 
 import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
-import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
-import ModalWindow from "@/components/ui/modal-window"
-import { SubmitButton } from "@/components/ui/submit-button"
+import { FormModal } from "@/components/forms/form-modal"
+import { FormSection } from "@/components/forms/form-section"
 import { DriverFormFields } from "@/components/forms/driver-form-fields"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
+import { useFormFieldErrorMessages } from "@/hooks/use-form-field-error-messages"
 import { sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints } from "@/lib/constants"
+import {
+  apiEndpoints,
+  driverFormFieldNamesByApiPropertyName,
+} from "@/lib/constants"
 import {
   createDriverRequestBody,
   createEmptyDriverFormValues,
-  getDriverFormValidationError,
+  getDriverFormFieldErrors,
 } from "@/lib/forms/driver-form"
-import { Depot, HttpMethod } from "@/lib/types"
+import { Depot, DriverFormValues, HttpMethod } from "@/lib/types"
 
 interface AddDriverModalProps {
   depots: ReadonlyArray<Depot>
@@ -23,20 +26,35 @@ interface AddDriverModalProps {
 
 export default function AddDriverModal({ depots }: AddDriverModalProps) {
   const driverTranslations = useTranslations("drivers")
-  const formValidationTranslations = useTranslations("formValidation")
   const commonTranslations = useTranslations("common")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [driverFormValues, setDriverFormValues] = useState(
     createEmptyDriverFormValues
   )
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
+  const {
+    formFieldErrorMessages,
+    showFormFieldErrors,
+    showApiFieldErrorMessages,
+    clearChangedFormFieldErrorMessages,
+    clearFormFieldErrorMessages,
+  } = useFormFieldErrorMessages(driverFormFieldNamesByApiPropertyName)
+
+  const handleOpen = () => {
+    clearFormFieldErrorMessages()
+    setIsModalOpen(true)
+  }
+
+  const handleDriverFormValuesChange = (
+    nextDriverFormValues: DriverFormValues
+  ) => {
+    clearChangedFormFieldErrorMessages(driverFormValues, nextDriverFormValues)
+    setDriverFormValues(nextDriverFormValues)
+  }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const driverFormValidationError =
-      getDriverFormValidationError(driverFormValues)
-    if (driverFormValidationError !== null) {
-      toast.error(formValidationTranslations(driverFormValidationError))
+    if (showFormFieldErrors(getDriverFormFieldErrors(driverFormValues))) {
       return
     }
 
@@ -51,7 +69,9 @@ export default function AddDriverModal({ depots }: AddDriverModalProps) {
         loading: driverTranslations("createLoading"),
         success: driverTranslations("createSuccess"),
         error: driverTranslations("createError"),
-      }
+      },
+      undefined,
+      showApiFieldErrorMessages
     )
     if (isDriverCreated) {
       setDriverFormValues(createEmptyDriverFormValues())
@@ -61,25 +81,26 @@ export default function AddDriverModal({ depots }: AddDriverModalProps) {
 
   return (
     <>
-      <Button hoverEffect="grow" onClick={() => setIsModalOpen(true)}>
+      <Button hoverEffect="grow" onClick={handleOpen}>
         {driverTranslations("addButtonLabel")}
       </Button>
-      <ModalWindow
+      <FormModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
         title={driverTranslations("addTitle")}
+        isSubmitting={isApiMutationRunning}
+        submitButtonLabel={commonTranslations("saveButtonLabel")}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
       >
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <FormSection title={driverTranslations("detailsSectionTitle")}>
           <DriverFormFields
             depots={depots}
             driverFormValues={driverFormValues}
-            onDriverFormValuesChange={setDriverFormValues}
+            formFieldErrorMessages={formFieldErrorMessages}
+            onDriverFormValuesChange={handleDriverFormValuesChange}
           />
-          <SubmitButton isSubmitting={isApiMutationRunning}>
-            {commonTranslations("saveButtonLabel")}
-          </SubmitButton>
-        </form>
-      </ModalWindow>
+        </FormSection>
+      </FormModal>
     </>
   )
 }

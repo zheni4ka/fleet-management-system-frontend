@@ -1,6 +1,8 @@
+import { getRequiredFieldErrors } from "@/lib/forms/form-field-errors"
 import {
   AutoMaintenance,
   CreateAutoMaintenanceRequestModel,
+  FormFieldErrors,
   FormValidationError,
   MaintenanceFormValues,
   UpdateAutoMaintenanceRequestModel,
@@ -10,28 +12,24 @@ export function createEmptyMaintenanceFormValues(): MaintenanceFormValues {
   return { name: "", description: "", serviceDate: "", plannedEndDate: "" }
 }
 
-export function getMaintenanceFormValidationError(
+export function getMaintenanceFormFieldErrors(
   maintenanceFormValues: MaintenanceFormValues
-): FormValidationError | null {
-  const requiredMaintenanceFieldValues = [
-    maintenanceFormValues.name,
-    maintenanceFormValues.description,
-    maintenanceFormValues.serviceDate,
-  ]
-  const hasEmptyRequiredField = requiredMaintenanceFieldValues.some(
-    (maintenanceFieldValue) => maintenanceFieldValue.trim() === ""
-  )
-  if (hasEmptyRequiredField) {
-    return FormValidationError.MaintenanceRequiredFieldsMissing
-  }
-  const hasPlannedEndDate = maintenanceFormValues.plannedEndDate !== ""
-  if (
-    hasPlannedEndDate &&
+): FormFieldErrors<keyof MaintenanceFormValues> {
+  const requiredFieldErrors = getRequiredFieldErrors(maintenanceFormValues, [
+    "name",
+    "description",
+    "serviceDate",
+  ])
+  const isPlannedEndNotAfterStart =
+    maintenanceFormValues.serviceDate !== "" &&
+    maintenanceFormValues.plannedEndDate !== "" &&
     maintenanceFormValues.plannedEndDate <= maintenanceFormValues.serviceDate
-  ) {
-    return FormValidationError.MaintenancePlannedEndNotAfterStart
-  }
-  return null
+  return isPlannedEndNotAfterStart
+    ? {
+        ...requiredFieldErrors,
+        plannedEndDate: FormValidationError.MaintenancePlannedEndNotAfterStart,
+      }
+    : requiredFieldErrors
 }
 
 export function createCreateAutoMaintenanceRequestModel(

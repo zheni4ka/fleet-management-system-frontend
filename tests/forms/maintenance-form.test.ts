@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   createCreateAutoMaintenanceRequestModel,
   createEmptyMaintenanceFormValues,
-  getMaintenanceFormValidationError,
+  getMaintenanceFormFieldErrors,
 } from "@/lib/forms/maintenance-form"
 import { FormValidationError } from "@/lib/types"
 
@@ -15,27 +15,29 @@ describe("maintenance form", () => {
   }
 
   it("accepts maintenance without a planned end", () => {
-    expect(getMaintenanceFormValidationError(filledMaintenanceFormValues)).toBe(
-      null
+    expect(getMaintenanceFormFieldErrors(filledMaintenanceFormValues)).toEqual(
+      {}
     )
   })
 
   it("requires the service date", () => {
     expect(
-      getMaintenanceFormValidationError({
+      getMaintenanceFormFieldErrors({
         ...filledMaintenanceFormValues,
         serviceDate: "",
       })
-    ).toBe(FormValidationError.MaintenanceRequiredFieldsMissing)
+    ).toEqual({ serviceDate: FormValidationError.RequiredFieldMissing })
   })
 
   it("rejects a planned end that is not after the start", () => {
     expect(
-      getMaintenanceFormValidationError({
+      getMaintenanceFormFieldErrors({
         ...filledMaintenanceFormValues,
         plannedEndDate: "2030-01-10T09:00",
       })
-    ).toBe(FormValidationError.MaintenancePlannedEndNotAfterStart)
+    ).toEqual({
+      plannedEndDate: FormValidationError.MaintenancePlannedEndNotAfterStart,
+    })
   })
 
   it("sends an empty planned end as null", () => {

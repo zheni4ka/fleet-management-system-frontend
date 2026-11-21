@@ -6,10 +6,7 @@ import {
   httpHeaderNames,
   httpStatusCodes,
 } from "@/lib/constants"
-import {
-  getApiProblemMessage,
-  getApiProblemType,
-} from "@/lib/api-error-message"
+import { getApiProblem, getApiProblemType } from "@/lib/api-error-message"
 import { ApiRequestFailedError } from "@/lib/api-request-failed-error"
 import { ConcurrencyConflictError } from "@/lib/concurrency-conflict-error"
 import { parseApiResponseBody } from "@/lib/api-response-body"
@@ -50,9 +47,11 @@ async function sendProxiedApiRequest(
     throw new ConcurrencyConflictError()
   }
   if (!response.ok) {
+    const apiProblem = await getApiProblem(response)
     throw new ApiRequestFailedError(
       response.status,
-      await getApiProblemMessage(response)
+      apiProblem.problemMessage,
+      apiProblem.apiFieldErrorMessages
     )
   }
   return response

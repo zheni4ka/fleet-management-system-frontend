@@ -1,8 +1,10 @@
+import { getRequiredFieldErrors } from "@/lib/forms/form-field-errors"
 import { convertZonedLocalDateTimeToUtcIsoString } from "@/lib/zoned-date-time"
 import { getIsSameRouteCity } from "@/lib/forms/route-city-selection"
 import {
   AddRouteFormValues,
   CreateRouteRequestModel,
+  FormFieldErrors,
   FormValidationError,
   RouteAssignmentFormValues,
   RouteCitySelection,
@@ -28,22 +30,36 @@ export function createEmptyAddRouteFormValues(): AddRouteFormValues {
   }
 }
 
-export function getRouteAssignmentFormValidationError(
+export function getRouteAssignmentFormFieldErrors(
   routeAssignmentFormValues: RouteAssignmentFormValues
-): FormValidationError | null {
-  const { startCity, destinationCity } = routeAssignmentFormValues
-  if (
-    startCity === null ||
-    destinationCity === null ||
-    routeAssignmentFormValues.autoId === "" ||
-    routeAssignmentFormValues.driverId === ""
-  ) {
-    return FormValidationError.RouteRequiredFieldsMissing
-  }
-  if (getIsSameRouteCity(startCity, destinationCity)) {
-    return FormValidationError.SameStartAndDestinationLocation
-  }
-  return null
+): FormFieldErrors<keyof RouteScheduleFormValues> {
+  const { startCity, destinationCity, autoId, driverId } =
+    routeAssignmentFormValues
+  const isSameRouteCity =
+    startCity !== null &&
+    destinationCity !== null &&
+    getIsSameRouteCity(startCity, destinationCity)
+  const routeAssignmentFormFieldErrors: FormFieldErrors<
+    keyof RouteScheduleFormValues
+  > = Object.fromEntries(
+    [
+      ["startCity", startCity === null],
+      ["destinationCity", destinationCity === null],
+      ["autoId", autoId === ""],
+      ["driverId", driverId === ""],
+    ]
+      .filter(([, isFieldEmpty]) => isFieldEmpty)
+      .map(([formFieldName]) => [
+        formFieldName,
+        FormValidationError.RequiredFieldMissing,
+      ])
+  )
+  return isSameRouteCity
+    ? {
+        ...routeAssignmentFormFieldErrors,
+        destinationCity: FormValidationError.SameStartAndDestinationLocation,
+      }
+    : routeAssignmentFormFieldErrors
 }
 
 function getRequiredRouteCity(
@@ -83,26 +99,30 @@ export function createCreateRouteRequestModel(
   }
 }
 
-export function getRouteScheduleFormValidationError(
+export function getRouteScheduleFormFieldErrors(
   routeScheduleFormValues: RouteScheduleFormValues
-): FormValidationError | null {
-  if (
-    routeScheduleFormValues.departureLocalDateTime === "" ||
-    routeScheduleFormValues.arrivalLocalDateTime === ""
-  ) {
-    return FormValidationError.RouteRequiredFieldsMissing
+): FormFieldErrors<keyof RouteScheduleFormValues> {
+  const routeScheduleFormFieldErrors = {
+    ...getRouteAssignmentFormFieldErrors(routeScheduleFormValues),
+    ...getRequiredFieldErrors(routeScheduleFormValues, [
+      "departureLocalDateTime",
+      "arrivalLocalDateTime",
+    ]),
   }
-  const routeAssignmentFormValidationError =
-    getRouteAssignmentFormValidationError(routeScheduleFormValues)
-  if (routeAssignmentFormValidationError !== null) {
-    return routeAssignmentFormValidationError
+  const canCompareRouteTimes =
+    routeScheduleFormValues.startCity !== null &&
+    routeScheduleFormValues.destinationCity !== null &&
+    routeScheduleFormValues.departureLocalDateTime !== "" &&
+    routeScheduleFormValues.arrivalLocalDateTime !== ""
+  if (!canCompareRouteTimes) {
+    return routeScheduleFormFieldErrors
   }
   const routeTimesUtc = createRouteTimesUtc(routeScheduleFormValues)
-  if (
-    new Date(routeTimesUtc.arrivalTimeUtc) <=
+  return new Date(routeTimesUtc.arrivalTimeUtc) <=
     new Date(routeTimesUtc.departureTimeUtc)
-  ) {
-    return FormValidationError.ArrivalNotAfterDeparture
-  }
-  return null
+    ? {
+        ...routeScheduleFormFieldErrors,
+        arrivalLocalDateTime: FormValidationError.ArrivalNotAfterDeparture,
+      }
+    : routeScheduleFormFieldErrors
 }

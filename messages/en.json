@@ -20,7 +20,8 @@
     "serverErrorMessage": "Server error: {status}",
     "dataLoadFailedMessage": "Failed to load data (status: {status})",
     "pageRenderErrorDescription": "The page could not be displayed. Try again or go back to the home page.",
-    "applicationErrorDescription": "The application ran into an error. Try reloading the page."
+    "applicationErrorDescription": "The application ran into an error. Try reloading the page.",
+    "requiredFieldsNote": "* — required fields"
   },
   "loginRedirectReasons": {
     "SessionExpired": "Your session has ended. Sign in again.",
@@ -226,18 +227,17 @@
     "singleSignOnNotConfigured": "Sign-in with a corporate account is not configured."
   },
   "formValidation": {
-    "AutoRequiredFieldsMissing": "Please fill in all form fields.",
     "AutoCapacityNotPositive": "Capacity must be a number greater than 0.",
-    "DriverRequiredFieldsMissing": "Please fill in the first name, surname, patronymic, licence number and depot.",
-    "MaintenanceRequiredFieldsMissing": "Please fill in all fields.",
-    "RouteRequiredFieldsMissing": "Please fill in all form fields before saving.",
     "SameStartAndDestinationLocation": "The start and destination locations must be different.",
     "ArrivalNotAfterDeparture": "The arrival time must be later than the departure time.",
     "RoutesPeriodDatesMissing": "Select the start and end date of the period.",
     "RoutesPeriodEndBeforeStart": "The end of the period cannot be earlier than its start.",
     "DispatcherDepotsMissing": "A dispatcher must be assigned at least one depot.",
     "DepotNameMissing": "Enter the depot name.",
-    "MaintenancePlannedEndNotAfterStart": "The planned end of work must be later than its start."
+    "MaintenancePlannedEndNotAfterStart": "The planned end of work must be later than its start.",
+    "RequiredFieldMissing": "Fill in this field.",
+    "EmailAddressInvalid": "Enter a valid email address.",
+    "FormFieldsNeedAttention": "Fix the errors in the highlighted fields."
   },
   "pages": {
     "autosTitle": "Vehicles",
@@ -320,7 +320,9 @@
     "archivedInsteadOfDeleted": "The vehicle is used in routes, so it was archived.",
     "restoreLoading": "Restoring the vehicle...",
     "restoreSuccess": "Vehicle restored from the archive.",
-    "restoreError": "Failed to restore the vehicle"
+    "restoreError": "Failed to restore the vehicle",
+    "detailsSectionTitle": "Vehicle details",
+    "numberHint": "Format: АА1234АА"
   },
   "maintenance": {
     "title": "Maintenance: {autoTitle}",
@@ -370,7 +372,9 @@
     "archivedInsteadOfDeleted": "The driver is assigned to routes, so they were archived.",
     "restoreLoading": "Restoring the driver...",
     "restoreSuccess": "Driver restored from the archive.",
-    "restoreError": "Failed to restore the driver"
+    "restoreError": "Failed to restore the driver",
+    "detailsSectionTitle": "Driver details",
+    "licenseNumberHint": "Format: ABC 123456"
   },
   "routes": {
     "addButtonLabel": "Add route",
@@ -429,7 +433,10 @@
     "plannedDurationLabel": "Planned duration",
     "actualDurationLabel": "Actual duration",
     "notRecordedValue": "Not recorded",
-    "depotLabel": "Depot"
+    "depotLabel": "Depot",
+    "routeSectionTitle": "Route",
+    "assignmentSectionTitle": "Assignment",
+    "scheduleSectionTitle": "Schedule and status"
   },
   "routeStatusActions": {
     "InProgress": "Start",
@@ -468,7 +475,9 @@
     "deactivateConfirmingLabel": "Deactivating...",
     "deactivateLoading": "Deactivating the account...",
     "deactivateSuccess": "Account deactivated.",
-    "deactivateError": "Failed to deactivate the account"
+    "deactivateError": "Failed to deactivate the account",
+    "accountSectionTitle": "Account",
+    "depotsSectionTitle": "Depot access"
   },
   "depots": {
     "addButtonLabel": "+ Add depot",

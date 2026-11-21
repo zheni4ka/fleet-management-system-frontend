@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   createCreateRouteRequestModel,
   createEmptyAddRouteFormValues,
-  getRouteScheduleFormValidationError,
+  getRouteScheduleFormFieldErrors,
 } from "@/lib/forms/route-form"
 import {
   formatRouteCitySelection,
@@ -65,34 +65,38 @@ describe("createCreateRouteRequestModel", () => {
   })
 })
 
-describe("getRouteScheduleFormValidationError", () => {
-  it("requires both times", () => {
+describe("getRouteScheduleFormFieldErrors", () => {
+  it("marks a missing arrival time on the arrival field", () => {
     expect(
-      getRouteScheduleFormValidationError(
+      getRouteScheduleFormFieldErrors(
         createKyivToWarsawFormValues({ arrivalLocalDateTime: "" })
       )
-    ).toBe(FormValidationError.RouteRequiredFieldsMissing)
+    ).toEqual({
+      arrivalLocalDateTime: FormValidationError.RequiredFieldMissing,
+    })
   })
 
-  it("requires both cities", () => {
+  it("marks a missing destination city on the destination field", () => {
     expect(
-      getRouteScheduleFormValidationError(
+      getRouteScheduleFormFieldErrors(
         createKyivToWarsawFormValues({ destinationCity: null })
       )
-    ).toBe(FormValidationError.RouteRequiredFieldsMissing)
+    ).toEqual({ destinationCity: FormValidationError.RequiredFieldMissing })
   })
 
-  it("rejects the same start and destination", () => {
+  it("marks the same start and destination on the destination field", () => {
     expect(
-      getRouteScheduleFormValidationError(
+      getRouteScheduleFormFieldErrors(
         createKyivToWarsawFormValues({ destinationCity: kyivCity })
       )
-    ).toBe(FormValidationError.SameStartAndDestinationLocation)
+    ).toEqual({
+      destinationCity: FormValidationError.SameStartAndDestinationLocation,
+    })
   })
 
   it("compares UTC instants, so an arrival that looks later on the wall clock can still be earlier", () => {
     expect(
-      getRouteScheduleFormValidationError(
+      getRouteScheduleFormFieldErrors(
         createKyivToWarsawFormValues({
           startCity: warsawCity,
           destinationCity: kyivCity,
@@ -100,13 +104,15 @@ describe("getRouteScheduleFormValidationError", () => {
           arrivalLocalDateTime: "2026-12-01T09:15",
         })
       )
-    ).toBe(FormValidationError.ArrivalNotAfterDeparture)
+    ).toEqual({
+      arrivalLocalDateTime: FormValidationError.ArrivalNotAfterDeparture,
+    })
   })
 
   it("accepts a valid route", () => {
     expect(
-      getRouteScheduleFormValidationError(createKyivToWarsawFormValues({}))
-    ).toBeNull()
+      getRouteScheduleFormFieldErrors(createKyivToWarsawFormValues({}))
+    ).toEqual({})
   })
 })
 

@@ -2,28 +2,30 @@
 
 import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
-import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 import { NativeSelect } from "@/components/ui/native-select"
 import { FormField } from "@/components/ui/form-field"
-import ModalWindow from "@/components/ui/modal-window"
-import { SubmitButton } from "@/components/ui/submit-button"
+import { FormModal } from "@/components/forms/form-modal"
+import { FormSection } from "@/components/forms/form-section"
 import { RouteFormFields } from "@/components/forms/route-form-fields"
 import { RouteTimeFields } from "@/components/forms/route-time-fields"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
+import { useFormFieldErrorMessages } from "@/hooks/use-form-field-error-messages"
 import { sendApiRequest } from "@/lib/api-client"
 import { resolveRouteLocationIds } from "@/lib/route-city-locations"
-import { apiEndpoints } from "@/lib/constants"
+import {
+  apiEndpoints,
+  routeFormFieldNamesByApiPropertyName,
+} from "@/lib/constants"
 import {
   createCreateRouteRequestModel,
   createEmptyAddRouteFormValues,
-  getRouteScheduleFormValidationError,
+  getRouteScheduleFormFieldErrors,
 } from "@/lib/forms/route-form"
 import {
   AddRouteFormValues,
   AutoLookupOption,
   DriverLookupOption,
-  FormValidationError,
   HttpMethod,
   RouteStatus,
 } from "@/lib/types"
@@ -40,36 +42,42 @@ export default function AddRouteModal({
 }: AddRouteModalProps) {
   const routeStatusTranslations = useTranslations("routeStatus")
   const routeTranslations = useTranslations("routes")
-  const formValidationTranslations = useTranslations("formValidation")
   const commonTranslations = useTranslations("common")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [addRouteFormValues, setAddRouteFormValues] = useState(
     createEmptyAddRouteFormValues
   )
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
+  const {
+    formFieldErrorMessages,
+    showFormFieldErrors,
+    showApiFieldErrorMessages,
+    clearChangedFormFieldErrorMessages,
+    clearFormFieldErrorMessages,
+  } = useFormFieldErrorMessages(routeFormFieldNamesByApiPropertyName)
 
-  const updateAddRouteFormValues = (
-    changedValues: Partial<AddRouteFormValues>
+  const handleOpen = () => {
+    clearFormFieldErrorMessages()
+    setIsModalOpen(true)
+  }
+
+  const handleAddRouteFormValuesChange = (
+    nextAddRouteFormValues: AddRouteFormValues
   ) => {
-    setAddRouteFormValues({ ...addRouteFormValues, ...changedValues })
+    clearChangedFormFieldErrorMessages(
+      addRouteFormValues,
+      nextAddRouteFormValues
+    )
+    setAddRouteFormValues(nextAddRouteFormValues)
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const routeScheduleFormValidationError =
-      getRouteScheduleFormValidationError(addRouteFormValues)
     const { startCity, destinationCity } = addRouteFormValues
-    if (
-      routeScheduleFormValidationError !== null ||
-      startCity === null ||
-      destinationCity === null
-    ) {
-      toast.error(
-        formValidationTranslations(
-          routeScheduleFormValidationError ??
-            FormValidationError.RouteRequiredFieldsMissing
-        )
-      )
+    const hasFormFieldErrors = showFormFieldErrors(
+      getRouteScheduleFormFieldErrors(addRouteFormValues)
+    )
+    if (hasFormFieldErrors || startCity === null || destinationCity === null) {
       return
     }
 
@@ -87,7 +95,9 @@ export default function AddRouteModal({
         loading: routeTranslations("createLoading"),
         success: routeTranslations("createSuccess"),
         error: routeTranslations("createError"),
-      }
+      },
+      undefined,
+      showApiFieldErrorMessages
     )
     if (isRouteCreated) {
       setAddRouteFormValues(createEmptyAddRouteFormValues())
@@ -97,33 +107,42 @@ export default function AddRouteModal({
 
   return (
     <>
-      <Button hoverEffect="grow" onClick={() => setIsModalOpen(true)}>
+      <Button hoverEffect="grow" onClick={handleOpen}>
         {routeTranslations("addButtonLabel")}
       </Button>
-      <ModalWindow
+      <FormModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
         title={routeTranslations("addTitle")}
+        isSubmitting={isApiMutationRunning}
+        submitButtonLabel={commonTranslations("saveButtonLabel")}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
       >
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <RouteFormFields
-            routeFormValues={addRouteFormValues}
-            onRouteFormValuesChange={setAddRouteFormValues}
-            autoLookupOptions={autoLookupOptions}
-            driverLookupOptions={driverLookupOptions}
-            alwaysSelectableAutoId={null}
-          />
+        <RouteFormFields
+          routeFormValues={addRouteFormValues}
+          formFieldErrorMessages={formFieldErrorMessages}
+          onRouteFormValuesChange={handleAddRouteFormValuesChange}
+          autoLookupOptions={autoLookupOptions}
+          driverLookupOptions={driverLookupOptions}
+          alwaysSelectableAutoId={null}
+        />
 
+        <FormSection title={routeTranslations("scheduleSectionTitle")}>
           <RouteTimeFields
             routeFormValues={addRouteFormValues}
-            onRouteFormValuesChange={setAddRouteFormValues}
+            formFieldErrorMessages={formFieldErrorMessages}
+            onRouteFormValuesChange={handleAddRouteFormValuesChange}
           />
-
-          <FormField label={routeTranslations("statusLabel")}>
+          <FormField
+            label={routeTranslations("statusLabel")}
+            isRequired
+            errorMessage={formFieldErrorMessages.status}
+          >
             <NativeSelect
               value={addRouteFormValues.status}
               onChange={(event) =>
-                updateAddRouteFormValues({
+                handleAddRouteFormValuesChange({
+                  ...addRouteFormValues,
                   status: parseEnumValue(RouteStatus, event.target.value),
                 })
               }
@@ -135,12 +154,8 @@ export default function AddRouteModal({
               ))}
             </NativeSelect>
           </FormField>
-
-          <SubmitButton isSubmitting={isApiMutationRunning}>
-            {commonTranslations("saveButtonLabel")}
-          </SubmitButton>
-        </form>
-      </ModalWindow>
+        </FormSection>
+      </FormModal>
     </>
   )
 }

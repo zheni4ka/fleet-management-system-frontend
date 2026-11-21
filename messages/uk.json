@@ -20,7 +20,8 @@
     "serverErrorMessage": "Помилка сервера: {status}",
     "dataLoadFailedMessage": "Помилка завантаження даних (статус: {status})",
     "pageRenderErrorDescription": "Не вдалося відобразити сторінку. Спробуйте ще раз або поверніться на головну.",
-    "applicationErrorDescription": "Застосунок зіткнувся з помилкою. Спробуйте оновити сторінку."
+    "applicationErrorDescription": "Застосунок зіткнувся з помилкою. Спробуйте оновити сторінку.",
+    "requiredFieldsNote": "* — обов'язкові поля"
   },
   "loginRedirectReasons": {
     "SessionExpired": "Сесія завершилась. Увійдіть у систему повторно.",
@@ -226,18 +227,17 @@
     "singleSignOnNotConfigured": "Вхід через корпоративний обліковий запис не налаштовано."
   },
   "formValidation": {
-    "AutoRequiredFieldsMissing": "Будь ласка, заповніть всі поля форми.",
     "AutoCapacityNotPositive": "Місткість має бути числом, більшим за 0.",
-    "DriverRequiredFieldsMissing": "Будь ласка, заповніть ім'я, прізвище, по батькові, номер посвідчення та депо.",
-    "MaintenanceRequiredFieldsMissing": "Заповніть усі поля.",
-    "RouteRequiredFieldsMissing": "Будь ласка, заповніть всі поля форми перед збереженням.",
     "SameStartAndDestinationLocation": "Початкова та кінцева локації мають відрізнятися.",
     "ArrivalNotAfterDeparture": "Час прибуття має бути пізніше за час відправлення.",
     "RoutesPeriodDatesMissing": "Оберіть початкову та кінцеву дату періоду.",
     "RoutesPeriodEndBeforeStart": "Кінець періоду не може бути раніше за його початок.",
     "DispatcherDepotsMissing": "Диспетчеру потрібно призначити щонайменше одне депо.",
     "DepotNameMissing": "Вкажіть назву депо.",
-    "MaintenancePlannedEndNotAfterStart": "Запланований кінець робіт має бути пізніше за їх початок."
+    "MaintenancePlannedEndNotAfterStart": "Запланований кінець робіт має бути пізніше за їх початок.",
+    "RequiredFieldMissing": "Заповніть це поле.",
+    "EmailAddressInvalid": "Вкажіть коректну адресу електронної пошти.",
+    "FormFieldsNeedAttention": "Виправте помилки у виділених полях."
   },
   "pages": {
     "autosTitle": "Автомобілі",
@@ -320,7 +320,9 @@
     "archivedInsteadOfDeleted": "Автомобіль використовується в маршрутах, тому його перенесено до архіву.",
     "restoreLoading": "Відновлення автомобіля...",
     "restoreSuccess": "Автомобіль відновлено з архіву!",
-    "restoreError": "Не вдалося відновити автомобіль"
+    "restoreError": "Не вдалося відновити автомобіль",
+    "detailsSectionTitle": "Дані автомобіля",
+    "numberHint": "Формат: АА1234АА"
   },
   "maintenance": {
     "title": "Технічне обслуговування: {autoTitle}",
@@ -370,7 +372,9 @@
     "archivedInsteadOfDeleted": "Водія призначено на маршрути, тому його перенесено до архіву.",
     "restoreLoading": "Відновлення водія...",
     "restoreSuccess": "Водія відновлено з архіву!",
-    "restoreError": "Не вдалося відновити водія"
+    "restoreError": "Не вдалося відновити водія",
+    "detailsSectionTitle": "Дані водія",
+    "licenseNumberHint": "Формат: ABC 123456"
   },
   "routes": {
     "addButtonLabel": "Додати маршрут",
@@ -429,7 +433,10 @@
     "plannedDurationLabel": "Тривалість за планом",
     "actualDurationLabel": "Фактична тривалість",
     "notRecordedValue": "Не зафіксовано",
-    "depotLabel": "Депо"
+    "depotLabel": "Депо",
+    "routeSectionTitle": "Маршрут",
+    "assignmentSectionTitle": "Призначення",
+    "scheduleSectionTitle": "Розклад і статус"
   },
   "routeStatusActions": {
     "InProgress": "Розпочати",
@@ -468,7 +475,9 @@
     "deactivateConfirmingLabel": "Деактивація...",
     "deactivateLoading": "Деактивація облікового запису...",
     "deactivateSuccess": "Обліковий запис деактивовано!",
-    "deactivateError": "Не вдалося деактивувати обліковий запис"
+    "deactivateError": "Не вдалося деактивувати обліковий запис",
+    "accountSectionTitle": "Обліковий запис",
+    "depotsSectionTitle": "Доступ до депо"
   },
   "depots": {
     "addButtonLabel": "+ Додати депо",

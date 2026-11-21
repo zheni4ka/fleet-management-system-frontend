@@ -4,17 +4,19 @@ import { NativeSelect } from "@/components/ui/native-select"
 import { FormField } from "@/components/ui/form-field"
 import { autoColorOptions } from "@/lib/constants"
 import { DepotSelectField } from "@/components/forms/depot-select-field"
-import { AutoFormValues, Depot } from "@/lib/types"
+import { AutoFormValues, Depot, FormFieldErrorMessages } from "@/lib/types"
 
 interface AutoFormFieldsProps {
   depots: ReadonlyArray<Depot>
   autoFormValues: AutoFormValues
+  formFieldErrorMessages: FormFieldErrorMessages<string>
   onAutoFormValuesChange: (autoFormValues: AutoFormValues) => void
 }
 
 export function AutoFormFields({
   depots,
   autoFormValues,
+  formFieldErrorMessages,
   onAutoFormValuesChange,
 }: AutoFormFieldsProps) {
   const autoTranslations = useTranslations("autos")
@@ -28,7 +30,11 @@ export function AutoFormFields({
 
   return (
     <>
-      <FormField label={autoTranslations("markLabel")}>
+      <FormField
+        label={autoTranslations("markLabel")}
+        isRequired
+        errorMessage={formFieldErrorMessages.mark}
+      >
         <Input
           value={autoFormValues.mark}
           onChange={(event) =>
@@ -36,7 +42,11 @@ export function AutoFormFields({
           }
         />
       </FormField>
-      <FormField label={autoTranslations("modelLabel")}>
+      <FormField
+        label={autoTranslations("modelLabel")}
+        isRequired
+        errorMessage={formFieldErrorMessages.model}
+      >
         <Input
           value={autoFormValues.model}
           onChange={(event) =>
@@ -44,7 +54,11 @@ export function AutoFormFields({
           }
         />
       </FormField>
-      <FormField label={autoTranslations("colorLabel")}>
+      <FormField
+        label={autoTranslations("colorLabel")}
+        isRequired
+        errorMessage={formFieldErrorMessages.color}
+      >
         <NativeSelect
           value={autoFormValues.color}
           onChange={(event) =>
@@ -64,7 +78,12 @@ export function AutoFormFields({
           ))}
         </NativeSelect>
       </FormField>
-      <FormField label={autoTranslations("numberLabel")}>
+      <FormField
+        label={autoTranslations("numberLabel")}
+        isRequired
+        hint={autoTranslations("numberHint")}
+        errorMessage={formFieldErrorMessages.number}
+      >
         <Input
           value={autoFormValues.number}
           onChange={(event) =>
@@ -72,7 +91,11 @@ export function AutoFormFields({
           }
         />
       </FormField>
-      <FormField label={autoTranslations("capacityLabel")}>
+      <FormField
+        label={autoTranslations("capacityLabel")}
+        isRequired
+        errorMessage={formFieldErrorMessages.capacity}
+      >
         <Input
           type="number"
           min={0}
@@ -86,6 +109,7 @@ export function AutoFormFields({
       <DepotSelectField
         depots={depots}
         selectedDepotId={autoFormValues.depotId}
+        errorMessage={formFieldErrorMessages.depotId}
         onSelectedDepotIdChange={(selectedDepotId) =>
           updateAutoFormValues({ depotId: selectedDepotId })
         }

@@ -3,29 +3,33 @@
 import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
 import { Pencil } from "lucide-react"
-import toast from "react-hot-toast"
 import { IconActionButton } from "@/components/icon-action-button"
 import { NativeSelect } from "@/components/ui/native-select"
 import { FormField } from "@/components/ui/form-field"
-import ModalWindow from "@/components/ui/modal-window"
-import { SubmitButton } from "@/components/ui/submit-button"
+import { FormModal } from "@/components/forms/form-modal"
+import { FormSection } from "@/components/forms/form-section"
 import { RouteFormFields } from "@/components/forms/route-form-fields"
 import { RouteTimeFields } from "@/components/forms/route-time-fields"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
+import { useFormFieldErrorMessages } from "@/hooks/use-form-field-error-messages"
 import { sendApiRequest } from "@/lib/api-client"
 import { resolveRouteLocationIds } from "@/lib/route-city-locations"
-import { allowedRouteStatusTransitions, apiEndpoints } from "@/lib/constants"
+import {
+  allowedRouteStatusTransitions,
+  apiEndpoints,
+  routeFormFieldNamesByApiPropertyName,
+} from "@/lib/constants"
 import {
   canRouteBeRescheduled,
   createEditRouteFormValuesFromRoute,
   createUpdateRouteRequestModel,
-  getEditRouteFormValidationError,
+  getEditRouteFormFieldErrors,
 } from "@/lib/forms/edit-route-form"
 import { isRouteStatusActive } from "@/lib/route-status"
 import {
   AutoLookupOption,
   DriverLookupOption,
-  FormValidationError,
+  EditRouteFormValues,
   HttpMethod,
   Route,
   RouteStatus,
@@ -48,12 +52,18 @@ export default function EditRouteModal({
   const routeStatusTranslations = useTranslations("routeStatus")
   const iconActionTranslations = useTranslations("iconActions")
   const routeTranslations = useTranslations("routes")
-  const formValidationTranslations = useTranslations("formValidation")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editRouteFormValues, setEditRouteFormValues] = useState(() =>
     createEditRouteFormValuesFromRoute(route)
   )
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
+  const {
+    formFieldErrorMessages,
+    showFormFieldErrors,
+    showApiFieldErrorMessages,
+    clearChangedFormFieldErrorMessages,
+    clearFormFieldErrorMessages,
+  } = useFormFieldErrorMessages(routeFormFieldNamesByApiPropertyName)
 
   const isRouteEditable = isRouteStatusActive(route.status)
   const selectableRouteStatuses = [
@@ -63,27 +73,27 @@ export default function EditRouteModal({
 
   const handleOpen = () => {
     setEditRouteFormValues(createEditRouteFormValuesFromRoute(route))
+    clearFormFieldErrorMessages()
     setIsModalOpen(true)
+  }
+
+  const handleEditRouteFormValuesChange = (
+    nextEditRouteFormValues: EditRouteFormValues
+  ) => {
+    clearChangedFormFieldErrorMessages(
+      editRouteFormValues,
+      nextEditRouteFormValues
+    )
+    setEditRouteFormValues(nextEditRouteFormValues)
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const editRouteFormValidationError = getEditRouteFormValidationError(
-      route,
-      editRouteFormValues
-    )
     const { startCity, destinationCity } = editRouteFormValues
-    if (
-      editRouteFormValidationError !== null ||
-      startCity === null ||
-      destinationCity === null
-    ) {
-      toast.error(
-        formValidationTranslations(
-          editRouteFormValidationError ??
-            FormValidationError.RouteRequiredFieldsMissing
-        )
-      )
+    const hasFormFieldErrors = showFormFieldErrors(
+      getEditRouteFormFieldErrors(route, editRouteFormValues)
+    )
+    if (hasFormFieldErrors || startCity === null || destinationCity === null) {
       return
     }
 
@@ -103,7 +113,8 @@ export default function EditRouteModal({
         success: routeTranslations("updateSuccess"),
         error: routeTranslations("updateError"),
       },
-      () => setIsModalOpen(false)
+      () => setIsModalOpen(false),
+      showApiFieldErrorMessages
     )
     if (isRouteUpdated) {
       setIsModalOpen(false)
@@ -123,25 +134,44 @@ export default function EditRouteModal({
         disabled={isRouteUpdating}
         onClick={handleOpen}
       />
-      <ModalWindow
+      <FormModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
         title={routeTranslations("editTitle", { routeId: route.id })}
+        isSubmitting={isApiMutationRunning}
+        submitButtonLabel={routeTranslations("saveChangesButtonLabel")}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
       >
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <RouteFormFields
-            routeFormValues={editRouteFormValues}
-            onRouteFormValuesChange={setEditRouteFormValues}
-            autoLookupOptions={autoLookupOptions}
-            driverLookupOptions={driverLookupOptions}
-            alwaysSelectableAutoId={route.autoId}
-          />
+        <RouteFormFields
+          routeFormValues={editRouteFormValues}
+          formFieldErrorMessages={formFieldErrorMessages}
+          onRouteFormValuesChange={handleEditRouteFormValuesChange}
+          autoLookupOptions={autoLookupOptions}
+          driverLookupOptions={driverLookupOptions}
+          alwaysSelectableAutoId={route.autoId}
+        />
 
-          <FormField label={routeTranslations("statusLabel")}>
+        <FormSection title={routeTranslations("scheduleSectionTitle")}>
+          {canRouteBeRescheduled(route) ? (
+            <RouteTimeFields
+              routeFormValues={editRouteFormValues}
+              formFieldErrorMessages={formFieldErrorMessages}
+              onRouteFormValuesChange={handleEditRouteFormValuesChange}
+            />
+          ) : (
+            <p className="text-xs text-slate-500 sm:col-span-2">
+              {routeTranslations("timesNotEditableHint")}
+            </p>
+          )}
+          <FormField
+            label={routeTranslations("statusLabel")}
+            isRequired
+            errorMessage={formFieldErrorMessages.status}
+          >
             <NativeSelect
               value={editRouteFormValues.status}
               onChange={(event) =>
-                setEditRouteFormValues({
+                handleEditRouteFormValuesChange({
                   ...editRouteFormValues,
                   status: parseEnumValue(RouteStatus, event.target.value),
                 })
@@ -154,23 +184,8 @@ export default function EditRouteModal({
               ))}
             </NativeSelect>
           </FormField>
-
-          {canRouteBeRescheduled(route) ? (
-            <RouteTimeFields
-              routeFormValues={editRouteFormValues}
-              onRouteFormValuesChange={setEditRouteFormValues}
-            />
-          ) : (
-            <p className="text-xs text-slate-500">
-              {routeTranslations("timesNotEditableHint")}
-            </p>
-          )}
-
-          <SubmitButton isSubmitting={isApiMutationRunning}>
-            {routeTranslations("saveChangesButtonLabel")}
-          </SubmitButton>
-        </form>
-      </ModalWindow>
+        </FormSection>
+      </FormModal>
     </>
   )
 }

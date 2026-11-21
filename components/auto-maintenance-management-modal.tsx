@@ -3,7 +3,6 @@
 import { useLocale, useTranslations } from "next-intl"
 import { resolveAppLocale } from "@/lib/app-locale"
 import { useState, type FormEvent } from "react"
-import toast from "react-hot-toast"
 import { History, Wrench } from "lucide-react"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
@@ -14,18 +13,27 @@ import ModalWindow from "@/components/ui/modal-window"
 import { SubmitButton } from "@/components/ui/submit-button"
 import { IconActionButton } from "@/components/icon-action-button"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
+import { useFormFieldErrorMessages } from "@/hooks/use-form-field-error-messages"
 import { fetchApiData, sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints } from "@/lib/constants"
+import {
+  apiEndpoints,
+  maintenanceFormFieldNamesByApiPropertyName,
+} from "@/lib/constants"
 import { formatDate } from "@/lib/formatters"
 import { useApiErrorMessageResolver } from "@/hooks/use-api-error-message-resolver"
 import {
   createCompleteAutoMaintenanceRequestModel,
   createCreateAutoMaintenanceRequestModel,
   createEmptyMaintenanceFormValues,
-  getMaintenanceFormValidationError,
+  getMaintenanceFormFieldErrors,
 } from "@/lib/forms/maintenance-form"
 import { autoMaintenanceSchema } from "@/lib/schemas/auto-maintenance-schema"
-import { AutoMaintenance, HttpMethod, MaintenanceFormValues } from "@/lib/types"
+import {
+  AutoMaintenance,
+  HttpMethod,
+  MaintenanceFormValues,
+  ModalWindowSize,
+} from "@/lib/types"
 
 interface AutoMaintenanceManagementModalProps {
   autoId: number
@@ -39,7 +47,6 @@ export default function AutoMaintenanceManagementModal({
   const appLocale = resolveAppLocale(useLocale())
   const iconActionTranslations = useTranslations("iconActions")
   const maintenanceTranslations = useTranslations("maintenance")
-  const formValidationTranslations = useTranslations("formValidation")
   const commonTranslations = useTranslations("common")
   const resolveApiErrorMessage = useApiErrorMessageResolver()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -54,11 +61,26 @@ export default function AutoMaintenanceManagementModal({
     createEmptyMaintenanceFormValues
   )
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
+  const {
+    formFieldErrorMessages,
+    showFormFieldErrors,
+    showApiFieldErrorMessages,
+    clearChangedFormFieldErrorMessages,
+    clearFormFieldErrorMessages,
+  } = useFormFieldErrorMessages(maintenanceFormFieldNamesByApiPropertyName)
 
   const updateMaintenanceFormValues = (
     changedValues: Partial<MaintenanceFormValues>
   ) => {
-    setMaintenanceFormValues({ ...maintenanceFormValues, ...changedValues })
+    const nextMaintenanceFormValues = {
+      ...maintenanceFormValues,
+      ...changedValues,
+    }
+    clearChangedFormFieldErrorMessages(
+      maintenanceFormValues,
+      nextMaintenanceFormValues
+    )
+    setMaintenanceFormValues(nextMaintenanceFormValues)
   }
 
   const loadMaintenanceHistory = async () => {
@@ -85,6 +107,7 @@ export default function AutoMaintenanceManagementModal({
   }
 
   const handleOpen = () => {
+    clearFormFieldErrorMessages()
     setIsModalOpen(true)
     void loadMaintenanceHistory()
   }
@@ -111,11 +134,9 @@ export default function AutoMaintenanceManagementModal({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const maintenanceFormValidationError = getMaintenanceFormValidationError(
-      maintenanceFormValues
-    )
-    if (maintenanceFormValidationError !== null) {
-      toast.error(formValidationTranslations(maintenanceFormValidationError))
+    if (
+      showFormFieldErrors(getMaintenanceFormFieldErrors(maintenanceFormValues))
+    ) {
       return
     }
 
@@ -130,7 +151,9 @@ export default function AutoMaintenanceManagementModal({
         loading: maintenanceTranslations("createLoading"),
         success: maintenanceTranslations("createSuccess"),
         error: maintenanceTranslations("createError"),
-      }
+      },
+      undefined,
+      showApiFieldErrorMessages
     )
     if (isMaintenanceCreated) {
       setMaintenanceFormValues(createEmptyMaintenanceFormValues())
@@ -161,7 +184,7 @@ export default function AutoMaintenanceManagementModal({
       )
     }
     return (
-      <div className="max-h-36 space-y-2 overflow-y-auto pr-2">
+      <div className="max-h-96 space-y-2 overflow-y-auto pr-2">
         {maintenanceHistory.map((maintenanceRecord) => (
           <div
             key={maintenanceRecord.id}
@@ -227,9 +250,10 @@ export default function AutoMaintenanceManagementModal({
       <ModalWindow
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        size={ModalWindowSize.Wide}
         title={maintenanceTranslations("title", { autoTitle })}
       >
-        <div className="space-y-5 px-2">
+        <div className="grid gap-5 md:grid-cols-2">
           <section>
             <div className="mb-3 flex items-center gap-2 border-b border-slate-100 pb-2">
               <History className="size-4 text-slate-500" />
@@ -248,8 +272,16 @@ export default function AutoMaintenanceManagementModal({
               </h3>
             </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-              <FormField label={maintenanceTranslations("workTypeLabel")}>
+            <form
+              noValidate
+              onSubmit={handleSubmit}
+              className="flex flex-col gap-3"
+            >
+              <FormField
+                label={maintenanceTranslations("workTypeLabel")}
+                isRequired
+                errorMessage={formFieldErrorMessages.name}
+              >
                 <Input
                   placeholder={maintenanceTranslations("workTypePlaceholder")}
                   value={maintenanceFormValues.name}
@@ -260,6 +292,8 @@ export default function AutoMaintenanceManagementModal({
               </FormField>
               <FormField
                 label={maintenanceTranslations("problemDescriptionLabel")}
+                isRequired
+                errorMessage={formFieldErrorMessages.description}
               >
                 <Textarea
                   placeholder={maintenanceTranslations(
@@ -274,7 +308,11 @@ export default function AutoMaintenanceManagementModal({
                   rows={2}
                 />
               </FormField>
-              <FormField label={maintenanceTranslations("serviceDateLabel")}>
+              <FormField
+                label={maintenanceTranslations("serviceDateLabel")}
+                isRequired
+                errorMessage={formFieldErrorMessages.serviceDate}
+              >
                 <Input
                   type="datetime-local"
                   value={maintenanceFormValues.serviceDate}
@@ -285,7 +323,11 @@ export default function AutoMaintenanceManagementModal({
                   }
                 />
               </FormField>
-              <FormField label={maintenanceTranslations("plannedEndDateLabel")}>
+              <FormField
+                label={maintenanceTranslations("plannedEndDateLabel")}
+                hint={maintenanceTranslations("plannedEndDateHint")}
+                errorMessage={formFieldErrorMessages.plannedEndDate}
+              >
                 <Input
                   type="datetime-local"
                   value={maintenanceFormValues.plannedEndDate}
@@ -297,9 +339,6 @@ export default function AutoMaintenanceManagementModal({
                   }
                 />
               </FormField>
-              <p className="text-xs text-slate-500">
-                {maintenanceTranslations("plannedEndDateHint")}
-              </p>
               <SubmitButton isSubmitting={isApiMutationRunning}>
                 {maintenanceTranslations("registerButtonLabel")}
               </SubmitButton>

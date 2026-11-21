@@ -1,9 +1,5 @@
 export enum FormValidationError {
-  AutoRequiredFieldsMissing = "AutoRequiredFieldsMissing",
   AutoCapacityNotPositive = "AutoCapacityNotPositive",
-  DriverRequiredFieldsMissing = "DriverRequiredFieldsMissing",
-  MaintenanceRequiredFieldsMissing = "MaintenanceRequiredFieldsMissing",
-  RouteRequiredFieldsMissing = "RouteRequiredFieldsMissing",
   SameStartAndDestinationLocation = "SameStartAndDestinationLocation",
   ArrivalNotAfterDeparture = "ArrivalNotAfterDeparture",
   RoutesPeriodDatesMissing = "RoutesPeriodDatesMissing",
@@ -11,4 +7,7 @@ export enum FormValidationError {
   DispatcherDepotsMissing = "DispatcherDepotsMissing",
   DepotNameMissing = "DepotNameMissing",
   MaintenancePlannedEndNotAfterStart = "MaintenancePlannedEndNotAfterStart",
+  RequiredFieldMissing = "RequiredFieldMissing",
+  EmailAddressInvalid = "EmailAddressInvalid",
+  FormFieldsNeedAttention = "FormFieldsNeedAttention",
 }

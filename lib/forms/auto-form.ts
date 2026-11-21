@@ -1,7 +1,9 @@
+import { getRequiredFieldErrors } from "@/lib/forms/form-field-errors"
 import {
   Auto,
   AutoFormValues,
   CreateAutoRequestModel,
+  FormFieldErrors,
   FormValidationError,
   UpdateAutoRequestModel,
 } from "@/lib/types"
@@ -36,23 +38,27 @@ function parseAutoCapacity(rawCapacity: string): number | null {
   return parsedCapacity
 }
 
-export function getAutoFormValidationError(
+export function getAutoFormFieldErrors(
   autoFormValues: AutoFormValues
-): FormValidationError | null {
-  const hasEmptyRequiredField = [
-    autoFormValues.mark,
-    autoFormValues.model,
-    autoFormValues.color,
-    autoFormValues.number,
-    autoFormValues.depotId,
-  ].some((requiredFieldValue) => requiredFieldValue.trim() === "")
-  if (hasEmptyRequiredField) {
-    return FormValidationError.AutoRequiredFieldsMissing
+): FormFieldErrors<keyof AutoFormValues> {
+  const requiredFieldErrors = getRequiredFieldErrors(autoFormValues, [
+    "mark",
+    "model",
+    "color",
+    "number",
+    "capacity",
+    "depotId",
+  ])
+  if (
+    requiredFieldErrors.capacity === undefined &&
+    parseAutoCapacity(autoFormValues.capacity) === null
+  ) {
+    return {
+      ...requiredFieldErrors,
+      capacity: FormValidationError.AutoCapacityNotPositive,
+    }
   }
-  if (parseAutoCapacity(autoFormValues.capacity) === null) {
-    return FormValidationError.AutoCapacityNotPositive
-  }
-  return null
+  return requiredFieldErrors
 }
 
 export function createCreateAutoRequestModel(

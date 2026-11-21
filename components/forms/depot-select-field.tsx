@@ -6,18 +6,24 @@ import { Depot } from "@/lib/types"
 interface DepotSelectFieldProps {
   depots: ReadonlyArray<Depot>
   selectedDepotId: string
+  errorMessage?: string
   onSelectedDepotIdChange: (selectedDepotId: string) => void
 }
 
 export function DepotSelectField({
   depots,
   selectedDepotId,
+  errorMessage,
   onSelectedDepotIdChange,
 }: DepotSelectFieldProps) {
   const listFilterTranslations = useTranslations("listFilters")
   const depotTranslations = useTranslations("depots")
   return (
-    <FormField label={listFilterTranslations("depotLabel")}>
+    <FormField
+      label={listFilterTranslations("depotLabel")}
+      isRequired
+      errorMessage={errorMessage}
+    >
       <NativeSelect
         value={selectedDepotId}
         onChange={(event) => onSelectedDepotIdChange(event.target.value)}

@@ -1,8 +1,9 @@
+import { getRequiredFieldErrors } from "@/lib/forms/form-field-errors"
 import {
   CreateDriverRequestModel,
   Driver,
   DriverFormValues,
-  FormValidationError,
+  FormFieldErrors,
 } from "@/lib/types"
 
 export function createEmptyDriverFormValues(): DriverFormValues {
@@ -27,20 +28,16 @@ export function createDriverFormValuesFromDriver(
   }
 }
 
-export function getDriverFormValidationError(
+export function getDriverFormFieldErrors(
   driverFormValues: DriverFormValues
-): FormValidationError | null {
-  const hasEmptyRequiredField = [
-    driverFormValues.name,
-    driverFormValues.surname,
-    driverFormValues.patronymic,
-    driverFormValues.licenseNumber,
-    driverFormValues.depotId,
-  ].some((requiredFieldValue) => requiredFieldValue.trim() === "")
-  if (hasEmptyRequiredField) {
-    return FormValidationError.DriverRequiredFieldsMissing
-  }
-  return null
+): FormFieldErrors<keyof DriverFormValues> {
+  return getRequiredFieldErrors(driverFormValues, [
+    "name",
+    "surname",
+    "patronymic",
+    "licenseNumber",
+    "depotId",
+  ])
 }
 
 export function createDriverRequestBody(

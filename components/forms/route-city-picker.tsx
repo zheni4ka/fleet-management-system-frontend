@@ -19,6 +19,7 @@ interface RouteCityPickerProps {
   label: string
   placeholder: string
   selectedCity: RouteCitySelection | null
+  errorMessage?: string
   onSelectedCityChange: (selectedCity: RouteCitySelection) => void
 }
 
@@ -26,6 +27,7 @@ export function RouteCityPicker({
   label,
   placeholder,
   selectedCity,
+  errorMessage: fieldErrorMessage,
   onSelectedCityChange,
 }: RouteCityPickerProps) {
   const routeTranslations = useTranslations("routes")
@@ -103,8 +105,19 @@ export function RouteCityPicker({
   }
 
   return (
-    <div className="flex flex-col gap-1 text-sm font-medium text-slate-700">
-      <label htmlFor={inputId}>{label}</label>
+    <div
+      className={cn(
+        "flex flex-col gap-1 text-sm font-medium text-slate-700",
+        fieldErrorMessage !== undefined &&
+          "[&_button]:border-red-500 [&_input]:border-red-500"
+      )}
+    >
+      <label htmlFor={inputId}>
+        {label}
+        <span aria-hidden="true" className="ml-0.5 text-red-600">
+          *
+        </span>
+      </label>
       {isSearchShown ? (
         <div className="relative">
           <Input
@@ -205,6 +218,11 @@ export function RouteCityPicker({
             className="size-3.5 shrink-0 text-slate-400"
           />
         </button>
+      )}
+      {fieldErrorMessage !== undefined && (
+        <p role="alert" className="text-xs font-medium text-red-600">
+          {fieldErrorMessage}
+        </p>
       )}
     </div>
   )

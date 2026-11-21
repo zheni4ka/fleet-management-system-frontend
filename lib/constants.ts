@@ -1,11 +1,15 @@
 import { CheckCircle, Play, XCircle } from "lucide-react"
 import type { ToastPosition } from "react-hot-toast"
+import { AddRouteFormValues } from "@/lib/types/add-route-form-values"
 import { AppLocale } from "@/lib/types/app-locale"
+import { AutoFormValues } from "@/lib/types/auto-form-values"
 import { AuditLogSortField } from "@/lib/types/audit-log-sort-field"
 import { AutoSortField } from "@/lib/types/auto-sort-field"
 import { BadgeTone } from "@/lib/types/badge-tone"
 import { DispatcherSortField } from "@/lib/types/dispatcher-sort-field"
 import { DriverFormField } from "@/lib/types/driver-form-field"
+import { DriverFormValues } from "@/lib/types/driver-form-values"
+import { MaintenanceFormValues } from "@/lib/types/maintenance-form-values"
 import { DriverSortField } from "@/lib/types/driver-sort-field"
 import { ModalWindowSize } from "@/lib/types/modal-window-size"
 import { NavigationLink } from "@/lib/types/navigation-link"
@@ -63,6 +67,10 @@ export const accountPasswordConstraints = Object.freeze({
   digitPattern: /[0-9]/,
   uppercaseLetterPattern: /[A-Z]/,
   lowercaseLetterPattern: /[a-z]/,
+})
+
+export const accountEmailConstraints = Object.freeze({
+  pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
 })
 
 export const apiProblemTypes = Object.freeze({
@@ -431,10 +439,18 @@ export const recentRoutesTableColumns: ReadonlyArray<TableColumn> =
   ])
 
 export const driverFormFields: ReadonlyArray<DriverFormField> = Object.freeze([
-  { name: "name", labelMessageKey: "nameLabel" },
-  { name: "surname", labelMessageKey: "surnameLabel" },
-  { name: "patronymic", labelMessageKey: "patronymicLabel" },
-  { name: "licenseNumber", labelMessageKey: "licenseNumberLabel" },
+  { name: "name", labelMessageKey: "nameLabel", hintMessageKey: null },
+  { name: "surname", labelMessageKey: "surnameLabel", hintMessageKey: null },
+  {
+    name: "patronymic",
+    labelMessageKey: "patronymicLabel",
+    hintMessageKey: null,
+  },
+  {
+    name: "licenseNumber",
+    labelMessageKey: "licenseNumberLabel",
+    hintMessageKey: "licenseNumberHint",
+  },
 ])
 
 export const routeStatusActions: ReadonlyArray<RouteStatusAction> =
@@ -563,4 +579,67 @@ export const modalWindowSizeClassNames: Readonly<
 > = Object.freeze({
   [ModalWindowSize.Default]: "max-w-md",
   [ModalWindowSize.Wide]: "max-w-3xl",
+})
+
+export const autoFormFieldNamesByApiPropertyName: Readonly<
+  Record<string, keyof AutoFormValues>
+> = Object.freeze({
+  mark: "mark",
+  model: "model",
+  color: "color",
+  number: "number",
+  capacity: "capacity",
+  depotId: "depotId",
+})
+
+export const driverFormFieldNamesByApiPropertyName: Readonly<
+  Record<string, keyof DriverFormValues>
+> = Object.freeze({
+  name: "name",
+  surname: "surname",
+  patronymic: "patronymic",
+  licenseNumber: "licenseNumber",
+  depotId: "depotId",
+})
+
+export const routeFormFieldNamesByApiPropertyName: Readonly<
+  Record<string, keyof AddRouteFormValues>
+> = Object.freeze({
+  startLocationId: "startCity",
+  destinationLocationId: "destinationCity",
+  autoId: "autoId",
+  driverId: "driverId",
+  departureTimeUtc: "departureLocalDateTime",
+  arrivalTimeUtc: "arrivalLocalDateTime",
+  status: "status",
+})
+
+export const maintenanceFormFieldNamesByApiPropertyName: Readonly<
+  Record<string, keyof MaintenanceFormValues>
+> = Object.freeze({
+  name: "name",
+  description: "description",
+  serviceDate: "serviceDate",
+  plannedEndDate: "plannedEndDate",
+})
+
+export const dispatcherFormFieldNamesByApiPropertyName: Readonly<
+  Record<string, string>
+> = Object.freeze({
+  username: "username",
+  email: "email",
+  password: "password",
+  depotIds: "depotIds",
+})
+
+export const depotFormFieldNamesByApiPropertyName: Readonly<
+  Record<string, string>
+> = Object.freeze({
+  name: "name",
+})
+
+export const userDepotsFormFieldNamesByApiPropertyName: Readonly<
+  Record<string, string>
+> = Object.freeze({
+  depotIds: "depotIds",
 })

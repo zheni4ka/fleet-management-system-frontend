@@ -4,15 +4,16 @@ import {
 } from "@/lib/forms/route-city-selection"
 import {
   createRouteTimesUtc,
-  getRouteAssignmentFormValidationError,
-  getRouteScheduleFormValidationError,
+  getRouteAssignmentFormFieldErrors,
+  getRouteScheduleFormFieldErrors,
 } from "@/lib/forms/route-form"
 import { convertUtcIsoStringToZonedLocalDateTime } from "@/lib/zoned-date-time"
 import {
   EditRouteFormValues,
-  FormValidationError,
+  FormFieldErrors,
   Route,
   RouteLocationIds,
+  RouteScheduleFormValues,
   RouteStatus,
   UpdateRouteRequestModel,
 } from "@/lib/types"
@@ -41,13 +42,13 @@ export function createEditRouteFormValuesFromRoute(
   }
 }
 
-export function getEditRouteFormValidationError(
+export function getEditRouteFormFieldErrors(
   route: Route,
   editRouteFormValues: EditRouteFormValues
-): FormValidationError | null {
+): FormFieldErrors<keyof RouteScheduleFormValues> {
   return canRouteBeRescheduled(route)
-    ? getRouteScheduleFormValidationError(editRouteFormValues)
-    : getRouteAssignmentFormValidationError(editRouteFormValues)
+    ? getRouteScheduleFormFieldErrors(editRouteFormValues)
+    : getRouteAssignmentFormFieldErrors(editRouteFormValues)
 }
 
 export function createUpdateRouteRequestModel(

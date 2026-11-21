@@ -2,16 +2,24 @@
 
 import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
-import toast from "react-hot-toast"
 import { Building2 } from "lucide-react"
-import ModalWindow from "@/components/ui/modal-window"
-import { SubmitButton } from "@/components/ui/submit-button"
+import { FormModal } from "@/components/forms/form-modal"
 import { IconActionButton } from "@/components/icon-action-button"
 import { DepotCheckboxList } from "@/components/forms/depot-checkbox-list"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
+import { useFormFieldErrorMessages } from "@/hooks/use-form-field-error-messages"
 import { sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints } from "@/lib/constants"
-import { Depot, Dispatcher, FormValidationError, HttpMethod } from "@/lib/types"
+import {
+  apiEndpoints,
+  userDepotsFormFieldNamesByApiPropertyName,
+} from "@/lib/constants"
+import {
+  Depot,
+  Dispatcher,
+  FormValidationError,
+  HttpMethod,
+  ModalWindowSize,
+} from "@/lib/types"
 
 interface EditUserDepotsModalProps {
   dispatcher: Dispatcher
@@ -24,25 +32,33 @@ export function EditUserDepotsModal({
 }: EditUserDepotsModalProps) {
   const iconActionTranslations = useTranslations("iconActions")
   const dispatcherTranslations = useTranslations("dispatchers")
-  const formValidationTranslations = useTranslations("formValidation")
   const commonTranslations = useTranslations("common")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedDepotIds, setSelectedDepotIds] = useState<
     ReadonlyArray<number>
   >(dispatcher.depotIds)
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
+  const {
+    formFieldErrorMessages,
+    showFormFieldErrors,
+    showApiFieldErrorMessages,
+    clearFormFieldErrorMessages,
+  } = useFormFieldErrorMessages(userDepotsFormFieldNamesByApiPropertyName)
 
   const handleOpen = () => {
     setSelectedDepotIds(dispatcher.depotIds)
+    clearFormFieldErrorMessages()
     setIsModalOpen(true)
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (selectedDepotIds.length === 0) {
-      toast.error(
-        formValidationTranslations(FormValidationError.DispatcherDepotsMissing)
-      )
+    const isDepotSelectionInvalid = showFormFieldErrors(
+      selectedDepotIds.length === 0
+        ? { depotIds: FormValidationError.DispatcherDepotsMissing }
+        : {}
+    )
+    if (isDepotSelectionInvalid) {
       return
     }
 
@@ -56,7 +72,9 @@ export function EditUserDepotsModal({
         loading: dispatcherTranslations("depotsUpdateLoading"),
         success: dispatcherTranslations("depotsUpdateSuccess"),
         error: dispatcherTranslations("depotsUpdateError"),
-      }
+      },
+      undefined,
+      showApiFieldErrorMessages
     )
     if (isUserDepotsUpdated) {
       setIsModalOpen(false)
@@ -71,24 +89,27 @@ export function EditUserDepotsModal({
         variant="outline"
         onClick={handleOpen}
       />
-      <ModalWindow
+      <FormModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        size={ModalWindowSize.Default}
         title={dispatcherTranslations("depotsTitle", {
           username: dispatcher.username,
         })}
+        isSubmitting={isApiMutationRunning}
+        submitButtonLabel={commonTranslations("saveButtonLabel")}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
       >
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <DepotCheckboxList
-            depots={depots}
-            selectedDepotIds={selectedDepotIds}
-            onSelectedDepotIdsChange={setSelectedDepotIds}
-          />
-          <SubmitButton isSubmitting={isApiMutationRunning}>
-            {commonTranslations("saveButtonLabel")}
-          </SubmitButton>
-        </form>
-      </ModalWindow>
+        <DepotCheckboxList
+          depots={depots}
+          selectedDepotIds={selectedDepotIds}
+          errorMessage={formFieldErrorMessages.depotIds}
+          onSelectedDepotIdsChange={(nextSelectedDepotIds) => {
+            setSelectedDepotIds(nextSelectedDepotIds)
+            clearFormFieldErrorMessages()
+          }}
+        />
+      </FormModal>
     </>
   )
 }

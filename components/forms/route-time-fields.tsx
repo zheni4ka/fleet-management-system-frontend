@@ -1,12 +1,13 @@
 import { useTranslations } from "next-intl"
 import { Input } from "@/components/ui/input"
 import { FormField } from "@/components/ui/form-field"
-import { RouteScheduleFormValues } from "@/lib/types"
+import { FormFieldErrorMessages, RouteScheduleFormValues } from "@/lib/types"
 
 interface RouteTimeFieldsProps<
   TRouteFormValues extends RouteScheduleFormValues,
 > {
   routeFormValues: TRouteFormValues
+  formFieldErrorMessages: FormFieldErrorMessages<string>
   onRouteFormValuesChange: (routeFormValues: TRouteFormValues) => void
 }
 
@@ -14,6 +15,7 @@ export function RouteTimeFields<
   TRouteFormValues extends RouteScheduleFormValues,
 >({
   routeFormValues,
+  formFieldErrorMessages,
   onRouteFormValuesChange,
 }: RouteTimeFieldsProps<TRouteFormValues>) {
   const routeTranslations = useTranslations("routes")
@@ -32,12 +34,14 @@ export function RouteTimeFields<
         })
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <>
       <FormField
         label={createRouteTimeLabel(
           routeTranslations("departureTimeLabel"),
           routeFormValues.startCity?.timeZoneId ?? null
         )}
+        isRequired
+        errorMessage={formFieldErrorMessages.departureLocalDateTime}
       >
         <Input
           type="datetime-local"
@@ -55,6 +59,8 @@ export function RouteTimeFields<
           routeTranslations("arrivalTimeLabel"),
           routeFormValues.destinationCity?.timeZoneId ?? null
         )}
+        isRequired
+        errorMessage={formFieldErrorMessages.arrivalLocalDateTime}
       >
         <Input
           type="datetime-local"
@@ -67,6 +73,6 @@ export function RouteTimeFields<
           }
         />
       </FormField>
-    </div>
+    </>
   )
 }

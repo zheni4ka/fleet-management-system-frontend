@@ -4,9 +4,10 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import { useApiErrorMessageResolver } from "@/hooks/use-api-error-message-resolver"
+import { ApiRequestFailedError } from "@/lib/api-request-failed-error"
 import { ConcurrencyConflictError } from "@/lib/concurrency-conflict-error"
 import { SessionExpiredError } from "@/lib/session-expired-error"
-import { ApiMutationToastMessages } from "@/lib/types"
+import { ApiFieldErrorMessages, ApiMutationToastMessages } from "@/lib/types"
 
 export function useApiMutationWithRefresh() {
   const router = useRouter()
@@ -16,7 +17,10 @@ export function useApiMutationWithRefresh() {
   const runApiMutation = async (
     createApiMutationRequest: () => Promise<string | void>,
     toastMessages: ApiMutationToastMessages,
-    handleConcurrencyConflict?: () => void
+    handleConcurrencyConflict?: () => void,
+    handleApiFieldErrorMessages?: (
+      apiFieldErrorMessages: ApiFieldErrorMessages
+    ) => void
   ): Promise<boolean> => {
     setIsApiMutationRunning(true)
     const mutationToastId = toast.loading(toastMessages.loading)
@@ -42,6 +46,12 @@ export function useApiMutationWithRefresh() {
         handleConcurrencyConflict?.()
         router.refresh()
         return false
+      }
+      if (
+        error instanceof ApiRequestFailedError &&
+        Object.keys(error.apiFieldErrorMessages).length > 0
+      ) {
+        handleApiFieldErrorMessages?.(error.apiFieldErrorMessages)
       }
       console.error(toastMessages.error, error)
       toast.error(resolveApiErrorMessage(error, toastMessages.error), {

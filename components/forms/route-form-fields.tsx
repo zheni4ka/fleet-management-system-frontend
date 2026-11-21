@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl"
 import { FormField } from "@/components/ui/form-field"
+import { FormSection } from "@/components/forms/form-section"
 import { SearchableSelect } from "@/components/ui/searchable-select"
 import { RouteCityPicker } from "@/components/forms/route-city-picker"
 import {
@@ -10,6 +11,7 @@ import { cityGeocodingAttributionLinks } from "@/lib/constants"
 import {
   AutoLookupOption,
   DriverLookupOption,
+  FormFieldErrorMessages,
   RouteAssignmentFormValues,
 } from "@/lib/types"
 
@@ -32,6 +34,7 @@ interface RouteFormFieldsProps<
   TRouteFormValues extends RouteAssignmentFormValues,
 > {
   routeFormValues: TRouteFormValues
+  formFieldErrorMessages: FormFieldErrorMessages<string>
   onRouteFormValuesChange: (routeFormValues: TRouteFormValues) => void
   autoLookupOptions: ReadonlyArray<AutoLookupOption>
   driverLookupOptions: ReadonlyArray<DriverLookupOption>
@@ -42,6 +45,7 @@ export function RouteFormFields<
   TRouteFormValues extends RouteAssignmentFormValues,
 >({
   routeFormValues,
+  formFieldErrorMessages,
   onRouteFormValuesChange,
   autoLookupOptions,
   driverLookupOptions,
@@ -68,26 +72,26 @@ export function RouteFormFields<
 
   return (
     <>
-      <div className="flex flex-col gap-1">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <RouteCityPicker
-            label={routeTranslations("startLocationLabel")}
-            placeholder={routeTranslations("citySearchPlaceholder")}
-            selectedCity={routeFormValues.startCity}
-            onSelectedCityChange={(startCity) =>
-              updateRouteAssignmentFormValues({ startCity })
-            }
-          />
-          <RouteCityPicker
-            label={routeTranslations("destinationLocationLabel")}
-            placeholder={routeTranslations("citySearchPlaceholder")}
-            selectedCity={routeFormValues.destinationCity}
-            onSelectedCityChange={(destinationCity) =>
-              updateRouteAssignmentFormValues({ destinationCity })
-            }
-          />
-        </div>
-        <p className="text-xs text-slate-400">
+      <FormSection title={routeTranslations("routeSectionTitle")}>
+        <RouteCityPicker
+          label={routeTranslations("startLocationLabel")}
+          placeholder={routeTranslations("citySearchPlaceholder")}
+          selectedCity={routeFormValues.startCity}
+          errorMessage={formFieldErrorMessages.startCity}
+          onSelectedCityChange={(startCity) =>
+            updateRouteAssignmentFormValues({ startCity })
+          }
+        />
+        <RouteCityPicker
+          label={routeTranslations("destinationLocationLabel")}
+          placeholder={routeTranslations("citySearchPlaceholder")}
+          selectedCity={routeFormValues.destinationCity}
+          errorMessage={formFieldErrorMessages.destinationCity}
+          onSelectedCityChange={(destinationCity) =>
+            updateRouteAssignmentFormValues({ destinationCity })
+          }
+        />
+        <p className="text-xs text-slate-400 sm:col-span-2">
           {routeTranslations.rich("citySearchAttribution", {
             openMeteo: renderAttributionLink(
               cityGeocodingAttributionLinks.openMeteo
@@ -100,10 +104,14 @@ export function RouteFormFields<
             ),
           })}
         </p>
-      </div>
+      </FormSection>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <FormField label={routeTranslations("driverLabel")}>
+      <FormSection title={routeTranslations("assignmentSectionTitle")}>
+        <FormField
+          label={routeTranslations("driverLabel")}
+          isRequired
+          errorMessage={formFieldErrorMessages.driverId}
+        >
           <SearchableSelect
             options={createDriverSearchableSelectOptions(
               selectableDriverLookupOptions
@@ -117,7 +125,11 @@ export function RouteFormFields<
             emptyMessage={routeTranslations("driverEmptyMessage")}
           />
         </FormField>
-        <FormField label={routeTranslations("autoLabel")}>
+        <FormField
+          label={routeTranslations("autoLabel")}
+          isRequired
+          errorMessage={formFieldErrorMessages.autoId}
+        >
           <SearchableSelect
             options={createAutoSearchableSelectOptions(
               autoLookupOptions,
@@ -133,7 +145,7 @@ export function RouteFormFields<
             emptyMessage={routeTranslations("autoEmptyMessage")}
           />
         </FormField>
-      </div>
+      </FormSection>
     </>
   )
 }

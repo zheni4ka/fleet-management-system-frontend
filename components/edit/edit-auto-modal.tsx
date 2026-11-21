@@ -2,21 +2,24 @@
 
 import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
-import toast from "react-hot-toast"
 import { Pencil } from "lucide-react"
-import ModalWindow from "@/components/ui/modal-window"
-import { SubmitButton } from "@/components/ui/submit-button"
 import { IconActionButton } from "@/components/icon-action-button"
+import { FormModal } from "@/components/forms/form-modal"
+import { FormSection } from "@/components/forms/form-section"
 import { AutoFormFields } from "@/components/forms/auto-form-fields"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
+import { useFormFieldErrorMessages } from "@/hooks/use-form-field-error-messages"
 import { sendApiRequest } from "@/lib/api-client"
-import { apiEndpoints } from "@/lib/constants"
+import {
+  apiEndpoints,
+  autoFormFieldNamesByApiPropertyName,
+} from "@/lib/constants"
 import {
   createAutoFormValuesFromAuto,
   createUpdateAutoRequestModel,
-  getAutoFormValidationError,
+  getAutoFormFieldErrors,
 } from "@/lib/forms/auto-form"
-import { Auto, Depot, HttpMethod } from "@/lib/types"
+import { Auto, AutoFormValues, Depot, HttpMethod } from "@/lib/types"
 
 interface EditAutoModalProps {
   auto: Auto
@@ -26,24 +29,34 @@ interface EditAutoModalProps {
 export default function EditAutoModal({ auto, depots }: EditAutoModalProps) {
   const iconActionTranslations = useTranslations("iconActions")
   const autoTranslations = useTranslations("autos")
-  const formValidationTranslations = useTranslations("formValidation")
   const commonTranslations = useTranslations("common")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [autoFormValues, setAutoFormValues] = useState(() =>
     createAutoFormValuesFromAuto(auto)
   )
   const { isApiMutationRunning, runApiMutation } = useApiMutationWithRefresh()
+  const {
+    formFieldErrorMessages,
+    showFormFieldErrors,
+    showApiFieldErrorMessages,
+    clearChangedFormFieldErrorMessages,
+    clearFormFieldErrorMessages,
+  } = useFormFieldErrorMessages(autoFormFieldNamesByApiPropertyName)
 
   const handleOpen = () => {
     setAutoFormValues(createAutoFormValuesFromAuto(auto))
+    clearFormFieldErrorMessages()
     setIsModalOpen(true)
+  }
+
+  const handleAutoFormValuesChange = (nextAutoFormValues: AutoFormValues) => {
+    clearChangedFormFieldErrorMessages(autoFormValues, nextAutoFormValues)
+    setAutoFormValues(nextAutoFormValues)
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const autoFormValidationError = getAutoFormValidationError(autoFormValues)
-    if (autoFormValidationError !== null) {
-      toast.error(formValidationTranslations(autoFormValidationError))
+    if (showFormFieldErrors(getAutoFormFieldErrors(autoFormValues))) {
       return
     }
 
@@ -59,7 +72,8 @@ export default function EditAutoModal({ auto, depots }: EditAutoModalProps) {
         success: autoTranslations("updateSuccess"),
         error: autoTranslations("updateError"),
       },
-      () => setIsModalOpen(false)
+      () => setIsModalOpen(false),
+      showApiFieldErrorMessages
     )
     if (isAutoUpdated) {
       setIsModalOpen(false)
@@ -74,22 +88,23 @@ export default function EditAutoModal({ auto, depots }: EditAutoModalProps) {
         variant="outline"
         onClick={handleOpen}
       />
-      <ModalWindow
-        title={autoTranslations("editTitle")}
+      <FormModal
         isOpen={isModalOpen}
+        title={autoTranslations("editTitle")}
+        isSubmitting={isApiMutationRunning}
+        submitButtonLabel={commonTranslations("saveButtonLabel")}
         onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
       >
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <FormSection title={autoTranslations("detailsSectionTitle")}>
           <AutoFormFields
             depots={depots}
             autoFormValues={autoFormValues}
-            onAutoFormValuesChange={setAutoFormValues}
+            formFieldErrorMessages={formFieldErrorMessages}
+            onAutoFormValuesChange={handleAutoFormValuesChange}
           />
-          <SubmitButton isSubmitting={isApiMutationRunning}>
-            {commonTranslations("saveButtonLabel")}
-          </SubmitButton>
-        </form>
-      </ModalWindow>
+        </FormSection>
+      </FormModal>
     </>
   )
 }

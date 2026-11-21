@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest"
 import {
   createCreateAutoRequestModel,
   createEmptyAutoFormValues,
-  getAutoFormValidationError,
+  getAutoFormFieldErrors,
 } from "@/lib/forms/auto-form"
 import {
   createDriverRequestBody,
   createEmptyDriverFormValues,
-  getDriverFormValidationError,
+  getDriverFormFieldErrors,
 } from "@/lib/forms/driver-form"
 import { getPasswordPolicyViolation } from "@/lib/forms/password-policy"
 import { createRoutesPeriodFormValuesFromPageSearchParams } from "@/lib/forms/routes-period-form"
@@ -24,16 +24,26 @@ describe("auto form", () => {
     depotId: "1",
   }
 
-  it("requires a depot", () => {
-    expect(
-      getAutoFormValidationError({ ...filledAutoFormValues, depotId: "" })
-    ).not.toBeNull()
+  it("accepts a filled vehicle", () => {
+    expect(getAutoFormFieldErrors(filledAutoFormValues)).toEqual({})
   })
 
-  it("rejects a non-positive capacity", () => {
+  it("marks a missing depot on the depot field", () => {
     expect(
-      getAutoFormValidationError({ ...filledAutoFormValues, capacity: "0" })
-    ).toBe(FormValidationError.AutoCapacityNotPositive)
+      getAutoFormFieldErrors({ ...filledAutoFormValues, depotId: "" })
+    ).toEqual({ depotId: FormValidationError.RequiredFieldMissing })
+  })
+
+  it("marks a non-positive capacity on the capacity field", () => {
+    expect(
+      getAutoFormFieldErrors({ ...filledAutoFormValues, capacity: "0" })
+    ).toEqual({ capacity: FormValidationError.AutoCapacityNotPositive })
+  })
+
+  it("reports an empty capacity as missing, not as non-positive", () => {
+    expect(
+      getAutoFormFieldErrors({ ...filledAutoFormValues, capacity: " " })
+    ).toEqual({ capacity: FormValidationError.RequiredFieldMissing })
   })
 
   it("trims text and converts numbers for the request", () => {
@@ -49,10 +59,10 @@ describe("auto form", () => {
 })
 
 describe("driver form", () => {
-  it("requires every field including the depot", () => {
+  it("marks every empty field including the depot", () => {
     expect(
-      getDriverFormValidationError(createEmptyDriverFormValues())
-    ).not.toBeNull()
+      Object.keys(getDriverFormFieldErrors(createEmptyDriverFormValues()))
+    ).toEqual(["name", "surname", "patronymic", "licenseNumber", "depotId"])
   })
 
   it("sends the depot as a number", () => {
