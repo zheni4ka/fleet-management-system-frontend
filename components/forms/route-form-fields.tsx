@@ -3,11 +3,15 @@ import { FormField } from "@/components/ui/form-field"
 import { FormSection } from "@/components/forms/form-section"
 import { SearchableSelect } from "@/components/ui/searchable-select"
 import { RouteCityPicker } from "@/components/forms/route-city-picker"
+import { RouteAddressPicker } from "@/components/forms/route-address-picker"
 import {
   createAutoSearchableSelectOptions,
   createDriverSearchableSelectOptions,
 } from "@/lib/forms/searchable-select-options"
-import { cityGeocodingAttributionLinks } from "@/lib/constants"
+import {
+  addressGeocodingAttributionLinks,
+  cityGeocodingAttributionLinks,
+} from "@/lib/constants"
 import {
   AutoLookupOption,
   DriverLookupOption,
@@ -79,7 +83,7 @@ export function RouteFormFields<
           selectedCity={routeFormValues.startCity}
           errorMessage={formFieldErrorMessages.startCity}
           onSelectedCityChange={(startCity) =>
-            updateRouteAssignmentFormValues({ startCity })
+            updateRouteAssignmentFormValues({ startCity, startAddress: null })
           }
         />
         <RouteCityPicker
@@ -88,7 +92,30 @@ export function RouteFormFields<
           selectedCity={routeFormValues.destinationCity}
           errorMessage={formFieldErrorMessages.destinationCity}
           onSelectedCityChange={(destinationCity) =>
-            updateRouteAssignmentFormValues({ destinationCity })
+            updateRouteAssignmentFormValues({
+              destinationCity,
+              destinationAddress: null,
+            })
+          }
+        />
+        <RouteAddressPicker
+          key={`start-${routeFormValues.startCity?.geoNamesId ?? routeFormValues.startCity?.locationId ?? "none"}`}
+          label={routeTranslations("startAddressLabel")}
+          routeCity={routeFormValues.startCity}
+          selectedAddress={routeFormValues.startAddress}
+          errorMessage={formFieldErrorMessages.startAddress}
+          onSelectedAddressChange={(startAddress) =>
+            updateRouteAssignmentFormValues({ startAddress })
+          }
+        />
+        <RouteAddressPicker
+          key={`destination-${routeFormValues.destinationCity?.geoNamesId ?? routeFormValues.destinationCity?.locationId ?? "none"}`}
+          label={routeTranslations("destinationAddressLabel")}
+          routeCity={routeFormValues.destinationCity}
+          selectedAddress={routeFormValues.destinationAddress}
+          errorMessage={formFieldErrorMessages.destinationAddress}
+          onSelectedAddressChange={(destinationAddress) =>
+            updateRouteAssignmentFormValues({ destinationAddress })
           }
         />
         <p className="text-xs text-slate-400 sm:col-span-2">
@@ -101,6 +128,14 @@ export function RouteFormFields<
             ),
             license: renderAttributionLink(
               cityGeocodingAttributionLinks.license
+            ),
+          })}{" "}
+          {routeTranslations.rich("addressSearchAttribution", {
+            photon: renderAttributionLink(
+              addressGeocodingAttributionLinks.photon
+            ),
+            openStreetMap: renderAttributionLink(
+              addressGeocodingAttributionLinks.openStreetMap
             ),
           })}
         </p>

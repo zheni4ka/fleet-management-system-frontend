@@ -195,6 +195,7 @@ export const apiEndpoints = Object.freeze({
   searchCityGeocodingCandidates:
     "/api/v1/Location/searchCityGeocodingCandidates",
   ensureCityLocation: "/api/v1/Location/ensureCityLocation",
+  searchAddressCandidates: "/api/v1/Location/searchAddressCandidates",
   createRoute: "/api/v1/Route/createRoute",
   updateRoute: "/api/v1/Route/updateRoute",
   deleteRoute: "/api/v1/Route/deleteRoute",
@@ -544,6 +545,17 @@ export const cityGeocodingSearchConstraints = Object.freeze({
   debounceDelayInMilliseconds: 350,
 })
 
+export const addressGeocodingSearchConstraints = Object.freeze({
+  minLength: 3,
+  maxLength: 200,
+  debounceDelayInMilliseconds: 400,
+})
+
+export const addressGeocodingAttributionLinks = Object.freeze({
+  photon: "https://photon.komoot.io/",
+  openStreetMap: "https://www.openstreetmap.org/copyright",
+})
+
 export const mapCoordinatesFractionDigits = 4
 
 export const cityGeocodingAttributionLinks = Object.freeze({
@@ -609,6 +621,12 @@ export const routeFormFieldNamesByApiPropertyName: Readonly<
 > = Object.freeze({
   startLocationId: "startCity",
   destinationLocationId: "destinationCity",
+  startAddressLine: "startAddress",
+  startAddressLatitude: "startAddress",
+  startAddressLongitude: "startAddress",
+  destinationAddressLine: "destinationAddress",
+  destinationAddressLatitude: "destinationAddress",
+  destinationAddressLongitude: "destinationAddress",
   autoId: "autoId",
   driverId: "driverId",
   departureTimeUtc: "departureLocalDateTime",

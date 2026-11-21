@@ -447,7 +447,20 @@
     "routeSectionTitle": "Маршрут",
     "assignmentSectionTitle": "Призначення",
     "scheduleSectionTitle": "Розклад і статус",
-    "driverPhoneLabel": "Телефон водія"
+    "driverPhoneLabel": "Телефон водія",
+    "startAddressLabel": "Адреса відправлення",
+    "destinationAddressLabel": "Адреса призначення",
+    "addressSearchPlaceholder": "Вулиця та номер будинку, наприклад Городоцька 120",
+    "addressCityRequiredHint": "Спершу оберіть місто.",
+    "addressCityCoordinatesMissingHint": "Для цього міста немає координат. Оберіть місто ще раз через пошук.",
+    "addressSearchHint": "Введіть щонайменше {minLength, number} символи, щоб знайти адресу.",
+    "addressSearchLoading": "Пошук адрес...",
+    "addressSearchEmpty": "Нічого не знайдено. Спробуйте вказати вулицю та номер будинку інакше.",
+    "addressSearchError": "Не вдалося знайти адреси. Спробуйте ще раз.",
+    "addressSearchResultsLabel": "Знайдені адреси",
+    "changeAddressLabel": "Змінити адресу {addressLine}",
+    "addressNotSpecifiedValue": "Не вказано",
+    "addressSearchAttribution": "Адреси: <photon>Photon</photon>, дані © <openStreetMap>учасники OpenStreetMap</openStreetMap>."
   },
   "routeStatusActions": {
     "InProgress": "Розпочати",

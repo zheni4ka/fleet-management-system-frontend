@@ -5,4 +5,6 @@ export interface RouteCitySelection {
   region: string | null
   country: string
   timeZoneId: string
+  latitude: number | null
+  longitude: number | null
 }

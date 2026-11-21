@@ -10,6 +10,8 @@ export function createRouteCitySelectionFromCandidate(
     region: cityCandidate.region,
     country: cityCandidate.country,
     timeZoneId: cityCandidate.timeZoneId,
+    latitude: cityCandidate.latitude,
+    longitude: cityCandidate.longitude,
   }
 }
 
@@ -23,6 +25,8 @@ export function createRouteStartCitySelection(
     region: null,
     country: route.startLocationCountry,
     timeZoneId: route.startLocationTimeZoneId,
+    latitude: route.startLocationLatitude,
+    longitude: route.startLocationLongitude,
   }
 }
 
@@ -36,6 +40,8 @@ export function createRouteDestinationCitySelection(
     region: null,
     country: route.destinationLocationCountry,
     timeZoneId: route.destinationLocationTimeZoneId,
+    latitude: route.destinationLocationLatitude,
+    longitude: route.destinationLocationLongitude,
   }
 }
 

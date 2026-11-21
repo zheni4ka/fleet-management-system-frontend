@@ -126,8 +126,19 @@ export function RouteDetailsModal({ route, onClose }: RouteDetailsModalProps) {
       value: `${startLocationName} (${route.startLocationTimeZoneId})`,
     },
     {
+      label: routeTranslations("startAddressLabel"),
+      value:
+        route.startAddressLine ?? routeTranslations("addressNotSpecifiedValue"),
+    },
+    {
       label: routeTranslations("destinationLocationLabel"),
       value: `${destinationLocationName} (${route.destinationLocationTimeZoneId})`,
+    },
+    {
+      label: routeTranslations("destinationAddressLabel"),
+      value:
+        route.destinationAddressLine ??
+        routeTranslations("addressNotSpecifiedValue"),
     },
     {
       label: routeTranslations("cardAutoLabel"),

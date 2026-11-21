@@ -11,6 +11,7 @@ import {
 import {
   AddRouteFormValues,
   FormValidationError,
+  RouteAddressSelection,
   RouteCitySelection,
 } from "@/lib/types"
 
@@ -21,6 +22,8 @@ const kyivCity: RouteCitySelection = {
   region: null,
   country: "Ukraine",
   timeZoneId: "Europe/Kyiv",
+  latitude: 50.4501,
+  longitude: 30.5234,
 }
 
 const warsawCity: RouteCitySelection = {
@@ -30,6 +33,20 @@ const warsawCity: RouteCitySelection = {
   region: "Masovian Voivodeship",
   country: "Poland",
   timeZoneId: "Europe/Warsaw",
+  latitude: 52.2297,
+  longitude: 21.0122,
+}
+
+const kyivAddress: RouteAddressSelection = {
+  addressLine: "вулиця Хрещатик, 22",
+  latitude: 50.4474,
+  longitude: 30.5214,
+}
+
+const warsawAddress: RouteAddressSelection = {
+  addressLine: "Marszałkowska, 10",
+  latitude: 52.2216,
+  longitude: 21.0168,
 }
 
 function createKyivToWarsawFormValues(
@@ -38,7 +55,9 @@ function createKyivToWarsawFormValues(
   return {
     ...createEmptyAddRouteFormValues(),
     startCity: kyivCity,
+    startAddress: kyivAddress,
     destinationCity: warsawCity,
+    destinationAddress: warsawAddress,
     autoId: "5",
     driverId: "7",
     departureLocalDateTime: "2026-12-01T08:00",
@@ -61,11 +80,29 @@ describe("createCreateRouteRequestModel", () => {
       driverId: 7,
       departureTimeUtc: "2026-12-01T06:00:00.000Z",
       arrivalTimeUtc: "2026-12-01T17:00:00.000Z",
+      startAddressLine: "вулиця Хрещатик, 22",
+      startAddressLatitude: 50.4474,
+      destinationAddressLine: "Marszałkowska, 10",
+      destinationAddressLongitude: 21.0168,
     })
   })
 })
 
 describe("getRouteScheduleFormFieldErrors", () => {
+  it("marks missing addresses on their own fields", () => {
+    expect(
+      getRouteScheduleFormFieldErrors(
+        createKyivToWarsawFormValues({
+          startAddress: null,
+          destinationAddress: null,
+        })
+      )
+    ).toEqual({
+      startAddress: FormValidationError.RequiredFieldMissing,
+      destinationAddress: FormValidationError.RequiredFieldMissing,
+    })
+  })
+
   it("marks a missing arrival time on the arrival field", () => {
     expect(
       getRouteScheduleFormFieldErrors(

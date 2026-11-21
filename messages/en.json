@@ -447,7 +447,20 @@
     "routeSectionTitle": "Route",
     "assignmentSectionTitle": "Assignment",
     "scheduleSectionTitle": "Schedule and status",
-    "driverPhoneLabel": "Driver's phone"
+    "driverPhoneLabel": "Driver's phone",
+    "startAddressLabel": "Departure address",
+    "destinationAddressLabel": "Destination address",
+    "addressSearchPlaceholder": "Street and house number, for example Horodotska 120",
+    "addressCityRequiredHint": "Choose the city first.",
+    "addressCityCoordinatesMissingHint": "This city has no coordinates. Choose the city again through the search.",
+    "addressSearchHint": "Type at least {minLength, number} characters to find an address.",
+    "addressSearchLoading": "Searching addresses...",
+    "addressSearchEmpty": "Nothing found. Try writing the street and house number differently.",
+    "addressSearchError": "Failed to find addresses. Try again.",
+    "addressSearchResultsLabel": "Found addresses",
+    "changeAddressLabel": "Change address {addressLine}",
+    "addressNotSpecifiedValue": "Not specified",
+    "addressSearchAttribution": "Addresses: <photon>Photon</photon>, data © <openStreetMap>OpenStreetMap contributors</openStreetMap>."
   },
   "routeStatusActions": {
     "InProgress": "Start",

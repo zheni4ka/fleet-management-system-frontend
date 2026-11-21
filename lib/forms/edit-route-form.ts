@@ -3,6 +3,7 @@ import {
   createRouteStartCitySelection,
 } from "@/lib/forms/route-city-selection"
 import {
+  createRouteAddressRequestFields,
   createRouteTimesUtc,
   getRouteAssignmentFormFieldErrors,
   getRouteScheduleFormFieldErrors,
@@ -12,11 +13,24 @@ import {
   EditRouteFormValues,
   FormFieldErrors,
   Route,
+  RouteAddressSelection,
   RouteLocationIds,
   RouteScheduleFormValues,
   RouteStatus,
   UpdateRouteRequestModel,
 } from "@/lib/types"
+
+function createRouteAddressSelection(
+  addressLine: string | null,
+  addressLatitude: number | null,
+  addressLongitude: number | null
+): RouteAddressSelection | null {
+  return addressLine === null ||
+    addressLatitude === null ||
+    addressLongitude === null
+    ? null
+    : { addressLine, latitude: addressLatitude, longitude: addressLongitude }
+}
 
 export function canRouteBeRescheduled(route: Route): boolean {
   return route.status === RouteStatus.Planned
@@ -27,7 +41,17 @@ export function createEditRouteFormValuesFromRoute(
 ): EditRouteFormValues {
   return {
     startCity: createRouteStartCitySelection(route),
+    startAddress: createRouteAddressSelection(
+      route.startAddressLine,
+      route.startAddressLatitude,
+      route.startAddressLongitude
+    ),
     destinationCity: createRouteDestinationCitySelection(route),
+    destinationAddress: createRouteAddressSelection(
+      route.destinationAddressLine,
+      route.destinationAddressLatitude,
+      route.destinationAddressLongitude
+    ),
     departureLocalDateTime: convertUtcIsoStringToZonedLocalDateTime(
       route.departureTimeUtc,
       route.startLocationTimeZoneId
@@ -63,6 +87,7 @@ export function createUpdateRouteRequestModel(
     id: route.id,
     rowVersion: route.rowVersion,
     ...routeLocationIds,
+    ...createRouteAddressRequestFields(editRouteFormValues),
     ...routeTimesUtc,
     autoId: Number(editRouteFormValues.autoId),
     driverId: Number(editRouteFormValues.driverId),

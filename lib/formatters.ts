@@ -65,23 +65,41 @@ function createMapPoint(
 }
 
 export function createRouteStartMapPoint(route: Route): string {
-  return createMapPoint(
-    {
-      latitude: route.startLocationLatitude,
-      longitude: route.startLocationLongitude,
-    },
-    formatRouteStartLocationName(route)
-  )
+  return route.startAddressLatitude === null ||
+    route.startAddressLongitude === null
+    ? createMapPoint(
+        {
+          latitude: route.startLocationLatitude,
+          longitude: route.startLocationLongitude,
+        },
+        formatRouteStartLocationName(route)
+      )
+    : createMapPoint(
+        {
+          latitude: route.startAddressLatitude,
+          longitude: route.startAddressLongitude,
+        },
+        formatRouteStartLocationName(route)
+      )
 }
 
 export function createRouteDestinationMapPoint(route: Route): string {
-  return createMapPoint(
-    {
-      latitude: route.destinationLocationLatitude,
-      longitude: route.destinationLocationLongitude,
-    },
-    formatRouteDestinationLocationName(route)
-  )
+  return route.destinationAddressLatitude === null ||
+    route.destinationAddressLongitude === null
+    ? createMapPoint(
+        {
+          latitude: route.destinationLocationLatitude,
+          longitude: route.destinationLocationLongitude,
+        },
+        formatRouteDestinationLocationName(route)
+      )
+    : createMapPoint(
+        {
+          latitude: route.destinationAddressLatitude,
+          longitude: route.destinationAddressLongitude,
+        },
+        formatRouteDestinationLocationName(route)
+      )
 }
 
 export function formatRouteAutoTitleWithNumber(route: Route): string {

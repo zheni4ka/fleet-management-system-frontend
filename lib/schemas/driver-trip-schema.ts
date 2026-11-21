@@ -15,6 +15,8 @@ export const driverTripSchema = z.object({
   destinationLocationCity: z.string(),
   destinationLocationCountry: z.string(),
   destinationLocationTimeZoneId: z.string().min(1),
+  startAddressLine: z.string().nullable(),
+  destinationAddressLine: z.string().nullable(),
   plannedDepartureTimeUtc: z.iso.datetime(),
   plannedArrivalTimeUtc: z.iso.datetime(),
   startedAtUtc: z.iso.datetime(),

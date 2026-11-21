@@ -1,6 +1,7 @@
+import { RouteAddressRequestFields } from "./route-address-request-fields"
 import { RouteStatus } from "./route-status"
 
-export interface CreateRouteRequestModel {
+export interface CreateRouteRequestModel extends RouteAddressRequestFields {
   startLocationId: number
   destinationLocationId: number
   departureTimeUtc: string

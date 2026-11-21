@@ -67,6 +67,13 @@ export function DriverTripsTable({
                     country: driverTrip.destinationLocationCountry,
                   })}
                 </span>
+                {(driverTrip.startAddressLine !== null ||
+                  driverTrip.destinationAddressLine !== null) && (
+                  <span className="block text-xs text-slate-600">
+                    {driverTrip.startAddressLine ?? "—"} →{" "}
+                    {driverTrip.destinationAddressLine ?? "—"}
+                  </span>
+                )}
                 {driverTrip.routeId === null ? (
                   <span className="block text-[11px] text-slate-500">
                     {driverProfileTranslations("routeDeletedLabel")}

@@ -4,6 +4,10 @@ import {
   createUpdateRouteRequestModel,
   getEditRouteFormFieldErrors,
 } from "@/lib/forms/edit-route-form"
+import {
+  createRouteDestinationMapPoint,
+  createRouteStartMapPoint,
+} from "@/lib/formatters"
 import { FormValidationError, Route, RouteStatus } from "@/lib/types"
 
 const plannedRoute: Route = {
@@ -20,6 +24,12 @@ const plannedRoute: Route = {
   destinationLocationTimeZoneId: "Europe/Warsaw",
   destinationLocationLatitude: 52.22977,
   destinationLocationLongitude: 21.01178,
+  startAddressLine: "вулиця Хрещатик, 22",
+  startAddressLatitude: 50.4474,
+  startAddressLongitude: 30.5214,
+  destinationAddressLine: "Marszałkowska, 10",
+  destinationAddressLatitude: 52.2216,
+  destinationAddressLongitude: 21.0168,
   departureTimeUtc: "2026-12-01T06:00:00Z",
   arrivalTimeUtc: "2026-12-01T17:00:00Z",
   actualDepartureTimeUtc: null,
@@ -100,5 +110,48 @@ describe("edit route form", () => {
         arrivalLocalDateTime: "",
       })
     ).toEqual({})
+  })
+
+  it("sends no addresses for an older route that has none, so status changes still work", () => {
+    const routeWithoutAddresses = {
+      ...plannedRoute,
+      startAddressLine: null,
+      startAddressLatitude: null,
+      startAddressLongitude: null,
+      destinationAddressLine: null,
+      destinationAddressLatitude: null,
+      destinationAddressLongitude: null,
+    }
+
+    const updateRouteRequestModel = createUpdateRouteRequestModel(
+      routeWithoutAddresses,
+      createEditRouteFormValuesFromRoute(routeWithoutAddresses),
+      routeLocationIds
+    )
+
+    expect(updateRouteRequestModel.startAddressLine).toBe(null)
+    expect(updateRouteRequestModel.destinationAddressLatitude).toBe(null)
+  })
+
+  it("fills addresses of a route that has them and uses them on the map", () => {
+    const routeWithAddresses = {
+      ...plannedRoute,
+      startAddressLatitude: null,
+      startAddressLongitude: null,
+    }
+
+    expect(
+      createEditRouteFormValuesFromRoute(routeWithAddresses).destinationAddress
+    ).toEqual({
+      addressLine: "Marszałkowska, 10",
+      latitude: 52.2216,
+      longitude: 21.0168,
+    })
+    expect(createRouteDestinationMapPoint(routeWithAddresses)).toBe(
+      "52.2216,21.0168"
+    )
+    expect(createRouteStartMapPoint(routeWithAddresses)).toBe(
+      "50.45466,30.5238"
+    )
   })
 })
