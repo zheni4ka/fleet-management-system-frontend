@@ -17,6 +17,8 @@ export const routeSchema = z.object({
   destinationLocationLongitude: z.number().nullable(),
   departureTimeUtc: z.iso.datetime(),
   arrivalTimeUtc: z.iso.datetime(),
+  actualDepartureTimeUtc: z.iso.datetime().nullable(),
+  actualArrivalTimeUtc: z.iso.datetime().nullable(),
   autoId: z.number().int(),
   autoMark: z.string(),
   autoModel: z.string(),

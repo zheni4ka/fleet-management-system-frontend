@@ -61,6 +61,30 @@ export function RouteCard({
         appLocale
       ),
     },
+    ...(route.actualDepartureTimeUtc === null
+      ? []
+      : [
+          {
+            label: routeTranslations("cardActualDepartureLabel"),
+            value: formatUtcDateTimeWithTimeZone(
+              route.actualDepartureTimeUtc,
+              route.startLocationTimeZoneId,
+              appLocale
+            ),
+          },
+        ]),
+    ...(route.actualArrivalTimeUtc === null
+      ? []
+      : [
+          {
+            label: routeTranslations("cardActualArrivalLabel"),
+            value: formatUtcDateTimeWithTimeZone(
+              route.actualArrivalTimeUtc,
+              route.destinationLocationTimeZoneId,
+              appLocale
+            ),
+          },
+        ]),
     { label: routeTranslations("cardAutoLabel"), value: autoTitle },
     { label: routeTranslations("cardDriverLabel"), value: driverFullName },
   ]

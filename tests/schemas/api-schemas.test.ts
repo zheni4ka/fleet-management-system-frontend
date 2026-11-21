@@ -22,6 +22,8 @@ const validRouteResponse = {
   destinationLocationLongitude: null,
   departureTimeUtc: "2026-12-01T06:00:00Z",
   arrivalTimeUtc: "2026-12-01T17:00:00Z",
+  actualDepartureTimeUtc: null,
+  actualArrivalTimeUtc: null,
   autoId: 5,
   autoMark: "Volvo",
   autoModel: "FH16",
@@ -38,6 +40,17 @@ const validRouteResponse = {
 describe("routeSchema", () => {
   it("accepts a route response from the API", () => {
     expect(routeSchema.safeParse(validRouteResponse).success).toBe(true)
+  })
+
+  it("accepts actual route times recorded by the server clock", () => {
+    expect(
+      routeSchema.safeParse({
+        ...validRouteResponse,
+        status: RouteStatus.Completed,
+        actualDepartureTimeUtc: "2026-12-01T06:12:40.1234567Z",
+        actualArrivalTimeUtc: "2026-12-01T17:45:03.7654321Z",
+      }).success
+    ).toBe(true)
   })
 
   it("rejects a route without a row version", () => {

@@ -175,7 +175,23 @@ export default function AutoMaintenanceManagementModal({
                   : maintenanceTranslations("inProgressSuffix")}
               </span>
               <span className="rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-medium text-slate-500">
-                {formatDate(maintenanceRecord.serviceDate, appLocale)}
+                {maintenanceRecord.plannedEndDate === null
+                  ? maintenanceTranslations("openEndedServiceIntervalLabel", {
+                      serviceDate: formatDate(
+                        maintenanceRecord.serviceDate,
+                        appLocale
+                      ),
+                    })
+                  : maintenanceTranslations("serviceIntervalLabel", {
+                      serviceDate: formatDate(
+                        maintenanceRecord.serviceDate,
+                        appLocale
+                      ),
+                      plannedEndDate: formatDate(
+                        maintenanceRecord.plannedEndDate,
+                        appLocale
+                      ),
+                    })}
               </span>
             </div>
             <p className="mb-2 text-xs text-slate-600">
@@ -269,6 +285,21 @@ export default function AutoMaintenanceManagementModal({
                   }
                 />
               </FormField>
+              <FormField label={maintenanceTranslations("plannedEndDateLabel")}>
+                <Input
+                  type="datetime-local"
+                  value={maintenanceFormValues.plannedEndDate}
+                  min={maintenanceFormValues.serviceDate}
+                  onChange={(event) =>
+                    updateMaintenanceFormValues({
+                      plannedEndDate: event.target.value,
+                    })
+                  }
+                />
+              </FormField>
+              <p className="text-xs text-slate-500">
+                {maintenanceTranslations("plannedEndDateHint")}
+              </p>
               <SubmitButton isSubmitting={isApiMutationRunning}>
                 {maintenanceTranslations("registerButtonLabel")}
               </SubmitButton>

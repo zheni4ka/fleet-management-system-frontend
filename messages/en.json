@@ -235,7 +235,8 @@
     "RoutesPeriodDatesMissing": "Select the start and end date of the period.",
     "RoutesPeriodEndBeforeStart": "The end of the period cannot be earlier than its start.",
     "DispatcherDepotsMissing": "A dispatcher must be assigned at least one depot.",
-    "DepotNameMissing": "Enter the depot name."
+    "DepotNameMissing": "Enter the depot name.",
+    "MaintenancePlannedEndNotAfterStart": "The planned end of work must be later than its start."
   },
   "pages": {
     "autosTitle": "Vehicles",
@@ -334,13 +335,17 @@
     "problemDescriptionLabel": "Problem description",
     "problemDescriptionPlaceholder": "Detailed description of the problem...",
     "serviceDateLabel": "Work start date",
+    "plannedEndDateLabel": "Planned end of work",
+    "plannedEndDateHint": "Optional. Without an end date the vehicle stays unavailable until the maintenance is completed.",
     "registerButtonLabel": "Register maintenance",
     "completeLoading": "Completing maintenance...",
     "completeSuccess": "Maintenance completed. The vehicle is available again.",
     "completeError": "Failed to complete the maintenance.",
     "createLoading": "Saving the record...",
     "createSuccess": "The vehicle was sent for maintenance.",
-    "createError": "Failed to create the record."
+    "createError": "Failed to create the record.",
+    "serviceIntervalLabel": "{serviceDate} – {plannedEndDate}",
+    "openEndedServiceIntervalLabel": "From {serviceDate} until completed"
   },
   "drivers": {
     "addButtonLabel": "Add driver",
@@ -403,6 +408,8 @@
     "emptyList": "There are no routes yet.",
     "cardDepartureLabel": "Departure",
     "cardArrivalLabel": "Arrival",
+    "cardActualDepartureLabel": "Actual departure",
+    "cardActualArrivalLabel": "Actual arrival",
     "cardAutoLabel": "Vehicle",
     "cardDriverLabel": "Driver",
     "mapTitle": "Route on Google Maps",

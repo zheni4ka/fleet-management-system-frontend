@@ -235,7 +235,8 @@
     "RoutesPeriodDatesMissing": "Оберіть початкову та кінцеву дату періоду.",
     "RoutesPeriodEndBeforeStart": "Кінець періоду не може бути раніше за його початок.",
     "DispatcherDepotsMissing": "Диспетчеру потрібно призначити щонайменше одне депо.",
-    "DepotNameMissing": "Вкажіть назву депо."
+    "DepotNameMissing": "Вкажіть назву депо.",
+    "MaintenancePlannedEndNotAfterStart": "Запланований кінець робіт має бути пізніше за їх початок."
   },
   "pages": {
     "autosTitle": "Автомобілі",
@@ -334,13 +335,17 @@
     "problemDescriptionLabel": "Опис проблеми",
     "problemDescriptionPlaceholder": "Детальний опис проблеми...",
     "serviceDateLabel": "Дата початку робіт",
+    "plannedEndDateLabel": "Запланований кінець робіт",
+    "plannedEndDateHint": "Необов'язково. Без дати кінця авто недоступне до завершення ТО.",
     "registerButtonLabel": "Зареєструвати ТО",
     "completeLoading": "Завершення ТО...",
     "completeSuccess": "ТО успішно завершено! Авто знову доступне.",
     "completeError": "Помилка при завершенні ТО.",
     "createLoading": "Збереження запису...",
     "createSuccess": "Автомобіль відправлено на ТО!",
-    "createError": "Помилка при створенні запису."
+    "createError": "Помилка при створенні запису.",
+    "serviceIntervalLabel": "{serviceDate} – {plannedEndDate}",
+    "openEndedServiceIntervalLabel": "З {serviceDate} до завершення"
   },
   "drivers": {
     "addButtonLabel": "Додати водія",
@@ -403,6 +408,8 @@
     "emptyList": "Маршрутів поки немає.",
     "cardDepartureLabel": "Виїзд",
     "cardArrivalLabel": "Прибуття",
+    "cardActualDepartureLabel": "Фактичне відправлення",
+    "cardActualArrivalLabel": "Фактичне прибуття",
     "cardAutoLabel": "Авто",
     "cardDriverLabel": "Водій",
     "mapTitle": "Маршрут на карті Google",

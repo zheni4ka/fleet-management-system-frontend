@@ -10,4 +10,5 @@ export enum FormValidationError {
   RoutesPeriodEndBeforeStart = "RoutesPeriodEndBeforeStart",
   DispatcherDepotsMissing = "DispatcherDepotsMissing",
   DepotNameMissing = "DepotNameMissing",
+  MaintenancePlannedEndNotAfterStart = "MaintenancePlannedEndNotAfterStart",
 }
