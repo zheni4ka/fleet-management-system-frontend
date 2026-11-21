@@ -1,9 +1,9 @@
 import "./globals.css"
 import { Inter } from "next/font/google"
 import { Metadata } from "next"
-import { Toaster } from "react-hot-toast"
 import { NextIntlClientProvider } from "next-intl"
 import { getLocale } from "next-intl/server"
+import { AppToaster } from "@/components/app-toaster"
 import { Header } from "@/components/header"
 import {
   getKnownUserRolesFromAuthToken,
@@ -54,7 +54,7 @@ export default async function RootLayout({
           <main className={unexpiredAuthToken === null ? undefined : "pt-8"}>
             {children}
           </main>
-          <Toaster position="bottom-right" reverseOrder={false} />
+          <AppToaster modalWindowId={null} />
         </NextIntlClientProvider>
       </body>
     </html>

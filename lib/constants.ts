@@ -1,4 +1,5 @@
 import { CheckCircle, Play, XCircle } from "lucide-react"
+import type { ToastPosition } from "react-hot-toast"
 import { AppLocale } from "@/lib/types/app-locale"
 import { AuditLogSortField } from "@/lib/types/audit-log-sort-field"
 import { AutoSortField } from "@/lib/types/auto-sort-field"
@@ -531,3 +532,11 @@ export const intlLocaleCodes: Readonly<Record<AppLocale, string>> =
     [AppLocale.Ukrainian]: "uk-UA",
     [AppLocale.English]: "en-GB",
   })
+
+export const appToasterPositions: Readonly<{
+  page: ToastPosition
+  modalWindow: ToastPosition
+}> = Object.freeze({
+  page: "bottom-right",
+  modalWindow: "top-center",
+})

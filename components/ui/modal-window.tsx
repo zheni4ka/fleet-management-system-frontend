@@ -1,7 +1,12 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useId, useRef } from "react"
 import { useTranslations } from "next-intl"
+import { AppToaster } from "@/components/app-toaster"
+import {
+  pushOpenModalWindowId,
+  removeOpenModalWindowId,
+} from "@/lib/open-modal-window-stack"
 
 interface ModalProps {
   isOpen: boolean
@@ -19,6 +24,15 @@ export default function ModalWindow({
   const commonTranslations = useTranslations("common")
   const dialogRef = useRef<HTMLDialogElement>(null)
   const elementFocusedBeforeOpenRef = useRef<HTMLElement | null>(null)
+  const modalWindowId = useId()
+
+  useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+    pushOpenModalWindowId(modalWindowId)
+    return () => removeOpenModalWindowId(modalWindowId)
+  }, [isOpen, modalWindowId])
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -67,6 +81,7 @@ export default function ModalWindow({
         </button>
       </div>
       <div className="flex flex-col gap-3 text-gray-600">{children}</div>
+      <AppToaster modalWindowId={modalWindowId} />
     </dialog>
   )
 }
