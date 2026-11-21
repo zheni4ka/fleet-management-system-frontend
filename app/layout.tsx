@@ -38,12 +38,15 @@ export default async function RootLayout({
     authToken !== null && isAuthTokenUnexpired(authToken) ? authToken : null
 
   return (
-    <html className={`${inter.className} p-3 sm:p-6`} lang={appLocale}>
+    <html
+      className={`${inter.className} p-3 sm:p-6 print:p-0`}
+      lang={appLocale}
+    >
       <body className="antialiased">
         <NextIntlClientProvider>
           {unexpiredAuthToken !== null && (
             <Header
-              className="fixed inset-x-0 top-0 z-45 w-full"
+              className="fixed inset-x-0 top-0 z-45 w-full print:hidden"
               isAdmin={hasAuthTokenUserRole(unexpiredAuthToken, UserRole.Admin)}
               currentUserName={getUserNameFromAuthToken(unexpiredAuthToken)}
               currentUserRoles={getKnownUserRolesFromAuthToken(
@@ -51,7 +54,11 @@ export default async function RootLayout({
               )}
             />
           )}
-          <main className={unexpiredAuthToken === null ? undefined : "pt-8"}>
+          <main
+            className={
+              unexpiredAuthToken === null ? undefined : "pt-8 print:pt-0"
+            }
+          >
             {children}
           </main>
           <AppToaster modalWindowId={null} />

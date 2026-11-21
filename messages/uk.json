@@ -185,7 +185,8 @@
     "completedRoutesCount": "Виконано",
     "drivingHours": "Годин у дорозі",
     "departureTime": "Час відправлення",
-    "arrivalTime": "Час прибуття"
+    "arrivalTime": "Час прибуття",
+    "auto": "Авто"
   },
   "login": {
     "title": "Вхід у систему",
@@ -501,7 +502,8 @@
     "involvedDriversLabel": "Задіяно водіїв",
     "driverLoadTitle": "Навантаження водіїв",
     "routesTitle": "Рейси за період",
-    "noRoutesInPeriod": "За обраний період рейсів немає."
+    "noRoutesInPeriod": "За обраний період рейсів немає.",
+    "generatedAtLabel": "Сформовано {generatedAt}"
   },
   "auditLogs": {
     "emptyList": "Журнал дій поки порожній."

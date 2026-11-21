@@ -51,6 +51,7 @@ async function RoutesPeriodReportSection({
   return (
     <RoutesPeriodReportView
       routesPeriodReport={routesPeriodReportResult.data}
+      reportGeneratedAtUtc={new Date().toISOString()}
     />
   )
 }

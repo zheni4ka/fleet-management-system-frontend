@@ -484,20 +484,30 @@ export const auditLogsTableColumns: ReadonlyArray<
 
 export const reportDriverSummariesTableColumns: ReadonlyArray<TableColumn> =
   Object.freeze([
-    { labelMessageKey: "driver", className: "w-2/5" },
-    { labelMessageKey: "routesCount", className: "w-1/5 text-center" },
-    { labelMessageKey: "completedRoutesCount", className: "w-1/5 text-center" },
-    { labelMessageKey: "drivingHours", className: "w-1/5 text-center" },
+    { labelMessageKey: "driver", className: "w-2/5 whitespace-normal" },
+    {
+      labelMessageKey: "routesCount",
+      className: "w-1/5 text-center whitespace-normal",
+    },
+    {
+      labelMessageKey: "completedRoutesCount",
+      className: "w-1/5 text-center whitespace-normal",
+    },
+    {
+      labelMessageKey: "drivingHours",
+      className: "w-1/5 text-center whitespace-normal",
+    },
   ])
 
 export const reportRoutesTableColumns: ReadonlyArray<TableColumn> =
   Object.freeze([
-    { labelMessageKey: "id", className: "w-1/12" },
-    { labelMessageKey: "fromTo", className: "w-3/12" },
-    { labelMessageKey: "departure", className: "w-2/12" },
-    { labelMessageKey: "arrival", className: "w-2/12" },
-    { labelMessageKey: "driver", className: "w-2/12" },
-    { labelMessageKey: "status", className: "w-2/12 text-right" },
+    { labelMessageKey: "id", className: "w-[6%] whitespace-normal" },
+    { labelMessageKey: "fromTo", className: "w-[26%] whitespace-normal" },
+    { labelMessageKey: "departure", className: "w-[16%] whitespace-normal" },
+    { labelMessageKey: "arrival", className: "w-[16%] whitespace-normal" },
+    { labelMessageKey: "driver", className: "w-[14%] whitespace-normal" },
+    { labelMessageKey: "auto", className: "w-[11%] whitespace-normal" },
+    { labelMessageKey: "status", className: "w-[11%] whitespace-normal" },
   ])
 
 export const depotNameConstraints = Object.freeze({

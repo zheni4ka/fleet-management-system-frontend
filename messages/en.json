@@ -185,7 +185,8 @@
     "completedRoutesCount": "Completed",
     "drivingHours": "Hours on the road",
     "departureTime": "Departure time",
-    "arrivalTime": "Arrival time"
+    "arrivalTime": "Arrival time",
+    "auto": "Vehicle"
   },
   "login": {
     "title": "Sign in",
@@ -501,7 +502,8 @@
     "involvedDriversLabel": "Drivers used",
     "driverLoadTitle": "Driver workload",
     "routesTitle": "Trips in the period",
-    "noRoutesInPeriod": "There are no trips in the selected period."
+    "noRoutesInPeriod": "There are no trips in the selected period.",
+    "generatedAtLabel": "Generated {generatedAt}"
   },
   "auditLogs": {
     "emptyList": "The audit log is empty."

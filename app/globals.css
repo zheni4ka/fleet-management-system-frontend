@@ -139,3 +139,15 @@
     outline-offset: 2px;
   }
 }
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  main {
+    padding: 12mm 10mm;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+}
