@@ -14,6 +14,7 @@ import { hasAuthTokenUserRole } from "@/lib/auth-token"
 import { createLoginPath } from "@/lib/login-redirect"
 import {
   createBackendRequestHeaders,
+  createBackendRequestTimeoutSignal,
   getServerApiBaseUrl,
 } from "@/lib/server/backend-api"
 import { logBffError } from "@/lib/server/bff-logger"
@@ -57,6 +58,7 @@ export async function fetchFromApi<TResponseSchema extends z.ZodType>(
     response = await fetch(`${getServerApiBaseUrl()}${apiPath}`, {
       headers: createBackendRequestHeaders(incomingRequestHeaders, authToken),
       cache: "no-store",
+      signal: createBackendRequestTimeoutSignal(),
     })
   } catch (error) {
     logBffError(

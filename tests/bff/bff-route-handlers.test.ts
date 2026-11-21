@@ -242,6 +242,46 @@ describe("/api/proxy/[...apiPath]", () => {
     expect(backendRequestHeaders.get("accept-language")).toBe("en")
   })
 
+  it("passes an API server error through with its message", async () => {
+    backendFetchMock.mockResolvedValue(
+      createJsonResponse(500, {
+        status: 500,
+        title: "Internal Server Error",
+        detail: "Сталася неочікувана помилка.",
+      })
+    )
+
+    const proxyResponse = await getThroughApiProxy(
+      createBffRequest("/api/proxy/api/v1/Route/getRoutesPagedList", "GET", {
+        cookie: "accessToken=access-token-value",
+      }),
+      createApiProxyRouteContext(["api", "v1", "Route", "getRoutesPagedList"])
+    )
+
+    expect(proxyResponse.status).toBe(500)
+    expect((await proxyResponse.json()).detail).toBe(
+      "Сталася неочікувана помилка."
+    )
+  })
+
+  it("answers 503 with a message when the API does not respond in time", async () => {
+    backendFetchMock.mockRejectedValue(
+      new DOMException("The operation timed out.", "TimeoutError")
+    )
+
+    const proxyResponse = await getThroughApiProxy(
+      createBffRequest("/api/proxy/api/v1/Route/getRoutesPagedList", "GET", {
+        cookie: "accessToken=access-token-value",
+      }),
+      createApiProxyRouteContext(["api", "v1", "Route", "getRoutesPagedList"])
+    )
+
+    const [, backendRequestInit] = backendFetchMock.mock.calls[0]
+    expect(backendRequestInit?.signal).toBeInstanceOf(AbortSignal)
+    expect(proxyResponse.status).toBe(503)
+    expect((await proxyResponse.json()).detail).not.toBe("")
+  })
+
   it("rejects a mutation that does not come from the same origin", async () => {
     const proxyResponse = await deleteThroughApiProxy(
       createBffRequest("/api/proxy/api/v1/Route/deleteRoute/1", "DELETE", {

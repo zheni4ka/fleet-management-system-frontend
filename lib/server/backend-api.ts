@@ -1,4 +1,8 @@
-import { httpContentTypes, httpHeaderNames } from "@/lib/constants"
+import {
+  backendRequestSettings,
+  httpContentTypes,
+  httpHeaderNames,
+} from "@/lib/constants"
 import { HttpMethod } from "@/lib/types"
 
 export function getServerApiBaseUrl(): string {
@@ -7,6 +11,10 @@ export function getServerApiBaseUrl(): string {
     throw new Error("Змінна середовища API_BASE_URL не налаштована.")
   }
   return serverApiBaseUrl
+}
+
+export function createBackendRequestTimeoutSignal(): AbortSignal {
+  return AbortSignal.timeout(backendRequestSettings.timeoutInMilliseconds)
 }
 
 export function createBackendRequestHeaders(
@@ -45,5 +53,6 @@ export async function postToBackend(
     headers: createBackendRequestHeaders(incomingRequestHeaders, null),
     body: JSON.stringify(requestBody),
     cache: "no-store",
+    signal: createBackendRequestTimeoutSignal(),
   })
 }

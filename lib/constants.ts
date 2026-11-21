@@ -540,3 +540,9 @@ export const appToasterPositions: Readonly<{
   page: "bottom-right",
   modalWindow: "top-center",
 })
+
+export const backendRequestSettings: Readonly<{
+  timeoutInMilliseconds: number
+}> = Object.freeze({
+  timeoutInMilliseconds: 20_000,
+})

@@ -1,11 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server"
-import {
-  apiEndpoints,
-  cookieNames,
-  httpStatusCodes,
-} from "@/lib/constants"
+import { apiEndpoints, cookieNames, httpStatusCodes } from "@/lib/constants"
 import {
   createBackendRequestHeaders,
+  createBackendRequestTimeoutSignal,
   getServerApiBaseUrl,
 } from "@/lib/server/backend-api"
 import {
@@ -25,7 +22,9 @@ export async function POST(request: NextRequest) {
   if (!isSameOriginRequest(request)) {
     return createProblemResponse(
       httpStatusCodes.forbidden,
-      createRequestMessageTranslator(request)("bffErrors.crossOriginRequestRejected")
+      createRequestMessageTranslator(request)(
+        "bffErrors.crossOriginRequestRejected"
+      )
     )
   }
 
@@ -57,6 +56,7 @@ export async function POST(request: NextRequest) {
         headers: createBackendRequestHeaders(request.headers, accessToken),
         body: JSON.stringify(updateLanguageRequest),
         cache: "no-store",
+        signal: createBackendRequestTimeoutSignal(),
       }
     )
   } catch (error) {

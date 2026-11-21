@@ -7,6 +7,7 @@ import {
 } from "@/lib/constants"
 import {
   createBackendRequestHeaders,
+  createBackendRequestTimeoutSignal,
   getServerApiBaseUrl,
 } from "@/lib/server/backend-api"
 import {
@@ -70,6 +71,7 @@ async function forwardRequestToBackend(
         headers: createBackendRequestHeaders(request.headers, accessToken),
         body: requestBodyText === "" ? undefined : requestBodyText,
         cache: "no-store",
+        signal: createBackendRequestTimeoutSignal(),
       }
     )
   } catch (error) {
