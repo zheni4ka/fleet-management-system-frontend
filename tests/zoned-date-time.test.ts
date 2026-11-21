@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import {
+  convertUtcIsoStringToZonedLocalDateTime,
   convertZonedLocalDateTimeToUtcIsoString,
   formatUtcDateTimeWithTimeZone,
 } from "@/lib/zoned-date-time"
@@ -40,5 +41,33 @@ describe("formatUtcDateTimeWithTimeZone", () => {
 
     expect(formattedDateTime).toContain("08:00")
     expect(formattedDateTime).toContain("(Europe/Kyiv)")
+  })
+})
+
+describe("convertUtcIsoStringToZonedLocalDateTime", () => {
+  it.each([
+    ["2026-12-01T06:00:00Z", "Europe/Kyiv", "2026-12-01T08:00"],
+    ["2026-07-01T17:00:00Z", "Europe/Kyiv", "2026-07-01T20:00"],
+    ["2026-12-01T23:30:00Z", "Europe/Warsaw", "2026-12-02T00:30"],
+    ["2026-12-01T06:12:40.1234567Z", "Europe/Kyiv", "2026-12-01T08:12"],
+  ])(
+    "converts %s in %s to %s",
+    (utcIsoDateTime, timeZoneId, expectedLocalDateTime) => {
+      expect(
+        convertUtcIsoStringToZonedLocalDateTime(utcIsoDateTime, timeZoneId)
+      ).toBe(expectedLocalDateTime)
+    }
+  )
+
+  it("round-trips with convertZonedLocalDateTimeToUtcIsoString", () => {
+    expect(
+      convertZonedLocalDateTimeToUtcIsoString(
+        convertUtcIsoStringToZonedLocalDateTime(
+          "2026-07-01T17:00:00.000Z",
+          "Europe/Warsaw"
+        ),
+        "Europe/Warsaw"
+      )
+    ).toBe("2026-07-01T17:00:00.000Z")
   })
 })

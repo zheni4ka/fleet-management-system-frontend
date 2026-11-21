@@ -380,7 +380,7 @@
     "arrivalTimeLabel": "Arrival time",
     "timeLabelWithoutLocation": "{timeLabel} (select a location)",
     "timeLabelWithTimeZone": "{timeLabel}, {timeZoneId}",
-    "timesNotEditableHint": "Departure and arrival times cannot be changed after the route is created.",
+    "timesNotEditableHint": "Departure and arrival times can be changed only while the route is planned.",
     "saveChangesButtonLabel": "Save changes",
     "startLocationLabel": "Start location",
     "destinationLocationLabel": "Destination",

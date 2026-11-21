@@ -4,12 +4,12 @@ import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
 import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
 import { FormField } from "@/components/ui/form-field"
 import ModalWindow from "@/components/ui/modal-window"
 import { SubmitButton } from "@/components/ui/submit-button"
 import { RouteFormFields } from "@/components/forms/route-form-fields"
+import { RouteTimeFields } from "@/components/forms/route-time-fields"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
 import { resolveRouteLocationIds } from "@/lib/route-city-locations"
@@ -17,7 +17,7 @@ import { apiEndpoints } from "@/lib/constants"
 import {
   createCreateRouteRequestModel,
   createEmptyAddRouteFormValues,
-  getAddRouteFormValidationError,
+  getRouteScheduleFormValidationError,
 } from "@/lib/forms/route-form"
 import {
   AddRouteFormValues,
@@ -54,32 +54,19 @@ export default function AddRouteModal({
     setAddRouteFormValues({ ...addRouteFormValues, ...changedValues })
   }
 
-  const createRouteTimeLabel = (
-    routeTimeLabel: string,
-    locationTimeZoneId: string | null
-  ): string =>
-    locationTimeZoneId === null
-      ? routeTranslations("timeLabelWithoutLocation", {
-          timeLabel: routeTimeLabel,
-        })
-      : routeTranslations("timeLabelWithTimeZone", {
-          timeLabel: routeTimeLabel,
-          timeZoneId: locationTimeZoneId,
-        })
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const addRouteFormValidationError =
-      getAddRouteFormValidationError(addRouteFormValues)
+    const routeScheduleFormValidationError =
+      getRouteScheduleFormValidationError(addRouteFormValues)
     const { startCity, destinationCity } = addRouteFormValues
     if (
-      addRouteFormValidationError !== null ||
+      routeScheduleFormValidationError !== null ||
       startCity === null ||
       destinationCity === null
     ) {
       toast.error(
         formValidationTranslations(
-          addRouteFormValidationError ??
+          routeScheduleFormValidationError ??
             FormValidationError.RouteRequiredFieldsMissing
         )
       )
@@ -127,40 +114,10 @@ export default function AddRouteModal({
             alwaysSelectableAutoId={null}
           />
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <FormField
-              label={createRouteTimeLabel(
-                routeTranslations("departureTimeLabel"),
-                addRouteFormValues.startCity?.timeZoneId ?? null
-              )}
-            >
-              <Input
-                type="datetime-local"
-                value={addRouteFormValues.departureLocalDateTime}
-                onChange={(event) =>
-                  updateAddRouteFormValues({
-                    departureLocalDateTime: event.target.value,
-                  })
-                }
-              />
-            </FormField>
-            <FormField
-              label={createRouteTimeLabel(
-                routeTranslations("arrivalTimeLabel"),
-                addRouteFormValues.destinationCity?.timeZoneId ?? null
-              )}
-            >
-              <Input
-                type="datetime-local"
-                value={addRouteFormValues.arrivalLocalDateTime}
-                onChange={(event) =>
-                  updateAddRouteFormValues({
-                    arrivalLocalDateTime: event.target.value,
-                  })
-                }
-              />
-            </FormField>
-          </div>
+          <RouteTimeFields
+            routeFormValues={addRouteFormValues}
+            onRouteFormValuesChange={setAddRouteFormValues}
+          />
 
           <FormField label={routeTranslations("statusLabel")}>
             <NativeSelect

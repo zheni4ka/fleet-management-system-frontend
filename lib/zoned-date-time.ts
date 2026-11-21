@@ -104,3 +104,13 @@ export function formatUtcDateTimeWithTimeZone(
 ): string {
   return `${formatUtcDateTimeInTimeZone(utcIsoDateTime, timeZoneId, appLocale)} (${timeZoneId})`
 }
+
+export function convertUtcIsoStringToZonedLocalDateTime(
+  utcIsoDateTime: string,
+  timeZoneId: string
+): string {
+  const utcMilliseconds = new Date(utcIsoDateTime).getTime()
+  const zonedWallClockAsUtcMilliseconds =
+    utcMilliseconds + getTimeZoneOffsetMilliseconds(utcMilliseconds, timeZoneId)
+  return new Date(zonedWallClockAsUtcMilliseconds).toISOString().slice(0, 16)
+}

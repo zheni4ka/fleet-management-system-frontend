@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   createCreateRouteRequestModel,
   createEmptyAddRouteFormValues,
-  getAddRouteFormValidationError,
+  getRouteScheduleFormValidationError,
 } from "@/lib/forms/route-form"
 import {
   formatRouteCitySelection,
@@ -65,10 +65,10 @@ describe("createCreateRouteRequestModel", () => {
   })
 })
 
-describe("getAddRouteFormValidationError", () => {
+describe("getRouteScheduleFormValidationError", () => {
   it("requires both times", () => {
     expect(
-      getAddRouteFormValidationError(
+      getRouteScheduleFormValidationError(
         createKyivToWarsawFormValues({ arrivalLocalDateTime: "" })
       )
     ).toBe(FormValidationError.RouteRequiredFieldsMissing)
@@ -76,7 +76,7 @@ describe("getAddRouteFormValidationError", () => {
 
   it("requires both cities", () => {
     expect(
-      getAddRouteFormValidationError(
+      getRouteScheduleFormValidationError(
         createKyivToWarsawFormValues({ destinationCity: null })
       )
     ).toBe(FormValidationError.RouteRequiredFieldsMissing)
@@ -84,7 +84,7 @@ describe("getAddRouteFormValidationError", () => {
 
   it("rejects the same start and destination", () => {
     expect(
-      getAddRouteFormValidationError(
+      getRouteScheduleFormValidationError(
         createKyivToWarsawFormValues({ destinationCity: kyivCity })
       )
     ).toBe(FormValidationError.SameStartAndDestinationLocation)
@@ -92,7 +92,7 @@ describe("getAddRouteFormValidationError", () => {
 
   it("compares UTC instants, so an arrival that looks later on the wall clock can still be earlier", () => {
     expect(
-      getAddRouteFormValidationError(
+      getRouteScheduleFormValidationError(
         createKyivToWarsawFormValues({
           startCity: warsawCity,
           destinationCity: kyivCity,
@@ -105,7 +105,7 @@ describe("getAddRouteFormValidationError", () => {
 
   it("accepts a valid route", () => {
     expect(
-      getAddRouteFormValidationError(createKyivToWarsawFormValues({}))
+      getRouteScheduleFormValidationError(createKyivToWarsawFormValues({}))
     ).toBeNull()
   })
 })

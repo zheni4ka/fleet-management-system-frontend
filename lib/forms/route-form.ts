@@ -7,6 +7,7 @@ import {
   RouteAssignmentFormValues,
   RouteCitySelection,
   RouteLocationIds,
+  RouteScheduleFormValues,
   RouteStatus,
 } from "@/lib/types"
 
@@ -54,17 +55,17 @@ function getRequiredRouteCity(
   return routeCity
 }
 
-function createRouteTimesUtc(
-  addRouteFormValues: AddRouteFormValues
+export function createRouteTimesUtc(
+  routeScheduleFormValues: RouteScheduleFormValues
 ): RouteTimesUtc {
   return {
     departureTimeUtc: convertZonedLocalDateTimeToUtcIsoString(
-      addRouteFormValues.departureLocalDateTime,
-      getRequiredRouteCity(addRouteFormValues.startCity).timeZoneId
+      routeScheduleFormValues.departureLocalDateTime,
+      getRequiredRouteCity(routeScheduleFormValues.startCity).timeZoneId
     ),
     arrivalTimeUtc: convertZonedLocalDateTimeToUtcIsoString(
-      addRouteFormValues.arrivalLocalDateTime,
-      getRequiredRouteCity(addRouteFormValues.destinationCity).timeZoneId
+      routeScheduleFormValues.arrivalLocalDateTime,
+      getRequiredRouteCity(routeScheduleFormValues.destinationCity).timeZoneId
     ),
   }
 }
@@ -82,21 +83,21 @@ export function createCreateRouteRequestModel(
   }
 }
 
-export function getAddRouteFormValidationError(
-  addRouteFormValues: AddRouteFormValues
+export function getRouteScheduleFormValidationError(
+  routeScheduleFormValues: RouteScheduleFormValues
 ): FormValidationError | null {
   if (
-    addRouteFormValues.departureLocalDateTime === "" ||
-    addRouteFormValues.arrivalLocalDateTime === ""
+    routeScheduleFormValues.departureLocalDateTime === "" ||
+    routeScheduleFormValues.arrivalLocalDateTime === ""
   ) {
     return FormValidationError.RouteRequiredFieldsMissing
   }
   const routeAssignmentFormValidationError =
-    getRouteAssignmentFormValidationError(addRouteFormValues)
+    getRouteAssignmentFormValidationError(routeScheduleFormValues)
   if (routeAssignmentFormValidationError !== null) {
     return routeAssignmentFormValidationError
   }
-  const routeTimesUtc = createRouteTimesUtc(addRouteFormValues)
+  const routeTimesUtc = createRouteTimesUtc(routeScheduleFormValues)
   if (
     new Date(routeTimesUtc.arrivalTimeUtc) <=
     new Date(routeTimesUtc.departureTimeUtc)

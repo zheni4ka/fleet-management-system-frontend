@@ -7,5 +7,7 @@ export interface UpdateRouteRequestModel {
   destinationLocationId: number
   autoId: number
   driverId: number
+  departureTimeUtc: string | null
+  arrivalTimeUtc: string | null
   status: RouteStatus
 }

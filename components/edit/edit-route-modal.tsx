@@ -10,15 +10,17 @@ import { FormField } from "@/components/ui/form-field"
 import ModalWindow from "@/components/ui/modal-window"
 import { SubmitButton } from "@/components/ui/submit-button"
 import { RouteFormFields } from "@/components/forms/route-form-fields"
+import { RouteTimeFields } from "@/components/forms/route-time-fields"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { sendApiRequest } from "@/lib/api-client"
 import { resolveRouteLocationIds } from "@/lib/route-city-locations"
 import { allowedRouteStatusTransitions, apiEndpoints } from "@/lib/constants"
 import {
+  canRouteBeRescheduled,
   createEditRouteFormValuesFromRoute,
   createUpdateRouteRequestModel,
+  getEditRouteFormValidationError,
 } from "@/lib/forms/edit-route-form"
-import { getRouteAssignmentFormValidationError } from "@/lib/forms/route-form"
 import { isRouteStatusActive } from "@/lib/route-status"
 import {
   AutoLookupOption,
@@ -66,17 +68,19 @@ export default function EditRouteModal({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const routeAssignmentFormValidationError =
-      getRouteAssignmentFormValidationError(editRouteFormValues)
+    const editRouteFormValidationError = getEditRouteFormValidationError(
+      route,
+      editRouteFormValues
+    )
     const { startCity, destinationCity } = editRouteFormValues
     if (
-      routeAssignmentFormValidationError !== null ||
+      editRouteFormValidationError !== null ||
       startCity === null ||
       destinationCity === null
     ) {
       toast.error(
         formValidationTranslations(
-          routeAssignmentFormValidationError ??
+          editRouteFormValidationError ??
             FormValidationError.RouteRequiredFieldsMissing
         )
       )
@@ -151,9 +155,16 @@ export default function EditRouteModal({
             </NativeSelect>
           </FormField>
 
-          <p className="text-xs text-slate-500">
-            {routeTranslations("timesNotEditableHint")}
-          </p>
+          {canRouteBeRescheduled(route) ? (
+            <RouteTimeFields
+              routeFormValues={editRouteFormValues}
+              onRouteFormValuesChange={setEditRouteFormValues}
+            />
+          ) : (
+            <p className="text-xs text-slate-500">
+              {routeTranslations("timesNotEditableHint")}
+            </p>
+          )}
 
           <SubmitButton isSubmitting={isApiMutationRunning}>
             {routeTranslations("saveChangesButtonLabel")}

@@ -380,7 +380,7 @@
     "arrivalTimeLabel": "Час прибуття",
     "timeLabelWithoutLocation": "{timeLabel} (оберіть локацію)",
     "timeLabelWithTimeZone": "{timeLabel}, {timeZoneId}",
-    "timesNotEditableHint": "Час відправлення та прибуття після створення маршруту не змінюється.",
+    "timesNotEditableHint": "Час відправлення та прибуття можна змінити лише для запланованого маршруту.",
     "saveChangesButtonLabel": "Зберегти зміни",
     "startLocationLabel": "Початкова локація",
     "destinationLocationLabel": "Кінцева локація",
