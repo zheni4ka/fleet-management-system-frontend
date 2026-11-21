@@ -187,7 +187,11 @@
     "drivingHours": "Годин у дорозі",
     "departureTime": "Час відправлення",
     "arrivalTime": "Час прибуття",
-    "auto": "Авто"
+    "auto": "Авто",
+    "contacts": "Контакти",
+    "tripStartedAt": "Початок",
+    "tripEndedAt": "Завершення",
+    "duration": "Тривалість"
   },
   "login": {
     "title": "Вхід у систему",
@@ -237,7 +241,8 @@
     "MaintenancePlannedEndNotAfterStart": "Запланований кінець робіт має бути пізніше за їх початок.",
     "RequiredFieldMissing": "Заповніть це поле.",
     "EmailAddressInvalid": "Вкажіть коректну адресу електронної пошти.",
-    "FormFieldsNeedAttention": "Виправте помилки у виділених полях."
+    "FormFieldsNeedAttention": "Виправте помилки у виділених полях.",
+    "PhoneNumberFormatInvalid": "Вкажіть номер у міжнародному форматі, наприклад +380671234567."
   },
   "pages": {
     "autosTitle": "Автомобілі",
@@ -374,7 +379,12 @@
     "restoreSuccess": "Водія відновлено з архіву!",
     "restoreError": "Не вдалося відновити водія",
     "detailsSectionTitle": "Дані водія",
-    "licenseNumberHint": "Формат: ABC 123456"
+    "licenseNumberHint": "Формат: ABC 123456",
+    "contactsSectionTitle": "Контакти",
+    "phoneNumberLabel": "Номер телефону",
+    "phoneNumberHint": "Міжнародний формат, наприклад +380671234567",
+    "emailLabel": "Електронна пошта",
+    "noContactsLabel": "Не вказано"
   },
   "routes": {
     "addButtonLabel": "Додати маршрут",
@@ -436,7 +446,8 @@
     "depotLabel": "Депо",
     "routeSectionTitle": "Маршрут",
     "assignmentSectionTitle": "Призначення",
-    "scheduleSectionTitle": "Розклад і статус"
+    "scheduleSectionTitle": "Розклад і статус",
+    "driverPhoneLabel": "Телефон водія"
   },
   "routeStatusActions": {
     "InProgress": "Розпочати",
@@ -516,5 +527,22 @@
   },
   "auditLogs": {
     "emptyList": "Журнал дій поки порожній."
+  },
+  "driverProfile": {
+    "title": "Профіль водія",
+    "description": "Контакти, статистика та історія поїздок водія.",
+    "backToDriversLabel": "До списку водіїв",
+    "notSpecifiedLabel": "Не вказано",
+    "recordStateLabel": "Стан запису",
+    "activeRecordLabel": "Активний",
+    "tripSummaryTitle": "Поїздки",
+    "tripsCountLabel": "Усього поїздок",
+    "completedTripsCountLabel": "Виконано",
+    "cancelledTripsCountLabel": "Перервано в дорозі",
+    "drivingHoursLabel": "Годин у дорозі",
+    "lastTripEndedAtLabel": "Остання поїздка завершилась",
+    "tripHistoryTitle": "Історія поїздок",
+    "noTrips": "Поїздок ще немає.",
+    "routeDeletedLabel": "Маршрут видалено"
   }
 }

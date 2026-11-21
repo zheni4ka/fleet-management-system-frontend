@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { useTranslations } from "next-intl"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
@@ -5,7 +6,11 @@ import EditDriverModal from "@/components/edit/edit-driver-modal"
 import { ArchivableTableRowActions } from "@/components/tables/archivable-table-row-actions"
 import { EmptyTableRow } from "@/components/tables/empty-table-row"
 import { TableColumnsHeader } from "@/components/tables/table-columns-header"
-import { formatDriverFullName } from "@/lib/formatters"
+import { createDriverProfilePath } from "@/lib/app-route-paths"
+import {
+  formatDriverFullName,
+  formatDriverFullNameWithPatronymic,
+} from "@/lib/formatters"
 import { hasActiveListFilters } from "@/lib/search-params"
 import { apiEndpoints, driversTableColumns } from "@/lib/constants"
 import {
@@ -51,9 +56,14 @@ export function DriversTable({
           {drivers.map((driver) => (
             <TableRow key={driver.id} className="hover:bg-slate-50/50">
               <TableCell className="font-mono text-xs">{driver.id}</TableCell>
-              <TableCell className="font-medium">{driver.name}</TableCell>
-              <TableCell>{driver.surname}</TableCell>
-              <TableCell>{driver.patronymic}</TableCell>
+              <TableCell className="font-medium whitespace-normal">
+                <Link
+                  href={createDriverProfilePath(driver.id)}
+                  className="text-indigo-700 hover:underline"
+                >
+                  {formatDriverFullNameWithPatronymic(driver)}
+                </Link>
+              </TableCell>
               <TableCell>
                 <Badge tone={BadgeTone.Info}>{driver.licenseNumber}</Badge>
                 {driver.isArchived && (
@@ -62,6 +72,32 @@ export function DriversTable({
                       {listFilterTranslations("archivedBadgeLabel")}
                     </Badge>
                   </span>
+                )}
+              </TableCell>
+              <TableCell className="text-sm whitespace-normal">
+                {driver.phoneNumber === null && driver.email === null ? (
+                  <span className="text-slate-400">
+                    {driverTranslations("noContactsLabel")}
+                  </span>
+                ) : (
+                  <div className="flex flex-col gap-0.5">
+                    {driver.phoneNumber !== null && (
+                      <a
+                        href={`tel:${driver.phoneNumber}`}
+                        className="hover:underline"
+                      >
+                        {driver.phoneNumber}
+                      </a>
+                    )}
+                    {driver.email !== null && (
+                      <a
+                        href={`mailto:${driver.email}`}
+                        className="break-all text-slate-600 hover:underline"
+                      >
+                        {driver.email}
+                      </a>
+                    )}
+                  </div>
                 )}
               </TableCell>
               <TableCell>{driver.depotName}</TableCell>

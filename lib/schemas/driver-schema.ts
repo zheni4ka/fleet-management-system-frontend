@@ -6,6 +6,8 @@ export const driverSchema = z.object({
   surname: z.string(),
   patronymic: z.string(),
   licenseNumber: z.string(),
+  phoneNumber: z.string().nullable(),
+  email: z.string().nullable(),
   depotId: z.number().int(),
   depotName: z.string(),
   isArchived: z.boolean(),

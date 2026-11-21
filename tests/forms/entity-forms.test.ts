@@ -72,6 +72,8 @@ describe("driver form", () => {
         surname: "Шевченко",
         patronymic: "Григорович",
         licenseNumber: "ABC 111111",
+        phoneNumber: " +380671234567 ",
+        email: " ",
         depotId: "2",
       })
     ).toEqual({
@@ -79,9 +81,40 @@ describe("driver form", () => {
       surname: "Шевченко",
       patronymic: "Григорович",
       licenseNumber: "ABC 111111",
+      phoneNumber: "+380671234567",
+      email: null,
       depotId: 2,
     })
   })
+
+  it.each([
+    [
+      "0671234567",
+      "",
+      { phoneNumber: FormValidationError.PhoneNumberFormatInvalid },
+    ],
+    [
+      "+380671234567",
+      "driver@fleet",
+      { email: FormValidationError.EmailAddressInvalid },
+    ],
+    ["", "", {}],
+  ])(
+    "checks optional contacts: phone %s, email %s",
+    (phoneNumber, email, expectedContactErrors) => {
+      expect(
+        getDriverFormFieldErrors({
+          name: "Тарас",
+          surname: "Шевченко",
+          patronymic: "Григорович",
+          licenseNumber: "ABC 111111",
+          phoneNumber,
+          email,
+          depotId: "2",
+        })
+      ).toEqual(expectedContactErrors)
+    }
+  )
 })
 
 describe("password policy", () => {

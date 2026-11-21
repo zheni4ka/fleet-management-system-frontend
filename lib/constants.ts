@@ -11,6 +11,7 @@ import { DriverFormField } from "@/lib/types/driver-form-field"
 import { DriverFormValues } from "@/lib/types/driver-form-values"
 import { MaintenanceFormValues } from "@/lib/types/maintenance-form-values"
 import { DriverSortField } from "@/lib/types/driver-sort-field"
+import { DriverTripSortField } from "@/lib/types/driver-trip-sort-field"
 import { ModalWindowSize } from "@/lib/types/modal-window-size"
 import { NavigationLink } from "@/lib/types/navigation-link"
 import { RouteSortField } from "@/lib/types/route-sort-field"
@@ -71,6 +72,11 @@ export const accountPasswordConstraints = Object.freeze({
 
 export const accountEmailConstraints = Object.freeze({
   pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+})
+
+export const driverContactConstraints = Object.freeze({
+  phoneNumberPattern: /^\+[1-9][0-9]{7,14}$/,
+  phoneNumberMaxLength: 16,
 })
 
 export const apiProblemTypes = Object.freeze({
@@ -182,6 +188,9 @@ export const apiEndpoints = Object.freeze({
   deleteDriver: "/api/v1/Driver/deleteDriver",
   restoreDriver: "/api/v1/Driver/restoreDriver",
   driversPagedList: "/api/v1/Driver/getDriversPagedList",
+  driverById: "/api/v1/Driver/getDriverById",
+  driverTripsPagedList: "/api/v1/Driver/getDriverTripsPagedList",
+  driverTripSummary: "/api/v1/Driver/getDriverTripSummary",
   driverLookupOptions: "/api/v1/Driver/getDriverLookupOptions",
   searchCityGeocodingCandidates:
     "/api/v1/Location/searchCityGeocodingCandidates",
@@ -374,31 +383,22 @@ export const driversTableColumns: ReadonlyArray<TableColumn<DriverSortField>> =
   Object.freeze([
     {
       labelMessageKey: "id",
-      className: "w-1/6",
+      className: "w-[7%]",
       sortField: DriverSortField.Id,
     },
     {
-      labelMessageKey: "name",
-      className: "w-1/6",
-      sortField: DriverSortField.Name,
-    },
-    {
-      labelMessageKey: "surname",
-      className: "w-1/6",
+      labelMessageKey: "driver",
+      className: "w-[26%]",
       sortField: DriverSortField.Surname,
     },
     {
-      labelMessageKey: "patronymic",
-      className: "w-1/6",
-      sortField: DriverSortField.Patronymic,
-    },
-    {
       labelMessageKey: "licenseNumber",
-      className: "w-1/6",
+      className: "w-[15%]",
       sortField: DriverSortField.LicenseNumber,
     },
-    { labelMessageKey: "depot", className: "w-1/6" },
-    { labelMessageKey: "operations", className: "w-1/6 text-center" },
+    { labelMessageKey: "contacts", className: "w-[24%]" },
+    { labelMessageKey: "depot", className: "w-[14%]" },
+    { labelMessageKey: "operations", className: "w-[14%] text-center" },
   ])
 
 export const dispatchersTableColumns: ReadonlyArray<
@@ -599,6 +599,8 @@ export const driverFormFieldNamesByApiPropertyName: Readonly<
   surname: "surname",
   patronymic: "patronymic",
   licenseNumber: "licenseNumber",
+  phoneNumber: "phoneNumber",
+  email: "email",
   depotId: "depotId",
 })
 
@@ -643,3 +645,22 @@ export const userDepotsFormFieldNamesByApiPropertyName: Readonly<
 > = Object.freeze({
   depotIds: "depotIds",
 })
+
+export const driverTripsTableColumns: ReadonlyArray<
+  TableColumn<DriverTripSortField>
+> = Object.freeze([
+  {
+    labelMessageKey: "tripStartedAt",
+    className: "w-[17%] whitespace-normal",
+    sortField: DriverTripSortField.StartedAt,
+  },
+  { labelMessageKey: "fromTo", className: "w-[25%] whitespace-normal" },
+  { labelMessageKey: "auto", className: "w-[16%] whitespace-normal" },
+  { labelMessageKey: "tripEndedAt", className: "w-[17%] whitespace-normal" },
+  {
+    labelMessageKey: "duration",
+    className: "w-[12%] whitespace-normal",
+    sortField: DriverTripSortField.DrivingMinutes,
+  },
+  { labelMessageKey: "status", className: "w-[13%] whitespace-normal" },
+])

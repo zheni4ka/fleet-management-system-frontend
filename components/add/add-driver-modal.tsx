@@ -4,7 +4,6 @@ import { useTranslations } from "next-intl"
 import { useState, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { FormModal } from "@/components/forms/form-modal"
-import { FormSection } from "@/components/forms/form-section"
 import { DriverFormFields } from "@/components/forms/driver-form-fields"
 import { useApiMutationWithRefresh } from "@/hooks/use-api-mutation-with-refresh"
 import { useFormFieldErrorMessages } from "@/hooks/use-form-field-error-messages"
@@ -92,14 +91,12 @@ export default function AddDriverModal({ depots }: AddDriverModalProps) {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleSubmit}
       >
-        <FormSection title={driverTranslations("detailsSectionTitle")}>
-          <DriverFormFields
-            depots={depots}
-            driverFormValues={driverFormValues}
-            formFieldErrorMessages={formFieldErrorMessages}
-            onDriverFormValuesChange={handleDriverFormValuesChange}
-          />
-        </FormSection>
+        <DriverFormFields
+          depots={depots}
+          driverFormValues={driverFormValues}
+          formFieldErrorMessages={formFieldErrorMessages}
+          onDriverFormValuesChange={handleDriverFormValuesChange}
+        />
       </FormModal>
     </>
   )

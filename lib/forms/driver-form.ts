@@ -1,9 +1,14 @@
+import {
+  accountEmailConstraints,
+  driverContactConstraints,
+} from "@/lib/constants"
 import { getRequiredFieldErrors } from "@/lib/forms/form-field-errors"
 import {
   CreateDriverRequestModel,
   Driver,
   DriverFormValues,
   FormFieldErrors,
+  FormValidationError,
 } from "@/lib/types"
 
 export function createEmptyDriverFormValues(): DriverFormValues {
@@ -12,6 +17,8 @@ export function createEmptyDriverFormValues(): DriverFormValues {
     surname: "",
     patronymic: "",
     licenseNumber: "",
+    phoneNumber: "",
+    email: "",
     depotId: "",
   }
 }
@@ -24,6 +31,8 @@ export function createDriverFormValuesFromDriver(
     surname: driver.surname,
     patronymic: driver.patronymic,
     licenseNumber: driver.licenseNumber,
+    phoneNumber: driver.phoneNumber ?? "",
+    email: driver.email ?? "",
     depotId: String(driver.depotId),
   }
 }
@@ -31,13 +40,33 @@ export function createDriverFormValuesFromDriver(
 export function getDriverFormFieldErrors(
   driverFormValues: DriverFormValues
 ): FormFieldErrors<keyof DriverFormValues> {
-  return getRequiredFieldErrors(driverFormValues, [
-    "name",
-    "surname",
-    "patronymic",
-    "licenseNumber",
-    "depotId",
-  ])
+  const trimmedPhoneNumber = driverFormValues.phoneNumber.trim()
+  const trimmedEmail = driverFormValues.email.trim()
+  const isPhoneNumberInvalid =
+    trimmedPhoneNumber !== "" &&
+    !driverContactConstraints.phoneNumberPattern.test(trimmedPhoneNumber)
+  const isEmailInvalid =
+    trimmedEmail !== "" && !accountEmailConstraints.pattern.test(trimmedEmail)
+  return {
+    ...getRequiredFieldErrors(driverFormValues, [
+      "name",
+      "surname",
+      "patronymic",
+      "licenseNumber",
+      "depotId",
+    ]),
+    ...(isPhoneNumberInvalid
+      ? { phoneNumber: FormValidationError.PhoneNumberFormatInvalid }
+      : {}),
+    ...(isEmailInvalid
+      ? { email: FormValidationError.EmailAddressInvalid }
+      : {}),
+  }
+}
+
+function getOptionalTrimmedText(optionalText: string): string | null {
+  const trimmedText = optionalText.trim()
+  return trimmedText === "" ? null : trimmedText
 }
 
 export function createDriverRequestBody(
@@ -48,6 +77,8 @@ export function createDriverRequestBody(
     surname: driverFormValues.surname.trim(),
     patronymic: driverFormValues.patronymic.trim(),
     licenseNumber: driverFormValues.licenseNumber.trim(),
+    phoneNumber: getOptionalTrimmedText(driverFormValues.phoneNumber),
+    email: getOptionalTrimmedText(driverFormValues.email),
     depotId: Number(driverFormValues.depotId),
   }
 }

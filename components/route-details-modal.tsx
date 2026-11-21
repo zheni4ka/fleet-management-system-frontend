@@ -1,11 +1,13 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { useLocale, useTranslations } from "next-intl"
 import ModalWindow from "@/components/ui/modal-window"
 import { RouteMapFrame } from "@/components/route-map-frame"
 import { RouteStatusBadge } from "@/components/route-status-badge"
 import { resolveAppLocale } from "@/lib/app-locale"
+import { createDriverProfilePath } from "@/lib/app-route-paths"
 import {
   createRouteDestinationMapPoint,
   createRouteStartMapPoint,
@@ -25,7 +27,7 @@ interface RouteDetailsModalProps {
 
 interface RouteDetailRow {
   label: string
-  value: string
+  value: React.ReactNode
 }
 
 interface RouteDetailsSectionProps {
@@ -133,8 +135,30 @@ export function RouteDetailsModal({ route, onClose }: RouteDetailsModalProps) {
     },
     {
       label: routeTranslations("cardDriverLabel"),
-      value: formatRouteDriverFullName(route),
+      value: (
+        <Link
+          href={createDriverProfilePath(route.driverId)}
+          className="text-indigo-700 hover:underline"
+        >
+          {formatRouteDriverFullName(route)}
+        </Link>
+      ),
     },
+    ...(route.driverPhoneNumber === null
+      ? []
+      : [
+          {
+            label: routeTranslations("driverPhoneLabel"),
+            value: (
+              <a
+                href={`tel:${route.driverPhoneNumber}`}
+                className="text-indigo-700 hover:underline"
+              >
+                {route.driverPhoneNumber}
+              </a>
+            ),
+          },
+        ]),
     { label: routeTranslations("depotLabel"), value: route.depotName },
   ]
 

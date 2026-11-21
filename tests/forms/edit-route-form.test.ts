@@ -31,6 +31,7 @@ const plannedRoute: Route = {
   driverId: 7,
   driverName: "Тарас",
   driverSurname: "Шевченко",
+  driverPhoneNumber: null,
   status: RouteStatus.Planned,
   depotId: 1,
   depotName: "Основне депо",

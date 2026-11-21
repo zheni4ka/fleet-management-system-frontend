@@ -187,7 +187,11 @@
     "drivingHours": "Hours on the road",
     "departureTime": "Departure time",
     "arrivalTime": "Arrival time",
-    "auto": "Vehicle"
+    "auto": "Vehicle",
+    "contacts": "Contacts",
+    "tripStartedAt": "Started",
+    "tripEndedAt": "Ended",
+    "duration": "Duration"
   },
   "login": {
     "title": "Sign in",
@@ -237,7 +241,8 @@
     "MaintenancePlannedEndNotAfterStart": "The planned end of work must be later than its start.",
     "RequiredFieldMissing": "Fill in this field.",
     "EmailAddressInvalid": "Enter a valid email address.",
-    "FormFieldsNeedAttention": "Fix the errors in the highlighted fields."
+    "FormFieldsNeedAttention": "Fix the errors in the highlighted fields.",
+    "PhoneNumberFormatInvalid": "Enter the number in international format, for example +380671234567."
   },
   "pages": {
     "autosTitle": "Vehicles",
@@ -374,7 +379,12 @@
     "restoreSuccess": "Driver restored from the archive.",
     "restoreError": "Failed to restore the driver",
     "detailsSectionTitle": "Driver details",
-    "licenseNumberHint": "Format: ABC 123456"
+    "licenseNumberHint": "Format: ABC 123456",
+    "contactsSectionTitle": "Contacts",
+    "phoneNumberLabel": "Phone number",
+    "phoneNumberHint": "International format, for example +380671234567",
+    "emailLabel": "Email",
+    "noContactsLabel": "Not specified"
   },
   "routes": {
     "addButtonLabel": "Add route",
@@ -436,7 +446,8 @@
     "depotLabel": "Depot",
     "routeSectionTitle": "Route",
     "assignmentSectionTitle": "Assignment",
-    "scheduleSectionTitle": "Schedule and status"
+    "scheduleSectionTitle": "Schedule and status",
+    "driverPhoneLabel": "Driver's phone"
   },
   "routeStatusActions": {
     "InProgress": "Start",
@@ -516,5 +527,22 @@
   },
   "auditLogs": {
     "emptyList": "The audit log is empty."
+  },
+  "driverProfile": {
+    "title": "Driver profile",
+    "description": "The driver's contacts, statistics and trip history.",
+    "backToDriversLabel": "Back to drivers",
+    "notSpecifiedLabel": "Not specified",
+    "recordStateLabel": "Record state",
+    "activeRecordLabel": "Active",
+    "tripSummaryTitle": "Trips",
+    "tripsCountLabel": "Total trips",
+    "completedTripsCountLabel": "Completed",
+    "cancelledTripsCountLabel": "Interrupted on the road",
+    "drivingHoursLabel": "Hours on the road",
+    "lastTripEndedAtLabel": "Last trip ended",
+    "tripHistoryTitle": "Trip history",
+    "noTrips": "No trips yet.",
+    "routeDeletedLabel": "Route deleted"
   }
 }

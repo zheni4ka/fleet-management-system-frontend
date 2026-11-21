@@ -117,7 +117,7 @@ export function createPathWithSearchParams(
   return searchParamsText === "" ? path : `${path}?${searchParamsText}`
 }
 
-function parsePositiveIntegerSearchParamValue(
+export function parsePositiveIntegerSearchParamValue(
   searchParamValue: string
 ): number | null {
   const parsedNumber = Number(searchParamValue)

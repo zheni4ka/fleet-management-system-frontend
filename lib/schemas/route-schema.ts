@@ -26,6 +26,7 @@ export const routeSchema = z.object({
   driverId: z.number().int(),
   driverName: z.string(),
   driverSurname: z.string(),
+  driverPhoneNumber: z.string().nullable(),
   status: z.enum(RouteStatus),
   depotId: z.number().int(),
   depotName: z.string(),

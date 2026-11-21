@@ -172,3 +172,16 @@ export function formatUtcIntervalHours(
     (60 * 60 * 1000)
   return formatHours(Math.round(intervalHoursCount * 10) / 10, appLocale)
 }
+
+export function formatDriverFullNameWithPatronymic(
+  driver: Pick<Driver, "name" | "surname" | "patronymic">
+): string {
+  return `${driver.surname} ${driver.name} ${driver.patronymic}`
+}
+
+export function formatDrivingMinutes(
+  drivingMinutes: number,
+  appLocale: AppLocale
+): string {
+  return formatHours(Math.round((drivingMinutes / 60) * 10) / 10, appLocale)
+}

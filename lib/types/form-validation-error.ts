@@ -10,4 +10,5 @@ export enum FormValidationError {
   RequiredFieldMissing = "RequiredFieldMissing",
   EmailAddressInvalid = "EmailAddressInvalid",
   FormFieldsNeedAttention = "FormFieldsNeedAttention",
+  PhoneNumberFormatInvalid = "PhoneNumberFormatInvalid",
 }

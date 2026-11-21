@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import { auditLogSchema } from "@/lib/schemas/audit-log-schema"
 import { cityGeocodingCandidatesSchema } from "@/lib/schemas/city-geocoding-candidate-schema"
 import { dispatcherSchema } from "@/lib/schemas/dispatcher-schema"
+import { driverTripSchema } from "@/lib/schemas/driver-trip-schema"
 import { routeSchema } from "@/lib/schemas/route-schema"
 import { sessionResponseSchema } from "@/lib/schemas/session-response-schema"
 import { AuditAction, RouteStatus } from "@/lib/types"
@@ -31,6 +32,7 @@ const validRouteResponse = {
   driverId: 7,
   driverName: "Тарас",
   driverSurname: "Шевченко",
+  driverPhoneNumber: "+380671234567",
   status: RouteStatus.Planned,
   depotId: 1,
   depotName: "Основне депо",
@@ -149,6 +151,41 @@ describe("auditLogSchema", () => {
     expect(auditLogSchema.safeParse(auditLogResponse).success).toBe(true)
     expect(
       auditLogSchema.safeParse({ ...auditLogResponse, action: "SomethingElse" })
+        .success
+    ).toBe(false)
+  })
+})
+
+describe("driverTripSchema", () => {
+  const driverTripResponse = {
+    id: 3,
+    driverId: 7,
+    routeId: null,
+    autoId: 5,
+    autoMark: "Volvo",
+    autoModel: "FH16",
+    autoNumber: "АА1111АА",
+    startLocationCity: "Kyiv",
+    startLocationCountry: "Ukraine",
+    startLocationTimeZoneId: "Europe/Kyiv",
+    destinationLocationCity: "Warsaw",
+    destinationLocationCountry: "Poland",
+    destinationLocationTimeZoneId: "Europe/Warsaw",
+    plannedDepartureTimeUtc: "2026-12-01T06:00:00Z",
+    plannedArrivalTimeUtc: "2026-12-01T17:00:00Z",
+    startedAtUtc: "2026-12-01T06:12:40.1234567Z",
+    endedAtUtc: "2026-12-01T17:45:03Z",
+    drivingMinutes: 692,
+    finalStatus: RouteStatus.Completed,
+  }
+
+  it("accepts a trip whose route was deleted", () => {
+    expect(driverTripSchema.safeParse(driverTripResponse).success).toBe(true)
+  })
+
+  it("rejects negative driving minutes", () => {
+    expect(
+      driverTripSchema.safeParse({ ...driverTripResponse, drivingMinutes: -1 })
         .success
     ).toBe(false)
   })

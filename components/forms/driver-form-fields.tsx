@@ -1,8 +1,9 @@
 import { useTranslations } from "next-intl"
 import { Input } from "@/components/ui/input"
 import { FormField } from "@/components/ui/form-field"
-import { driverFormFields } from "@/lib/constants"
+import { FormSection } from "@/components/forms/form-section"
 import { DepotSelectField } from "@/components/forms/depot-select-field"
+import { driverContactConstraints, driverFormFields } from "@/lib/constants"
 import { Depot, DriverFormValues, FormFieldErrorMessages } from "@/lib/types"
 
 interface DriverFormFieldsProps {
@@ -19,42 +20,78 @@ export function DriverFormFields({
   onDriverFormValuesChange,
 }: DriverFormFieldsProps) {
   const driverTranslations = useTranslations("drivers")
+  const updateDriverFormValues = (changedValues: Partial<DriverFormValues>) => {
+    onDriverFormValuesChange({ ...driverFormValues, ...changedValues })
+  }
+
   return (
     <>
-      {driverFormFields.map((driverFormField) => (
-        <FormField
-          key={driverFormField.name}
-          label={driverTranslations(driverFormField.labelMessageKey)}
-          isRequired
-          hint={
-            driverFormField.hintMessageKey === null
-              ? undefined
-              : driverTranslations(driverFormField.hintMessageKey)
+      <FormSection title={driverTranslations("detailsSectionTitle")}>
+        {driverFormFields.map((driverFormField) => (
+          <FormField
+            key={driverFormField.name}
+            label={driverTranslations(driverFormField.labelMessageKey)}
+            isRequired
+            hint={
+              driverFormField.hintMessageKey === null
+                ? undefined
+                : driverTranslations(driverFormField.hintMessageKey)
+            }
+            errorMessage={formFieldErrorMessages[driverFormField.name]}
+          >
+            <Input
+              value={driverFormValues[driverFormField.name]}
+              onChange={(event) =>
+                updateDriverFormValues({
+                  [driverFormField.name]: event.target.value,
+                })
+              }
+            />
+          </FormField>
+        ))}
+        <DepotSelectField
+          depots={depots}
+          selectedDepotId={driverFormValues.depotId}
+          errorMessage={formFieldErrorMessages.depotId}
+          onSelectedDepotIdChange={(selectedDepotId) =>
+            updateDriverFormValues({ depotId: selectedDepotId })
           }
-          errorMessage={formFieldErrorMessages[driverFormField.name]}
+        />
+      </FormSection>
+
+      <FormSection title={driverTranslations("contactsSectionTitle")}>
+        <FormField
+          label={driverTranslations("phoneNumberLabel")}
+          hint={driverTranslations("phoneNumberHint")}
+          errorMessage={formFieldErrorMessages.phoneNumber}
         >
           <Input
-            value={driverFormValues[driverFormField.name]}
+            type="tel"
+            autoComplete="tel"
+            inputMode="tel"
+            maxLength={driverContactConstraints.phoneNumberMaxLength}
+            placeholder="+380671234567"
+            value={driverFormValues.phoneNumber}
             onChange={(event) =>
-              onDriverFormValuesChange({
-                ...driverFormValues,
-                [driverFormField.name]: event.target.value,
-              })
+              updateDriverFormValues({ phoneNumber: event.target.value })
             }
           />
         </FormField>
-      ))}
-      <DepotSelectField
-        depots={depots}
-        selectedDepotId={driverFormValues.depotId}
-        errorMessage={formFieldErrorMessages.depotId}
-        onSelectedDepotIdChange={(selectedDepotId) =>
-          onDriverFormValuesChange({
-            ...driverFormValues,
-            depotId: selectedDepotId,
-          })
-        }
-      />
+        <FormField
+          label={driverTranslations("emailLabel")}
+          errorMessage={formFieldErrorMessages.email}
+        >
+          <Input
+            type="email"
+            autoComplete="email"
+            placeholder="driver@fleet.com"
+            value={driverFormValues.email}
+            onChange={(event) =>
+              updateDriverFormValues({ email: event.target.value })
+            }
+          />
+        </FormField>
+      </FormSection>
     </>
   )
 }
